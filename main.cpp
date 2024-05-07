@@ -16,26 +16,30 @@ void	sigint_handler(int sig)
     exit(0);
 }
 
-int tryToStart(std::vector<config> listOfConf)
-{
-    for (const auto &item: listOfConf)
-    {
-
-    }
-    Webserver webserver;
-    ws_ptr=&webserver;
-    std::vector<Server> listOfServer;
-    std::signal(SIGINT, sigint_handler);
-
-
-    if()
-    {
-        return 1;
-    }
-    return 0;
-}
+//int tryToStart(std::vector<config> listOfConf)
+//{
+//    for (const auto &item: listOfConf)
+//    {
+//
+//    }
+//    Webserver webserver;
+//    ws_ptr=&webserver;
+//    std::vector<Server> listOfServer;
+//    std::signal(SIGINT, sigint_handler);
+//
+//
+//    if()
+//    {
+//        return 1;
+//    }
+//    return 0;
+//}
 
 int main(int argc, char* argv[]) {
+    Webserver webserver;
+
+    ws_ptr=&webserver;
+
     if (argc != 2) {
         std::cerr << "Error: wrong number of arguments." << std::endl;
         exit(2);

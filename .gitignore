@@ -7,6 +7,7 @@
 **/*.cbp
 **/CMakeScripts
 **/compile_commands.json
+CMakeLists.txt
 .idea/
 .vscode/
 objs/

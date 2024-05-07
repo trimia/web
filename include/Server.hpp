@@ -5,6 +5,7 @@
 #include "Location.hpp"
 #include "Socket.hpp"
 
+
 //#include "Webserver.hpp"
 
 // ******************************************************** //
@@ -26,8 +27,8 @@ class	Server : public sType
 
     ~Server();
 		Server  &operator= (const Server &obj);
-        Server    setupServer(config conf);
-        std::vector<Server> setup(std::vector<config> allConf);
+//        Server    setupServer(Co conf);
+//        std::vector<Server> setup(std::vector<config> allConf);
 
     uint16_t getPort() const;
 
