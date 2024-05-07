@@ -1,0 +1,74 @@
+example adn guide:
+    - https://teoriadeisegnali.it/appint/html/altro/bgnet/index.html
+socket:
+    - socket  setsockopt() necessary to keep alive https://www.ibm.com/docs/en/zos/2.4.0?topic=calls-setsockopt https://www.ibm.com/docs/en/aix/7.2?topic=s-setsockopt-subroutine
+    - socket explanation video part 1 and 2 https://www.youtube.com/watch?v=gntyAFoZp-E
+epoll():
+    - https://idndx.com/the-implementation-of-epoll-1/
+    - https://idndx.com/the-implementation-of-epoll-2/
+    - https://idndx.com/the-implementation-of-epoll-3/
+    - https://idndx.com/the-implementation-of-epoll-4/
+multiplexing:
+    - if we want to use select() :
+                                    - https://codereview.stackexchange.com/questions/111310/select-server-implementation
+                                    - https://italiancoders.it/the-big-select-come-usare-la-select2-in-c-e-c-pt-1/
+                                    - https://italiancoders.it/the-big-select-come-usare-la-select2-in-c-e-c-pt-2/
+    - poll() or select():
+                            - https://mecha-mind.medium.com/a-non-threaded-chat-server-in-c-53dadab8e8f3
+                            - https://www.ibm.com/docs/en/i/7.4?topic=designs-using-poll-instead-select
+                            - https://hechao.li/2022/01/04/select-vs-poll-vs-epoll/
+                            - https://stackoverflow.com/questions/17355593/why-is-epoll-faster-than-select
+                            - https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/
+workflow:
+    - parser config file: acquire information from config file or if there isn't take the default and initialize struct and class
+    - "socket" server client run? file: organize all concern about server and client think to keep alive
+    - "HTTP" request? response? file: working for
+
+parser:
+    read config file check if is ok and populate struct
+config:
+    error check? initialize?
+server:
+    initialize all about server :
+        create socket
+        bind socket
+        listen on the socket
+        accept connection
+        send and receive data? maybe is HTTP block
+        disconnect?
+client:
+    initialize all about client :
+        create socket
+        connect to the server
+        send and receive data
+        disconnect??
+request: see webserver_flowchart
+        - https://freedium.cfd/https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
+
+response:
+
+mainly request response key:
+    - https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields
+
+
+
+bool Server::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
+
+    int str_len;
+    void *buf;
+    str_len = read(events[i].data.fd, buf, BUFFER_SIZE);
+    if (str_len == 0) // close request!
+    {
+        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
+        close(events[i].data.fd);
+        //printf("closed client: %d \n", epoll_events[i].data.fd);
+    }
+    else
+    {
+        write(events[i].data.fd, buf, str_len);   // echo!
+    }
+
+//    client.peaksize = recv(client.connection_socket.sock_fd, buffer, MAX_HEADER_SIZE, MSG_PEEK);
+
+    return false;
+}
