@@ -129,11 +129,11 @@ void Server::setPort(uint16_t port) {
     _port = port;
 }
 
-char *Server::getIp() const {
+const std::basic_string<char> Server::getIp() const {
     return _ip;
 }
 
-void Server::setIp(char *ip) {
+void Server::setIp(std::basic_string<char> ip) {
     _ip = ip;
 }
 
@@ -161,11 +161,11 @@ void Server::setIndex(const std::string &index) {
     _index = index;
 }
 
-unsigned long Server::getClientMaxBodySize() const {
+const std::basic_string<char> Server::getClientMaxBodySize() const {
     return _client_max_body_size;
 }
 
-void Server::setClientMaxBodySize(unsigned long clientMaxBodySize) {
+void Server::setClientMaxBodySize(std::basic_string<char> clientMaxBodySize) {
     _client_max_body_size = clientMaxBodySize;
 }
 
@@ -177,11 +177,11 @@ void Server::setAutoindex(bool autoindex) {
     _autoindex = autoindex;
 }
 
-const std::map<short, std::string> &Server::getErrorPages() const {
+const std::vector<std::string> Server::getErrorPages() const {
     return _error_pages;
 }
 
-void Server::setErrorPages(const std::map<short, std::string> &errorPages) {
+void Server::setErrorPages(std::vector<std::basic_string<char> > errorPages) {
     _error_pages = errorPages;
 }
 

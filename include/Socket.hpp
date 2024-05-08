@@ -1,11 +1,14 @@
 #ifndef _Socket_HPP_
-#define _Socket_HPP_
+# define _Socket_HPP_
 
-#include "include.h"
-#include "Response.hpp"
-#include "Request.hpp"
-#include "Webserver.hpp"
-#include "Server.hpp"
+# include "include.h"
+# include "Response.hpp"
+# include "Request.hpp"
+# include "Webserver.hpp"
+# include "Server.hpp"
+# include <sys/socket.h>
+# include <netinet/in.h>
+
 
 
 // ******************************************************** //
@@ -21,10 +24,9 @@ class	Socket
 	public	:
 		Socket ();
 		Socket (Socket const &obj);
+        explicit Socket(int fdSock);
 
-    explicit Socket(int fdSock);
-
-    ~Socket ();
+        ~Socket ();
 		Socket &operator= (const Socket &obj);
         //choose what option socket hav to do: keepalive etc...
         bool createSocket(Server server);

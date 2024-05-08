@@ -1,7 +1,3 @@
-//
-// Created by test on 5/1/24.
-//
-
 #include "../include/ConfigBlock.hpp"
 #include "../include/ConfigParser.hpp"
 #include <sstream>
@@ -11,8 +7,6 @@
  * Implement the simil Data Transfer Object
  * sends from parsed block to relative Object
  * */
-
-
 
 static uint16_t stoi(std::string& s) {
     char*       endptr;
@@ -28,93 +22,145 @@ void    ConfigBlock::handleHTTPBlock() {
     ;
 }
 
-/*
- * uint16_t						    _port;
- * char*                            _ip;
- * std::string						_server_name;
- * std::string						_root;
- * std::string						_index;
- * unsigned long					_client_max_body_size;
- * bool							    _autoindex;
- * std::map<short, std::string>	    _error_pages;
- * */
-void    ConfigBlock::handleServerBlock(std::string key, std::string value) {
+void    ConfigBlock::handleServerBlock(Server server, std::string key, std::string value) {
+//  else if (key == "cgi_enable") {
     if (key == "server_name") {
-        this->_server.setServerName(value);
+        server.setServerName(value);
     } else if (key == "listen") {
-        this->_server.setPort(stoi(value));
+        server.setPort(stoi(value));
     } else if (key == "autoindex") {
-//        when enabled autoindex can only be 'on' otherwise error?
-        this->_server.setAutoIndex(true);
+        server.setAutoindex(true); // check how to handle autoindex
+    } else if (key == "index") {
+        server.setIndex(value);
+    } else if (key == "root") {
+        server.setRoot(value);
+    } else if (key == "body_size") {
+        server.setClientMaxBodySize(value);
+    } else if (key == "host") {
+        server.setIp(value);
+    } else {
+        std::cout << "Error: wrong server block from config file" << std::endl;
+        exit(2);
+    }
+}
+
+void    ConfigBlock::handleLocationBlock(Location location, std::string key, std::string value) {
+    //////////// cgi_path ???
+    if (key == "location") {
+        location.setPath(value);
+    } else if (key == "autoindex") {
+        location.setAutoIndex(true); // check how to handle autoindex
+    } else if (key == "index") {
+        location.setIndex(value);
+    } else if (key == "root") {
+        location.setRoot(value);
+    } else if (key == "body_size") {
+        location.setClientMaxBodySize(value);
+    } else {
+        std::cout << "Error: wrong server block from config file" << std::endl;
+        exit(2);
+    }
+}
+
+void    ConfigBlock::handleServVectors(Server server, std::vector<std::string> vecString) {
+    //////////// cgi_path ???
+    if (vecString[0] == "error_page") {
+        server.setErrorPages(vecString);
+    } else {
+        std::cout << "Error: wrong error page in server block from config file" << std::endl;
+        exit(2);
+    }
+}
+
+void    ConfigBlock::handleLocVectors(Location location, std::vector<std::string> vecString) {
+    if (vecString[0] == "method") {
+        location.setMethods(vecString);
+    } else if (vecString[0] == "return") {
+        location.setReturn(vecString);
+    } else {
+        std::cout << "Error: wrong configuration in location block (method / return)" << std::endl;
+        exit(2);
     }
 }
 
 /*
- * std::string					_path;
- * std::string					_root;
- * bool  						_autoindex;
- * std::string					_index;
- * std::vector<short>			_methods; // GET+ POST- DELETE- PUT- HEAD-
- * std::string					_return;
- * std::string					_alias;
- * std::vector<std::string> 	_cgi_path;
- * std::vector<std::string>	    _cgi_ext;
- * unsigned long				_client_max_body_size;
+ * Wrapper that iterates over each server
+ *
+ * for server in servers
+ *      get_values and set server values
+ *      for location in locations
+ *          get_values and set location values
+ *      set list of locations inside single server
+ *      set server inside list of servers
  * */
-void    ConfigBlock::handleLocationBlock() {}
+std::vector<Server> ConfigBlock::handleBlock() {
+    Socket                  socket;
+    Server                  server;
+    Location                location;
+    std::vector<Location>   listOfLocation;
+    std::vector<Server>     listOfServers;
 
-void    ConfigBlock::handleServErrorPages() {}
-void    ConfigBlock::handleLocErrorPages() {}
-
-
-void    ConfigBlock::handleBlock() {
-    // Print HTTP block information
-    std::cout << "\n*** HTTP Block ***\n";
+    // HTTP block information
     std::map<std::string, std::string> httpBlock = getHttpBlock().keyValue;
-    for (std::map<std::string, std::string>::iterator it = httpBlock.begin(); it != httpBlock.end(); ++it) {
-        std::cout << "    Key: " << it->first << ", Value: " << it->second << std::endl;
+    for (std::map<std::string, std::string>::iterator it = httpBlock.begin();
+        it != httpBlock.end(); ++it) {
         this->handleHTTPBlock();
     }
 
-    // Print server block information
-    std::cout << "\n*** Server Blocks ***\n";
-    for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin(); it != getServerBlocks().end(); ++it) {
-        std::cout << "\n  *** Server Block ***\n";
+    // server block information
+    size_t countServ = 0;
+    for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin();
+        it != getServerBlocks().end(); ++it) {
         std::map<std::string, std::string> serverBlockKV = it->keyValue;
-        for (std::map<std::string, std::string>::iterator it2 = serverBlockKV.begin(); it2 != serverBlockKV.end(); ++it2) {
-//            std::cout << "      Key: " << it2->first << ", Value: " << it2->second << std::endl;
-            this->handleServerBlock(it2->first, it2->second);
+        for (std::map<std::string, std::string>::iterator it2 = serverBlockKV.begin();
+            it2 != serverBlockKV.end(); ++it2) {
+            this->handleServerBlock(server, it2->first, it2->second);
         }
-        // Print error pages for this server block
+        // error pages for this server block
         if (!it->errorPages.empty()) {
-            std::cout << "      Default error pages:";
-            for (std::vector<std::string>::iterator it22 = it->errorPages.begin();
-                 it22 != it->errorPages.end(); ++it22) {
-                this->handleServErrorPages();
-//                std::cout << *it22 << " ";
-            }
-//            std::cout << std::endl;
+            this->handleServVectors(server, it->errorPages);
         }
 
-        // Print location blocks information within this server block
+        // location blocks information within this server block
+        size_t  countLoc = 0;
         for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
              it3 != it->locationBlock.end(); ++it3) {
-            std::cout << "\n    *** Location Block ***\n";
+
             std::map<std::string, std::string> locationBlockKV = it3->keyValue;
-            for (std::map<std::string, std::string>::iterator it4 = locationBlockKV.begin(); it4 != locationBlockKV.end(); ++it4) {
-//                std::cout << "        Key: " << it4->first << ", Value: " << it4->second << std::endl;
-                this->handleLocationBlock();
+            for (std::map<std::string, std::string>::iterator it4 = locationBlockKV.begin();
+                it4 != locationBlockKV.end(); ++it4) {
+                this->handleLocationBlock(location, it4->first, it4->second);
             }
-            // Print error pages for this location block
+            // error pages for this location block
             if (!it3->retErrorPages.empty()) {
-                std::cout << "        Error Pages: ";
-                for (std::vector<std::string>::iterator it5 = it3->retErrorPages.begin(); it5 != it3->retErrorPages.end(); ++it5) {
-                    this->handleLocErrorPages();
-//                    std::cout << *it5 << " ";
-                }
-                std::cout << std::endl;
+                this->handleLocVectors(location, it3->retErrorPages);
             }
+            if (!it3->methods.empty()) {
+                this->handleLocVectors(location, it3->methods);
+            }
+
+            countLoc++;
+            listOfLocation.resize(countLoc);
+            listOfLocation.push_back(location);
         }
+        server.setLocations(listOfLocation);
+
+        ////////////////////////
+        //////////////// Implement logic in server class, PLS i'm begging you
+        //////////
+        socket.createSocket(server);
+        socket.setSocketOption(server);
+        socket.bindSocket(server);
+        socket.listenOnSocket(server.getServerSocket()->getFdSock());
+        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
+        ///
+
+        countServ++;
+        listOfServers.resize(countServ);
+        listOfServers.push_back(server);
+
     }
+
+    return listOfServers;
 }
 

@@ -41,13 +41,18 @@ int main(int argc, char* argv[]) {
     ConfigBlock     confBlock;
     ConfigParser    confParser(argv[1], confBlock);
     //TODO maybe this take webserver and fill it or return a list of server
-    confParser.parseConfigFile();
-//understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
-    if(tryToStart(webserver))
-    {
-        std::cout<<"failed to timeStart"<<std::endl;
-        exit(0);//understand if is good to exit or no
+//    confParser.parseConfigFile();
+
+    std::vector<Server> listOfServer = confParser.parseConfigFile();
+    for (auto x : listOfServer) { // c++ 11
+        std::cout << "SERVER_NAME: " << x.getServerName() << std::endl;
     }
+//understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
+//    if(tryToStart(webserver))
+//    {
+//        std::cout<<"failed to timeStart"<<std::endl;
+//        exit(0);//understand if is good to exit or no
+//    }
 
 }
 

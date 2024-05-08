@@ -7,10 +7,10 @@ SRCS = main.cpp \
 		src/Socket.cpp \
 		src/Server.cpp \
 		src/Client.cpp \
-		src/Webserver.cpp \
 		src/Location.cpp \
 		src/Request.cpp \
 		src/Response.cpp \
+		src/Webserver.cpp \
 
 
 OBJS = $(SRCS:.cpp=.o)
@@ -19,7 +19,7 @@ OBJS_DIR = ./objs/
 
 INCLUDE_DIR = include/
 CC = c++ -I$(INCLUDE_DIR)
-FLAG = -Wall -Wextra -Werror -std=c++98 -g #-I$(INCLUDE_DIR)
+FLAG = -Wall -Wextra -Werror #-std=c++98 -g
 
 
 %.o: %.cpp

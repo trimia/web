@@ -28,7 +28,7 @@ class LocationBlock {
     public:
         std::map<std::string, std::string>  keyValue;
         std::vector<std::string>            retErrorPages;
-        std::string                         pathDir;
+        std::vector<std::string>            methods;
         LocationBlock() {}
         ~LocationBlock() {}
 };
@@ -38,7 +38,7 @@ class ServerBlock {
         std::vector<LocationBlock>          locationBlock;
         std::map<std::string, std::string>  keyValue;
         std::vector<std::string>            errorPages;
-
+        std::vector<std::string>            cgiPath;
         ServerBlock() {}
         ~ServerBlock() {}
 };

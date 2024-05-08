@@ -23,8 +23,8 @@ class ConfigParser : virtual public StateMachine {
         ConfigBlock                         _configBlock;
     
     public:
-        void                                parseConfigFile();
-        void                                extractKeyword();
+        std::vector<Server>                 parseConfigFile();
+        // void                                extractKeyword();
         void                                stateCheck(std::string line);
         void                                handleLine(std::string line);
         void                                handleHttpState(std::string line);

@@ -51,7 +51,10 @@ bool Webserver::_addServerToEpoll() {
     std::cout<<"all server sock added to epoll instance"<<std::endl;
     return true;
 }
-
+/*
+ * It was causing problems during compilation
+ * has been commented for testing purpose
+ *
 bool Webserver::_mainLoop() {
     int eventNumber;
     epoll_event events[MAX_EVENTS];
@@ -63,7 +66,8 @@ bool Webserver::_mainLoop() {
     } while (eventNumber<=0);
     return false;
 }
-
+ */
+/*
 bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     for (int i = 0; i < eventNumber; ++i)
     {
@@ -84,12 +88,16 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
     }
     return true;
 }
+ */
 /*
  * handleConnection:
  * check what to do with connection and
  * call read()? or receiveData() write() or sendData() -see the snippet code in the function-,request, response and parser
  * TODO study and complete _handleconnection understand how we want handle response request etc..
- */
+ *
+ * TODO remy garcia's compilation says :
+ * The error message indicates a potential buffer overflow issue in the line: /////////////////
+ *  str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
 bool Webserver::_handleConnection(epoll_event &event) {
 
 //    events[i].data.ptr
@@ -140,9 +148,11 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
     return false;
 }
+ */
+
 
 bool Webserver::_closeConnection(epoll_event &event) {
-
+    (void)event;
     //TODO handle keepalive
 
 //    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,))
@@ -154,13 +164,19 @@ bool Webserver::_closeConnection(epoll_event &event) {
     return false;
 }
 
+/*
+ * Trimia this is a fake and modified runEpoll
+ * by remy garcia
+ * just to let the shit run!
+ * yours is the next one (untouched)
+ * */
 bool Webserver::runEpoll()
 {
-    bool a,b,c= false;
+    bool a,b = false;//,c= false;
     a=this->_initEpoll();
     b=this->_addServerToEpoll();
-    c=this->_mainLoop();
-    if(a== false|b== false|c==false)
+//    c=this->_mainLoop();
+    if(a == false || b == false)// || c == false)
         return false;
     return true;
 
@@ -168,6 +184,21 @@ bool Webserver::runEpoll()
 //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
 //    struct epoll_event event;
 }
+
+//bool Webserver::runEpoll()
+//{
+//    bool a,b,c= false;
+//    a=this->_initEpoll();
+//    b=this->_addServerToEpoll();
+//    c=this->_mainLoop();
+//    if(a == false || b == false || c == false)
+//        return false;
+//    return true;
+//
+//// understand if is necessary to allocate event
+////    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
+////    struct epoll_event event;
+//}
 
 void Webserver::addClientToList(Client client) {
 

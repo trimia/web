@@ -22,7 +22,7 @@ class	Server : public sType
 
 
     Server(uint16_t port, char *ip, std::string &serverName, std::string &root, std::string &index,
-           unsigned long clientMaxBodySize, bool autoindex, std::map<short, std::string> &errorPages,
+           unsigned long clientMaxBodySize, bool autoindex, std::vector<std::string> &errorPages,
            std::vector<Location> &locations, Socket *serverSocket);
 
     ~Server();
@@ -34,9 +34,9 @@ class	Server : public sType
 
     void setPort(uint16_t port);
 
-    char *getIp() const;
+    const std::basic_string<char> getIp() const;
 
-    void setIp(char *ip);
+    void setIp(std::basic_string<char> ip);
 
     const std::string &getServerName() const;
 
@@ -50,17 +50,17 @@ class	Server : public sType
 
     void setIndex(const std::string &index);
 
-    unsigned long getClientMaxBodySize() const;
+    const std::basic_string<char> getClientMaxBodySize() const;
 
-    void setClientMaxBodySize(unsigned long clientMaxBodySize);
+    void setClientMaxBodySize(std::basic_string<char> clientMaxBodySize);
 
     bool isAutoindex() const;
 
     void setAutoindex(bool autoindex);
 
-    const std::map<short, std::string> &getErrorPages() const;
+    const std::vector<std::string> getErrorPages() const;
 
-    void setErrorPages(const std::map<short, std::string> &errorPages);
+    void setErrorPages(std::vector<std::basic_string<char> > errorPages);
 
     const std::vector<Location> &getLocations() const;
 
@@ -79,13 +79,13 @@ private	:
         friend class Socket;
         friend class Webserver;
         uint16_t						_port;
-        char *                          _ip;
+        std::basic_string<char> _ip;
         std::string						_server_name;
         std::string						_root;
         std::string						_index;
-        unsigned long					_client_max_body_size;
+        std::basic_string<char> _client_max_body_size;
         bool							_autoindex;
-        std::map<short, std::string>	_error_pages;
+        std::vector<std::string>        _error_pages;
         std::vector<Location> 			_locations;
         Socket                          *_server_socket;
         epoll_event                     _event;
