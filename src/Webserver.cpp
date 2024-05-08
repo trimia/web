@@ -73,8 +73,12 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
            if(server->_server_socket->acceptConnection(server, this->_epollFd, this))
                 return false;
         }
-        else if(events[i].events && EPOLLIN | events[i].events && EPOLLOUT)
-            _handleConnection(events,eventNumber);
+        else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) &&
+        _handleConnection(events,eventNumber))
+        {
+            std::cout<<"error handling connection"<<std::endl;
+            return false;
+        }
 
     }
     return true;
@@ -88,14 +92,11 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
 bool Webserver::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
 
 //    events[i].data.ptr
+    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
 
 
 
-//
-//    if (EPOLLIN)
-//    {
-//
-//    }
+
 
 
     int str_len;
@@ -107,6 +108,7 @@ bool Webserver::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
         epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
         close(events[i].data.fd);
         //printf("closed client: %d \n", epoll_events[i].data.fd);
+        return true;
     }
     else
     {
@@ -118,11 +120,15 @@ bool Webserver::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
     return false;
 }
 
-void Webserver::run_epoll() {
-
-    this->_initEpoll();
-    this->_addServerToEpoll();
-    this->_mainLoop();
+bool Webserver::runEpoll()
+{
+    bool a,b,c= false;
+    a=this->_initEpoll();
+    b=this->_addServerToEpoll();
+    c=this->_mainLoop();
+    if(a== false|b== false|c==false)
+        return false;
+    return true;
 
 // understand if is necessary to allocate event
 //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);

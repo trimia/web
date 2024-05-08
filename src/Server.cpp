@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../include/Server.hpp"
 
 Server::Server()
 {
@@ -56,24 +56,24 @@ Server	&Server::operator= (const Server &obj)
  *  - call server constructor
  *  - create a socket per server, bind it and set it as non-blocking
  */
-Server    setupServer(config conf)
+Server    setupServer()
 {
 
     Socket sock;
-    //TODO maybe best practise is config subclass o server o inherit from it and we build server(conf) with copy constructor
+//    //TODO maybe best practise is config subclass o server o inherit from it and we build server(conf) with copy constructor
     Server server;
-
-
-    server.setPort(conf.getPort());
-    server.setIp(conf.getIp());
-    server.setServerName(conf.getServerName());
-    server.setRoot(conf.getRoot());
-    server.setIndex(conf.getIndex());
-    server.setClientMaxBodySize(conf.getClientMaxBodySize());
-    server.setAutoindex(conf.isAutoindex());
-    server.setErrorPages(conf.getErrorPages());
-    server.setLocations(conf.getLocations());
-//    server.setServerSocket(&sock);
+//
+//
+//    server.setPort(conf.getPort());
+//    server.setIp(conf.getIp());
+//    server.setServerName(conf.getServerName());
+//    server.setRoot(conf.getRoot());
+//    server.setIndex(conf.getIndex());
+//    server.setClientMaxBodySize(conf.getClientMaxBodySize());
+//    server.setAutoindex(conf.isAutoindex());
+//    server.setErrorPages(conf.getErrorPages());
+//    server.setLocations(conf.getLocations());
+////    server.setServerSocket(&sock);
 
 
 
@@ -91,24 +91,24 @@ Server    setupServer(config conf)
 /*
  * setup:
  */
-std::vector<Server>setup(std::vector<config> allConf)
-{
-
-/*
- * create client and all is necessary to run the server
- * maybe both client and server go on the same list ???
- * if end without error go on on main
- */
-    std::vector<Server> listOfServer;
-    listOfServer.reserve(allConf.size());
-
-    for (std::vector<config>::iterator it = allConf.begin(); it != allConf.end(); ++it)
-    {
-
-        listOfServer.push_back(setupServer(*it));
-    }
-    return listOfServer;
-}
+//std::vector<Server>setup(std::vector<config> allConf)
+//{
+//
+///*
+// * create client and all is necessary to run the server
+// * maybe both client and server go on the same list ???
+// * if end without error go on on main
+// */
+//    std::vector<Server> listOfServer;
+//    listOfServer.reserve(allConf.size());
+//
+//    for (std::vector<config>::iterator it = allConf.begin(); it != allConf.end(); ++it)
+//    {
+//
+//        listOfServer.push_back(setupServer(*it));
+//    }
+//    return listOfServer;
+//}
 
 
 /*

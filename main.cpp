@@ -16,29 +16,23 @@ void	sigint_handler(int sig)
     exit(0);
 }
 
-//int tryToStart(std::vector<config> listOfConf)
-//{
+int tryToStart(Webserver webserver)
+{
+//necessary only if we have to setup server
 //    for (const auto &item: listOfConf)
 //    {
 //
 //    }
-//    Webserver webserver;
-//    ws_ptr=&webserver;
-//    std::vector<Server> listOfServer;
-//    std::signal(SIGINT, sigint_handler);
-//
-//
-//    if()
-//    {
-//        return 1;
-//    }
-//    return 0;
-//}
+    std::signal(SIGINT, sigint_handler);
+    if(webserver.runEpoll())
+        return 0;
+    return 1;
+}
 
 int main(int argc, char* argv[]) {
     Webserver webserver;
-
     ws_ptr=&webserver;
+
 
     if (argc != 2) {
         std::cerr << "Error: wrong number of arguments." << std::endl;
@@ -46,7 +40,14 @@ int main(int argc, char* argv[]) {
     }
     ConfigBlock     confBlock;
     ConfigParser    confParser(argv[1], confBlock);
+    //TODO maybe this take webserver and fill it or return a list of server
     confParser.parseConfigFile();
+//understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
+    if(tryToStart(webserver))
+    {
+        std::cout<<"failed to start"<<std::endl;
+        exit(0);//understand if is good to exit or no
+    }
 
 }
 

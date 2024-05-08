@@ -21,6 +21,8 @@ class	Webserver
 
     void addClientToList(Client client);
 
+    bool runEpoll();
+
     const std::vector<Server> &getListOfServer() const;
 
     void setListOfServer(const std::vector<Server> &listOfServer);
@@ -32,8 +34,6 @@ class	Webserver
     int getEpollFd() const;
 
     void setEpollFd(int epollFd);
-
-    void run_epoll();
 
 private	:
 

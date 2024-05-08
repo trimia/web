@@ -40,9 +40,9 @@ int Request::parseRequest(std::string input, Request httpRequest)
         }
     }
 //fix this code with c++98
-//    for (const auto& pair : httpRequest._request_headers) {
-//        std::cout << pair.first << ": " << pair.second << std::endl;
-//    }
+    for (const auto& pair : httpRequest._request_headers) {
+        std::cout << pair.first << ": " << pair.second << std::endl;
+    }
     return 0;
 }
 

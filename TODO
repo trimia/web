@@ -1,5 +1,6 @@
-example adn guide:
+example and guide:
     - https://teoriadeisegnali.it/appint/html/altro/bgnet/index.html
+    - http://www.kegel.com/c10k.html
 socket:
     - socket  setsockopt() necessary to keep alive https://www.ibm.com/docs/en/zos/2.4.0?topic=calls-setsockopt https://www.ibm.com/docs/en/aix/7.2?topic=s-setsockopt-subroutine
     - socket explanation video part 1 and 2 https://www.youtube.com/watch?v=gntyAFoZp-E
@@ -8,6 +9,9 @@ epoll():
     - https://idndx.com/the-implementation-of-epoll-2/
     - https://idndx.com/the-implementation-of-epoll-3/
     - https://idndx.com/the-implementation-of-epoll-4/
+    - https://medium.com/@avocadi/what-is-epoll-9bbc74272f7c
+    - https://copyconstruct.medium.com/the-method-to-epolls-madness-d9d2d6378642
+
 multiplexing:
     - if we want to use select() :
                                     - https://codereview.stackexchange.com/questions/111310/select-server-implementation
@@ -19,6 +23,7 @@ multiplexing:
                             - https://hechao.li/2022/01/04/select-vs-poll-vs-epoll/
                             - https://stackoverflow.com/questions/17355593/why-is-epoll-faster-than-select
                             - https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/
+                            - https://stackoverflow.com/questions/17355593/why-is-epoll-faster-than-select
 workflow:
     - parser config file: acquire information from config file or if there isn't take the default and initialize struct and class
     - "socket" server client run? file: organize all concern about server and client think to keep alive
