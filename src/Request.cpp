@@ -21,7 +21,7 @@ void Request::setRequestHeaders(const std::map<std::string, std::string> &reques
     _request_headers = requestHeaders;
 }
 
-int Request::parseRequest(std::string input, Request httpRequest)
+    int Request::parseRequest(std::string input, Request httpRequest)
 {
     size_t pos = 0;
     while ((pos = input.find("\n")) != std::string::npos) {

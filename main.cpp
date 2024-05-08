@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 //understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
     if(tryToStart(webserver))
     {
-        std::cout<<"failed to start"<<std::endl;
+        std::cout<<"failed to timeStart"<<std::endl;
         exit(0);//understand if is good to exit or no
     }
 

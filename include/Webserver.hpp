@@ -44,7 +44,8 @@ private	:
     bool _addServerToEpoll();
     bool _mainLoop();
     bool _handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]);
-    bool _handleConnection(epoll_event (&events)[MAX_EVENTS], int i);
+    bool _handleConnection(epoll_event &event);
+    bool _closeConnection(epoll_event &event);
 
 		//	DataType	attributes.
 };

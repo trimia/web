@@ -74,7 +74,8 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
                 return false;
         }
         else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) &&
-        _handleConnection(events,eventNumber))
+                _handleConnection(events[i]))
+//            _handleConnection(events,eventNumber))
         {
             std::cout<<"error handling connection"<<std::endl;
             return false;
@@ -89,10 +90,30 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  * call read()? or receiveData() write() or sendData() -see the snippet code in the function-,request, response and parser
  * TODO study and complete _handleconnection understand how we want handle response request etc..
  */
-bool Webserver::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
+bool Webserver::_handleConnection(epoll_event &event) {
 
 //    events[i].data.ptr
-    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
+//    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
+    sConnection& ptr= *reinterpret_cast<sConnection*>(event.data.ptr);
+    Request request;
+
+    //understand how to initialize request and what is necessary to read from fd and work on response
+
+
+    if(ptr.timeStart == 0)
+        ptr.timeStart=std::time(NULL);
+    std::time_t currentTime = std::time(NULL);
+    double elapsedTime = std::difftime(currentTime, ptr.timeStart);
+    if (elapsedTime>=15)
+    {
+
+        return false;
+    }
+
+
+
+
+
 
 
 
@@ -102,20 +123,33 @@ bool Webserver::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
     int str_len;
     void *buf;
     buf=(void *)"";
-    str_len = (int)read(events[i].data.fd, buf, BUFFER_SIZE);
+    str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
     if (str_len == 0) // close request!
     {
-        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
-        close(events[i].data.fd);
+        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, event.data.fd, &event);
+        close(event.data.fd);
         //printf("closed client: %d \n", epoll_events[i].data.fd);
         return true;
     }
     else
     {
-        write(events[i].data.fd, buf, str_len);   // echo!
+        write(event.data.fd, buf, str_len);   // echo!
     }
 
 //    client.peaksize = recv(client.connection_socket.sock_fd, buffer, MAX_HEADER_SIZE, MSG_PEEK);
+
+    return false;
+}
+
+bool Webserver::_closeConnection(epoll_event &event) {
+
+    //TODO handle keepalive
+
+//    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,))
+//        return true;
+//    if(close(fd))
+//        return true;
+
 
     return false;
 }

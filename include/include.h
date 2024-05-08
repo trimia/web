@@ -71,6 +71,7 @@
 # define RESET_COLOR "\033[0m"
 # define DEFAULT_ERR_DIR "error_pages/"
 # define MIMETYPES_FILE_PATH "assets/mimeTypes.csv" //???
+
 struct sType
 {
 //    sType();
@@ -79,9 +80,14 @@ struct sType
     sType() { socketType=0;}
 };
 
-//sType::sType() {
-//
-//}
+struct sConnection :public sType
+{
+    bool            error;
+    bool            cgi;
+    std::time_t     timeStart;
+
+    sConnection(){ timeStart=0;error=false;cgi= false;}
+};
 
 //other file
 //# include "Location.hpp"

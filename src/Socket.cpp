@@ -131,7 +131,7 @@ bool Socket::connectSocket(SOCKET clientSocket, uint16_t port) {
         return false;
     }else
     {
-        std::cout<<"client connect can start sending and receiving data"<<std::endl;
+        std::cout<<"client connect can timeStart sending and receiving data"<<std::endl;
         return true;
     }
 }
