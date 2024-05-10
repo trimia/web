@@ -36,7 +36,7 @@ class	Server : public sType
 
     const std::basic_string<char> getIp() const;
 
-    void setIp(std::basic_string<char> ip);
+    void setIp(char *ip);
 
     const std::string &getServerName() const;
 
@@ -79,7 +79,7 @@ private	:
         friend class Socket;
         friend class Webserver;
         uint16_t						_port;
-        std::basic_string<char> _ip;
+        char *                          _ip;
         std::string						_server_name;
         std::string						_root;
         std::string						_index;

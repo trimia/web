@@ -40,9 +40,9 @@ void Request::setRequestHeaders(const std::map<std::string, std::string> &reques
         }
     }
 //fix this code with c++98
-    for (const auto& pair : httpRequest._request_headers) {
-        std::cout << pair.first << ": " << pair.second << std::endl;
-    }
+//    for (const auto& pair : httpRequest._request_headers) {
+//        std::cout << pair.first << ": " << pair.second << std::endl;
+//    }
     return 0;
 }
 

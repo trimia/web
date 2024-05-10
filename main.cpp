@@ -1,10 +1,7 @@
 #include "include/ConfigParser.hpp"
 #include "include/ConfigBlock.hpp"
-#include "include/HashTable.hpp"
-#include <map>
 #include "include/Server.hpp"
 #include "include/Webserver.hpp"
-#include "include/Location.hpp"
 #include "include/include.h"
 
 Webserver *ws_ptr;
@@ -42,11 +39,17 @@ int main(int argc, char* argv[]) {
     ConfigParser    confParser(argv[1], confBlock);
     //TODO maybe this take webserver and fill it or return a list of server
 //    confParser.parseConfigFile();
-
+    std::cout<<"here we are"<<std::endl;
     std::vector<Server> listOfServer = confParser.parseConfigFile();
-    for (auto x : listOfServer) { // c++ 11
-        std::cout << "SERVER_NAME: " << x.getServerName() << std::endl;
+    for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
+    {
+        std::cout<<RED << "SERVER_NAME: " << it->getServerName() << std::endl;
+        std::cout << "IP: " << it->getIp() <<RESET_COLOR <<std::endl;
+//        std::cout << "SERVER_NAME: " <<  << std::endl;
+
     }
+    std::cout<<"now we are here "<<std::endl;
+
 //understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
 //    if(tryToStart(webserver))
 //    {

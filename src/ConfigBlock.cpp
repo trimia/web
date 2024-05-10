@@ -37,9 +37,10 @@ void    ConfigBlock::handleServerBlock(Server server, std::string key, std::stri
     } else if (key == "body_size") {
         server.setClientMaxBodySize(value);
     } else if (key == "host") {
-        server.setIp(value);
+        //if we do _ip const we elide the cast but don't ḱnow if is good for htons()
+        server.setIp((char *)value.c_str());
     } else {
-        std::cout << "Error: wrong server block from config file" << std::endl;
+        std::cout << "Error: wrong server block from config file 1" << std::endl;
         exit(2);
     }
 }
@@ -57,7 +58,7 @@ void    ConfigBlock::handleLocationBlock(Location location, std::string key, std
     } else if (key == "body_size") {
         location.setClientMaxBodySize(value);
     } else {
-        std::cout << "Error: wrong server block from config file" << std::endl;
+        std::cout << "Error: wrong server block from config file 2" << std::endl;
         exit(2);
     }
 }
@@ -148,11 +149,11 @@ std::vector<Server> ConfigBlock::handleBlock() {
         ////////////////////////
         //////////////// Implement logic in server class, PLS i'm begging you
         //////////
-        socket.createSocket(server);
-        socket.setSocketOption(server);
-        socket.bindSocket(server);
-        socket.listenOnSocket(server.getServerSocket()->getFdSock());
-        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
+//        socket.createSocket(server);
+//        socket.setSocketOption(server);
+//        socket.bindSocket(server);
+//        socket.listenOnSocket(server.getServerSocket()->getFdSock());
+//        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
         ///
 
         countServ++;

@@ -133,7 +133,7 @@ const std::basic_string<char> Server::getIp() const {
     return _ip;
 }
 
-void Server::setIp(std::basic_string<char> ip) {
+void Server::setIp(char *ip) {
     _ip = ip;
 }
 
