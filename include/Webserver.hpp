@@ -4,6 +4,8 @@
 #include "include.h"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "ConfigParser.hpp"
+#include "ConfigBlock.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
@@ -53,6 +55,7 @@ private	:
     bool _closeConnection(epoll_event &event);
 
 		//	DataType	attributes.
+    bool _acceptConnection(Server *server);
 };
 
 // ******************************************************** //

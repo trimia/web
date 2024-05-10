@@ -2,18 +2,16 @@
 
 Server::Server()
 {
-    this->_autoindex="";
-
+Socket servsock;
+    this->_server_socket=servsock;
+//    this->_server_socket.bindSocket();
+//        socket.createSocket(server);
+//        socket.setSocketOption(server);
+//        socket.bindSocket(server);
+//        socket.listenOnSocket(server.getServerSocket()->getFdSock());
+//        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
 	std::cout << "Server : Default Constructor Called" << std::endl;
 }
-
-//Server::Server(uint16_t port, char *ip, std::string &serverName, std::string &root,
-//               std::string &index, unsigned long clientMaxBodySize, bool autoindex,
-//               std::map<short, std::string> &errorPages, std::vector<Location> &locations,
-//               Socket *serverSocket):
-//               sType(), _port(port), _ip(ip), _server_name(serverName),_root(root), _index(index),
-//               _client_max_body_size(clientMaxBodySize),_autoindex(autoindex), _error_pages(errorPages),
-//               _locations(locations), _server_socket(serverSocket){}
 Server::~Server()
 {
 	std::cout << "Server : Destructor Called" << std::endl;

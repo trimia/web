@@ -31,3 +31,19 @@ Client	&Client::operator= (const Client &obj)
 	}
 	return (*this);
 }
+/*
+ *
+ *
+ * getter and setter
+ *
+ */
+const Socket &Client::getClientSock() const {
+    return _clientSock;
+}
+
+int Client::setClientFdSock(int fd) {
+    _clientSock.setFdSock(fd);
+    return fd;
+//    _clientSock.setService()
+//    _clientSock = clientSock;
+}

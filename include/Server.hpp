@@ -19,13 +19,7 @@ class	Server : public sType
 	public	:
         Server();
 		Server(Server const &obj);
-
-
-    Server(uint16_t port, char *ip, std::string &serverName, std::string &root, std::string &index,
-           unsigned long clientMaxBodySize, bool autoindex, std::vector<std::string> &errorPages,
-           std::vector<Location> &locations, Socket *serverSocket);
-
-    ~Server();
+        ~Server();
 		Server  &operator= (const Server &obj);
 //        Server    setupServer(Co conf);
 //        std::vector<Server> setup(std::vector<config> allConf);
@@ -76,7 +70,7 @@ class	Server : public sType
 
 
 private	:
-        friend class Socket;
+//        friend class Socket;
         friend class Webserver;
         uint16_t						_port;
         char *                          _ip;
@@ -87,7 +81,7 @@ private	:
         bool							_autoindex;
         std::vector<std::string>        _error_pages;
         std::vector<Location> 			_locations;
-        Socket                          *_server_socket;
+        Socket                          _server_socket;
         epoll_event                     _event;
 //        in_addr_t						_host;
 //        struct sockaddr_in 				_server_address;

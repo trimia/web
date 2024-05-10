@@ -40,8 +40,9 @@ int main(int argc, char* argv[]) {
     //TODO maybe this take webserver and fill it or return a list of server
 //    confParser.parseConfigFile();
     std::cout<<"here we are"<<std::endl;
-    std::vector<Server> listOfServer = confParser.parseConfigFile();
-    for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
+    std::vector<Server*> listOfServer;
+//    = confParser.parseConfigFile();
+    for (std::vector<Server*>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
     {
         std::cout<<RED << "SERVER_NAME: " << it->getServerName() << std::endl;
         std::cout << "IP: " << it->getIp() <<RESET_COLOR <<std::endl;

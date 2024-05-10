@@ -7,7 +7,9 @@ Webserver::Webserver()
 
 Webserver::Webserver(std::string conf)
 {
-    
+    ConfigBlock     confBlock;
+    ConfigParser    confParser(conf, confBlock);
+    this->_listOfServer=confParser.parseConfigFile();
 
 }
 
@@ -44,13 +46,15 @@ bool Webserver::_initEpoll() {
 }
 
 bool Webserver::_addServerToEpoll() {
-    for (Server &item: this->_listOfServer)
+
+    for (std::vector<Server>::iterator item = this->_listOfServer.begin(); item != this->_listOfServer.end(); ++item)
     {
-        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item._server_socket->getFdSock(), &item._event)<1)
+        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket.getFdSock(), &item->_event)<1)
+//            if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
             return false;
-        item._event.events=EPOLLIN;
-        item._event.data.ptr=&item;
-        item.socketType=SERVER_SOCK;
+        item->_event.events=EPOLLIN;
+        item->_event.data.ptr=&item;
+        item->socketType=SERVER_SOCK;
 //        item.setType(SERVER_SOCK);
 
     }
@@ -102,6 +106,38 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  * The error message indicates a potential buffer overflow issue in the line: /////////////////
  *  str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
  */
+
+bool Webserver::_acceptConnection(Server *server) {
+//    SOCKET acceptSocket;
+//    acceptSocket= accept(server._fd,server._server_socket._service, sizeof(server._server_socket._service));
+//    if(acceptSocket==INVALID_SOCKET)
+    Client client;
+//    Server *ptr = static_cast<Server*>(event.data.ptr);
+//    Socket *ptr1 = static_cast<Socket*>(&ptr->_server_socket);
+//    Socket *ptr = static_cast<Socket*>(server->_server_socket.getFdSock());
+//    &ptr._service;
+//    socklen_t &tmp = static_cast<socklen_t&>(server->_server_socket.getSockSize());
+
+socklen_t temp=sizeof(server->_server_socket.getService());
+//temp=server._server_socket.getSockSize();
+//TODO fix the problem with socklen_t and  the getter ;(
+//    if((client._clientSock._fd_sock = accept(server->_server_socket->_fd_sock, (sockaddr *) &server->_server_socket->_service,&server->_server_socket->_sockSize)) == INVALID_SOCKET)
+        if(( client.setClientFdSock(accept(server->_server_socket.getFdSock(),(sockaddr *) &server->_server_socket.getService(),&temp)) ) == INVALID_SOCKET) {
+            std::cout << "accepted failed" << GETSOCKETERRNO() << std::endl;
+            return false;
+        }
+    client._event.events=EPOLLIN | EPOLLOUT;
+    client._event.data.ptr=&client;
+    client.socketType=CLIENT_SOCK;
+    this->addClientToList(client);
+//    webserver->addClientToList(client);
+    fcntl(client._clientSock.getFdSock(),F_SETFL,O_NONBLOCK);
+    if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock.getFdSock(), &client._event)<1)
+        return false;
+    std::cout<<"client sock added to epoll instance"<<std::endl;
+    return true;
+}
+
 bool Webserver::_handleConnection(epoll_event &event) {
 
 //    events[i].data.ptr
