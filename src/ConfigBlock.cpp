@@ -59,7 +59,8 @@ void    ConfigBlock::handleLocationBlock(Location location, std::string key, std
         location.setClientMaxBodySize(value);
     } else {
         std::cout << "Error: wrong server block from config file 2" << std::endl;
-        exit(2);
+//        trimia commentato perche'manacaanoalcuni parametri e mi serve per mandare aventi il programma
+//        exit(2);
     }
 }
 

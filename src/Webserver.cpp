@@ -54,7 +54,7 @@ bool Webserver::_addServerToEpoll() {
 /*
  * It was causing problems during compilation
  * has been commented for testing purpose
- *
+ */
 bool Webserver::_mainLoop() {
     int eventNumber;
     epoll_event events[MAX_EVENTS];
@@ -66,8 +66,6 @@ bool Webserver::_mainLoop() {
     } while (eventNumber<=0);
     return false;
 }
- */
-/*
 bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     for (int i = 0; i < eventNumber; ++i)
     {
@@ -88,7 +86,6 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
     }
     return true;
 }
- */
 /*
  * handleConnection:
  * check what to do with connection and
@@ -98,6 +95,7 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  * TODO remy garcia's compilation says :
  * The error message indicates a potential buffer overflow issue in the line: /////////////////
  *  str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
+ */
 bool Webserver::_handleConnection(epoll_event &event) {
 
 //    events[i].data.ptr
@@ -117,38 +115,27 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
         return false;
     }
-
-
-
-
-
-
-
-
-
-
-
-    int str_len;
-    void *buf;
-    buf=(void *)"";
-    str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
-    if (str_len == 0) // close request!
-    {
-        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, event.data.fd, &event);
-        close(event.data.fd);
-        //printf("closed client: %d \n", epoll_events[i].data.fd);
-        return true;
-    }
-    else
-    {
-        write(event.data.fd, buf, str_len);   // echo!
-    }
+//
+//    int str_len;
+//    void *buf;
+//    buf=(void *)"";
+//    str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
+//    if (str_len == 0) // close request!
+//    {
+//        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, event.data.fd, &event);
+//        close(event.data.fd);
+//        //printf("closed client: %d \n", epoll_events[i].data.fd);
+//        return true;
+//    }
+//    else
+//    {
+//        write(event.data.fd, buf, str_len);   // echo!
+//    }
 
 //    client.peaksize = recv(client.connection_socket.sock_fd, buffer, MAX_HEADER_SIZE, MSG_PEEK);
 
     return false;
 }
- */
 
 
 bool Webserver::_closeConnection(epoll_event &event) {
@@ -170,28 +157,13 @@ bool Webserver::_closeConnection(epoll_event &event) {
  * just to let the shit run!
  * yours is the next one (untouched)
  * */
-bool Webserver::runEpoll()
-{
-    bool a,b = false;//,c= false;
-    a=this->_initEpoll();
-    b=this->_addServerToEpoll();
-//    c=this->_mainLoop();
-    if(a == false || b == false)// || c == false)
-        return false;
-    return true;
-
-// understand if is necessary to allocate event
-//    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
-//    struct epoll_event event;
-}
-
 //bool Webserver::runEpoll()
 //{
-//    bool a,b,c= false;
+//    bool a,b = false;//,c= false;
 //    a=this->_initEpoll();
 //    b=this->_addServerToEpoll();
-//    c=this->_mainLoop();
-//    if(a == false || b == false || c == false)
+////    c=this->_mainLoop();
+//    if(a == false || b == false)// || c == false)
 //        return false;
 //    return true;
 //
@@ -199,6 +171,21 @@ bool Webserver::runEpoll()
 ////    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
 ////    struct epoll_event event;
 //}
+
+bool Webserver::runEpoll()
+{
+    bool a,b,c= false;
+    a=this->_initEpoll();
+    b=this->_addServerToEpoll();
+    c=this->_mainLoop();
+    if(a == false || b == false || c == false)
+        return false;
+    return true;
+
+// understand if is necessary to allocate event
+//    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
+//    struct epoll_event event;
+}
 
 void Webserver::addClientToList(Client client) {
 
