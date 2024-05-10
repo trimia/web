@@ -15,8 +15,12 @@ class	Webserver
 {
 	public	:
 		Webserver ();
+        Webserver(std::string conf);
 		Webserver (Webserver const &obj);
-		~Webserver ();
+
+    explicit Webserver(const std::string &conf);
+
+    ~Webserver ();
 		Webserver &operator= (const Webserver &obj);
 
     void addClientToList(Client client);
@@ -40,6 +44,7 @@ private	:
     std::vector<Server>     _listOfServer;
     std::vector<Client>     _listOfClient;
     int                     _epollFd;
+    std::string             conf;
     bool _initEpoll();
     bool _addServerToEpoll();
     bool _mainLoop();

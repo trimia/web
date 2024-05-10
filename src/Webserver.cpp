@@ -5,6 +5,12 @@ Webserver::Webserver()
 	std::cout << "Webserver : Default Constructor Called" << std::endl;
 }
 
+Webserver::Webserver(std::string conf)
+{
+    
+
+}
+
 Webserver::~Webserver()
 {
 	std::cout << "Webserver : Destructor Called" << std::endl;
