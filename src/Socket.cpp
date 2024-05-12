@@ -2,7 +2,7 @@
 Socket::Socket() {
     this->_fd_sock=INVALID_SOCKET;
 //    this->_service
-    std::cout << "Socket : Default Constructor Called" << std::endl;
+//    std::cout << "Socket : Default Constructor Called" << std::endl;
 
 }
 
@@ -10,19 +10,19 @@ Socket::Socket(int fdSock) : _fd_sock(fdSock) {}
 
 Socket::~Socket()
 {
-    std::cout << "Socket : Destructor Called" << std::endl;
+//    std::cout << "Socket : Destructor Called" << std::endl;
 }
 
 Socket::Socket(Socket const &obj)
 {
-    std::cout << "Copy Constructor Called" << std::endl;
+//    std::cout << "Copy Constructor Called" << std::endl;
     if (this != &obj)
         *this = obj;
 }
 
 Socket	&Socket::operator= (const Socket &obj)
 {
-    std::cout << "Copy Assignment Operator Called" << std::endl;
+//    std::cout << "Copy Assignment Operator Called" << std::endl;
     if (this != &obj)
     {
         this->_fd_sock=obj._fd_sock;

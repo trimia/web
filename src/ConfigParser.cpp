@@ -204,6 +204,7 @@ void    ConfigParser::handleServerState(std::string line) {
  * */
 void    ConfigParser::handleLocationState(std::string line) {
     std::vector<std::string> lineToks = AKAftSplit(line, ' ');
+
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = ServerState;
         this->countLocBlocks += 1;
@@ -216,26 +217,25 @@ void    ConfigParser::handleLocationState(std::string line) {
         }
     } else if (lineToks.size() == 3) {
         if (lineToks[0] == "return") {
-            size_t last = lineToks.size() - 1;
-            if (lineToks[last][lineToks[last].length() - 1] == ';') {
-                lineToks[last] = trimLastChar(lineToks[last]);
+//            size_t last = lineToks.size() - 1;
+//
+//            if (lineToks[last][lineToks[last].length() - 1] == ';') {
+//                lineToks[last] = trimLastChar(lineToks[last]);
                 this->_configBlock.getServerBlocks()[countServBlocks]
                         .locationBlock[countLocBlocks].retErrorPages = lineToks;
-            }
+//                printf("%s\n", this->_configBlock.getServerBlocks()[countServBlocks] //////////// check this case
+//                        .locationBlock[countLocBlocks].retErrorPages[0].c_str());
+//            }
         } else if (lineToks[0] == "location" && lineToks[2] == "{") {
             this->_configBlock.getServerBlocks()[countServBlocks]
                 .locationBlock[countLocBlocks].keyValue
                 .insert(std::make_pair(lineToks[0], lineToks[1]));
         }
-    } else if (lineToks[0] == "methods") {
-        size_t last = lineToks.size() - 1;
-        if (lineToks[last][lineToks[last].length() - 1] == ';') {
-            lineToks[last] = trimLastChar(lineToks[last]);
+    } if (lineToks[0] == "method") {
             this->_configBlock.getServerBlocks()[countServBlocks]
                 .locationBlock[countLocBlocks].methods = lineToks;
-        }
-    } else {
-        std::cerr << "Error: Location block got wrong configuration" << std::endl;
+//    } else {
+//        std::cerr << "Error: Location block got wrong configuration" << std::endl;
     }
 }
 
@@ -320,7 +320,9 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     }
 
     this->printConfig();
-    return this->getConfigBlock().handleBlock();
+
+    //////////
+    return this->_configBlock.handleBlock(this->countServBlocks, this->countLocBlocks);
 }
 
 //void    ConfigParser::extractKeyword() {

@@ -4,7 +4,7 @@ Server::Server()
 {
     this->_autoindex="";
 
-	std::cout << "Server : Default Constructor Called" << std::endl;
+//	std::cout << "Server : Default Constructor Called" << std::endl;
 }
 
 //Server::Server(uint16_t port, char *ip, std::string &serverName, std::string &root,
@@ -16,33 +16,33 @@ Server::Server()
 //               _locations(locations), _server_socket(serverSocket){}
 Server::~Server()
 {
-	std::cout << "Server : Destructor Called" << std::endl;
+//	std::cout << "Server : Destructor Called" << std::endl;
 }
 
 Server::Server(Server const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+//	std::cout << "Copy Constructor Called" << std::endl;
 	if (this != &obj)
 		*this = obj;
 }
 
 Server	&Server::operator= (const Server &obj)
 {
-	std::cout << "Copy Assignment Operator Called" << std::endl;
+//	std::cout << "Copy Assignment Operator Called" << std::endl;
 	if (this != &obj)
 	{
-        this->_port=obj._port;
-        this->_ip=obj._ip;
         this->_server_name=obj._server_name;
+        this->_ip=obj._ip;
+        this->_port=obj._port;
         this->_root=obj._root;
         this->_index=obj._index;
         this->_client_max_body_size=obj._client_max_body_size;
         this->_autoindex=obj._autoindex;
-        this->_error_pages=obj._error_pages;
-        this->_locations=obj._locations;
         this->_server_socket=obj._server_socket;
         this->_event=obj._event;
-		//	this->attributes = obj.attributes;
+        this->setLocations(obj._locations);
+        this->setErrorPages(obj._error_pages);
+        //	this->attributes = obj.attributes;
 		//	...
 	}
 	return (*this);
@@ -177,12 +177,15 @@ void Server::setAutoindex(bool autoindex) {
     _autoindex = autoindex;
 }
 
-const std::vector<std::string> Server::getErrorPages() const {
+std::vector<std::string> Server::getErrorPages() {
     return _error_pages;
 }
 
-void Server::setErrorPages(std::vector<std::basic_string<char> > errorPages) {
-    _error_pages = errorPages;
+void Server::setErrorPages(std::vector<std::string> errorPages) {
+    for (std::vector<std::string>::iterator it = errorPages.begin();
+         it != errorPages.end(); it++) {
+        this->_error_pages.push_back(*it);
+    }
 }
 
 const std::vector<Location> &Server::getLocations() const {
@@ -190,7 +193,10 @@ const std::vector<Location> &Server::getLocations() const {
 }
 
 void Server::setLocations(const std::vector<Location> &locations) {
-    _locations = locations;
+    for (std::vector<Location>::const_iterator it = locations.begin();
+         it != locations.end(); ++it) {
+        this->_locations.push_back(*it);
+    }
 }
 
 Socket *Server::getServerSocket() const {

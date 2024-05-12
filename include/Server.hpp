@@ -58,9 +58,9 @@ class	Server : public sType
 
     void setAutoindex(bool autoindex);
 
-    const std::vector<std::string> getErrorPages() const;
+    std::vector<std::string> getErrorPages();
 
-    void setErrorPages(std::vector<std::basic_string<char> > errorPages);
+    void setErrorPages(std::vector<std::string> errorPages);
 
     const std::vector<Location> &getLocations() const;
 
@@ -75,20 +75,6 @@ class	Server : public sType
     void setEvent(const epoll_event &event);
 
 
-private	:
-        friend class Socket;
-        friend class Webserver;
-        uint16_t						_port;
-        char *                          _ip;
-        std::string						_server_name;
-        std::string						_root;
-        std::string						_index;
-        std::basic_string<char> _client_max_body_size;
-        bool							_autoindex;
-        std::vector<std::string>        _error_pages;
-        std::vector<Location> 			_locations;
-        Socket                          *_server_socket;
-        epoll_event                     _event;
 //        in_addr_t						_host;
 //        struct sockaddr_in 				_server_address;
         //understand if _socket is necessary or _fd is good maybe have to change socket function return
@@ -101,6 +87,21 @@ private	:
 //        bool _handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]);
 //        bool _handleConnection(epoll_event (&events)[MAX_EVENTS], int i);
 		//	DataType	attributes.
+
+private	:
+        friend class Socket;
+        friend class Webserver;
+        uint16_t						_port;
+        char *                          _ip;
+        std::string						_server_name;
+        std::string						_root;
+        std::string						_index;
+        std::basic_string<char>         _client_max_body_size;
+        bool							_autoindex;
+        std::vector<std::string>        _error_pages;
+        std::vector<Location> 			_locations;
+        Socket                          *_server_socket;
+        epoll_event                     _event;
 };
 
 // ******************************************************** //

@@ -2,7 +2,7 @@
 
 Location::Location()
 {
-	std::cout << "Location : Default Constructor Called" << std::endl;
+//	std::cout << "Location : Default Constructor Called" << std::endl;
 }
 
 
@@ -16,29 +16,39 @@ Location::Location(const std::string &path, const std::string &root, bool autoin
 
 Location::~Location()
 {
-	std::cout << "Location : Destructor Called" << std::endl;
+//	std::cout << "Location : Destructor Called" << std::endl;
 }
 
 Location::Location(Location const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+//	std::cout << "Copy Constructor Called" << std::endl;
 	if (this != &obj)
 		*this = obj;
 }
 
 Location	&Location::operator= (const Location &obj)
 {
-	std::cout << "Copy Assignment Operator Called" << std::endl;
-	if (this != &obj)
-	{
-		//	this->attributes = obj.attributes;
-		//	...
-	}
-	return (*this);
+//	std::cout << "Copy Assignment Operator Called" << std::endl;
+    if (this != &obj)
+    {
+        this->_path=obj._path;
+        this->_cgiPath=obj._cgiPath;
+        this->_root=obj._root;
+        this->_index=obj._index;
+        this->_clientMaxBodySize=obj._clientMaxBodySize;
+        this->_autoindex=obj._autoindex;
+        this->setMethods(obj._methods);
+//        this->_error_pages=obj._error_pages;
+    }
+    return (*this);
 }
 
-void Location::setPath(std::string &path) {
+void Location::setPath(std::string path) {
     this->_path = path;
+}
+
+std::string Location::getPath() {
+    return this->_path;
 }
 
 void Location::setRoot(std::string &root) {
@@ -54,7 +64,13 @@ void Location::setAutoIndex(bool autoindex) {
 }
 
 void Location::setMethods(std::vector<std::string> methods) {
-    this->_methods = methods;
+    for (std::vector<std::string>::iterator it = methods.begin(); it != methods.end(); it++) {
+        this->_methods.push_back(*it);
+    }
+}
+
+std::vector<std::string> Location::getMethods() {
+    return this->_methods;
 }
 
 void Location::setReturn(std::vector<std::string> &returnPage) {

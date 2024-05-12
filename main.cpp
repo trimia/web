@@ -38,17 +38,25 @@ int main(int argc, char* argv[]) {
     ConfigBlock     confBlock;
     ConfigParser    confParser(argv[1], confBlock);
     //TODO maybe this take webserver and fill it or return a list of server
-//    confParser.parseConfigFile();
-    std::cout<<"here we are"<<std::endl;
+
+    std::cout<<RED<<"\n\n\t\t\tTEST FROM PARSER TO LIST OF SERVERS -> LIST OF LOCATIONS\n\n"<<RESET_COLOR<<std::endl;
     std::vector<Server> listOfServer = confParser.parseConfigFile();
     for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
     {
-        std::cout<<RED << "SERVER_NAME: " << it->getServerName() << std::endl;
+        std::cout<<GREEN << "SERVER_NAME: " << it->getServerName() << std::endl;
+        std::cout << "PORT: " << it->getPort() << std::endl;
         std::cout << "IP: " << it->getIp() <<RESET_COLOR <<std::endl;
-//        std::cout << "SERVER_NAME: " <<  << std::endl;
-
+        std::vector<Location> listOfLocation = it->getLocations();
+        if (!listOfLocation.empty())
+        {
+            for (std::vector<Location>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
+            {
+                std::cout<<BLUE << "LOC PATH : " << it1->getPath() << std::endl;
+                std::cout << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
+            }
+        }
     }
-    std::cout<<"now we are here "<<std::endl;
+    std::cout<<"END\n\n"<<std::endl;
 
 //understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
 //    if(tryToStart(webserver))

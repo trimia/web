@@ -23,11 +23,13 @@ class	Location
         ~Location ();
         Location &operator= (const Location &obj);
 
-        void                        setPath(std::string &path);
+        void                        setPath(std::string path);
+        std::string                 getPath(void);
         void                        setRoot(std::string &root);
         void                        setIndex(std::string &index);
         void                        setAutoIndex(bool autoindex);
         void                        setMethods(std::vector<std::string> methods);
+        std::vector<std::string>    getMethods(void);
         void                        setReturn(std::vector<std::string> &returnPage);
         void                        setCgiPath(std::vector<std::string> &cgiPath);
         void                        setClientMaxBodySize(std::basic_string<char> clientMaxBodySize);

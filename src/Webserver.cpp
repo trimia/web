@@ -2,12 +2,12 @@
 
 Webserver::Webserver()
 {
-	std::cout << "Webserver : Default Constructor Called" << std::endl;
+//	std::cout << "Webserver : Default Constructor Called" << std::endl;
 }
 
 Webserver::~Webserver()
 {
-	std::cout << "Webserver : Destructor Called" << std::endl;
+//	std::cout << "Webserver : Destructor Called" << std::endl;
 }
 
 Webserver::Webserver(Webserver const &obj)
@@ -38,17 +38,17 @@ bool Webserver::_initEpoll() {
 }
 
 bool Webserver::_addServerToEpoll() {
-    for (Server &item: this->_listOfServer)
-    {
-        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item._server_socket->getFdSock(), &item._event)<1)
-            return false;
-        item._event.events=EPOLLIN;
-        item._event.data.ptr=&item;
-        item.socketType=SERVER_SOCK;
-//        item.setType(SERVER_SOCK);
-
-    }
-    std::cout<<"all server sock added to epoll instance"<<std::endl;
+//    for (Server &item: this->_listOfServer)
+//    {
+//        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item._server_socket->getFdSock(), &item._event)<1)
+//            return false;
+//        item._event.events=EPOLLIN;
+//        item._event.data.ptr=&item;
+//        item.socketType=SERVER_SOCK;
+////        item.setType(SERVER_SOCK);
+//
+//    }
+//    std::cout<<"all server sock added to epoll instance"<<std::endl;
     return true;
 }
 /*

@@ -17,13 +17,15 @@ class ConfigBlock : virtual public StateMachine {
 
         HttpBlock                   &getHttpBlock() { return this->_httpBlock; }
         std::vector<ServerBlock>&   getServerBlocks() { return this->_serverBlocks; }
-        std::vector<Server>         handleBlock();
+        std::vector<Server>         handleBlock(int countServBlocks, int countLocBlocks);
         void                        handleLocVectors(Location location, std::vector<std::string> vecString);
         void                        handleServVectors(Server server, std::vector<std::string> vecString);
-        void                        handleLocationBlock(Location location, std::string key, std::string value);
-        void                        handleServerBlock(Server server, std::string key, std::string value);
+//        void                        handleServerBlock(Server server, std::string key, std::string value);
         void                        handleHTTPBlock();
 };
+
+Location    handleLocationBlock(Location location, std::string key, std::string value);
+Server      handleServerBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> vector);
 
 
 #endif
