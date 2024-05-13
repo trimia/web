@@ -24,25 +24,25 @@ void Request::setRequestHeaders(const std::map<std::string, std::string> &reques
     int Request::parseRequest(std::string input, Request httpRequest)
 {
     size_t pos = 0;
-    while ((pos = input.find("\n")) != std::string::npos) {
+    while ((pos = input.find("\n")) != std::string::npos)
+    {
         std::string line = input.substr(0, pos);
         input.erase(0, pos + 1);
-
-        if (line.empty()) {
-            break;
-        }
-
+        if (line.empty())
+			break;
         size_t colonPos = line.find_first_of(':');
-        if (colonPos != std::string::npos) {
+        if (colonPos != std::string::npos)
+        {
             std::string key = line.substr(0, colonPos);
             std::string value = line.substr(colonPos + 2); // Skip the colon and space
             httpRequest._request_headers[key] = value;
         }
     }
+	if(_request_headers["BODY"]=="")
 //fix this code with c++98
-//    for (const auto& pair : httpRequest._request_headers) {
-//        std::cout << pair.first << ": " << pair.second << std::endl;
-//    }
+    // for (const auto& pair : httpRequest._request_headers) {
+    //     std::cout << pair.first << ": " << pair.second << std::endl;
+    // }
     return 0;
 }
 

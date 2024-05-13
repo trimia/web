@@ -7,15 +7,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 
-enum HttpMethod
-{
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    HEAD,
-    NONE
-};
+
 
 class	Request
 {

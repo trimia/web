@@ -49,8 +49,8 @@ bool Webserver::_addServerToEpoll() {
 
     for (std::vector<Server>::iterator item = this->_listOfServer.begin(); item != this->_listOfServer.end(); ++item)
     {
+            //            if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
         if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket.getFdSock(), &item->_event)<1)
-//            if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
             return false;
         item->_event.events=EPOLLIN;
         item->_event.data.ptr=&item;
@@ -80,14 +80,14 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
     for (int i = 0; i < eventNumber; ++i)
     {
         sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
-        if(ptr->socketType==SERVER_SOCK){
+        if(ptr->socketType==SERVER_SOCK)
+        {
             Server *server = static_cast<Server *>(events[i].data.ptr);
-           if(server->_server_socket->acceptConnection(server, this->_epollFd, this))
+           if(this->_acceptConnection(server))
                 return false;
         }
         else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) &&
                 _handleConnection(events[i]))
-//            _handleConnection(events,eventNumber))
         {
             std::cout<<"error handling connection"<<std::endl;
             return false;
@@ -108,24 +108,14 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  */
 
 bool Webserver::_acceptConnection(Server *server) {
-//    SOCKET acceptSocket;
-//    acceptSocket= accept(server._fd,server._server_socket._service, sizeof(server._server_socket._service));
-//    if(acceptSocket==INVALID_SOCKET)
     Client client;
-//    Server *ptr = static_cast<Server*>(event.data.ptr);
-//    Socket *ptr1 = static_cast<Socket*>(&ptr->_server_socket);
-//    Socket *ptr = static_cast<Socket*>(server->_server_socket.getFdSock());
-//    &ptr._service;
-//    socklen_t &tmp = static_cast<socklen_t&>(server->_server_socket.getSockSize());
-
-socklen_t temp=sizeof(server->_server_socket.getService());
-//temp=server._server_socket.getSockSize();
-//TODO fix the problem with socklen_t and  the getter ;(
-//    if((client._clientSock._fd_sock = accept(server->_server_socket->_fd_sock, (sockaddr *) &server->_server_socket->_service,&server->_server_socket->_sockSize)) == INVALID_SOCKET)
-        if(( client.setClientFdSock(accept(server->_server_socket.getFdSock(),(sockaddr *) &server->_server_socket.getService(),&temp)) ) == INVALID_SOCKET) {
-            std::cout << "accepted failed" << GETSOCKETERRNO() << std::endl;
-            return false;
-        }
+    socklen_t temp=sizeof(server->_server_socket.getService());
+    if ((client.setClientFdSock(accept(server->_server_socket.getFdSock(),
+                                       (sockaddr *) &server->_server_socket.getService(),
+                                       &temp))) == INVALID_SOCKET) {
+        std::cout << "accepted failed" << GETSOCKETERRNO() << std::endl;
+        return false;
+    }
     client._event.events=EPOLLIN | EPOLLOUT;
     client._event.data.ptr=&client;
     client.socketType=CLIENT_SOCK;
@@ -143,20 +133,34 @@ bool Webserver::_handleConnection(epoll_event &event) {
 //    events[i].data.ptr
 //    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
     sConnection& ptr= *reinterpret_cast<sConnection*>(event.data.ptr);
+    Client * client = static_cast<Client *>(event.data.ptr);
     Request request;
-
     //understand how to initialize request and what is necessary to read from fd and work on response
-
-
     if(ptr.timeStart == 0)
         ptr.timeStart=std::time(NULL);
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, ptr.timeStart);
     if (elapsedTime>=15)
     {
-
+        this->_closeConnection(client);
         return false;
     }
+    else if (ptr.cgi)
+    {
+        //TODO handle cgi
+    }
+    else if(ptr.ended)
+    {
+        this->_closeConnection(client);
+
+    }
+    else if (ptr.error)
+    {
+        this->_closeConnection(client);
+    }
+
+
+
 //
 //    int str_len;
 //    void *buf;
@@ -180,14 +184,17 @@ bool Webserver::_handleConnection(epoll_event &event) {
 }
 
 
-bool Webserver::_closeConnection(epoll_event &event) {
-    (void)event;
+bool Webserver::_closeConnection(Client *client) {
+    // (void)event;
     //TODO handle keepalive
 
-//    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,))
-//        return true;
-//    if(close(fd))
-//        return true;
+// if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
+
+
+    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock().getFdSock(),&client->_event))
+        return true;
+    if(close(client->getClientSock().getFdSock()))
+        return true;
 
 
     return false;

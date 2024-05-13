@@ -52,7 +52,7 @@ private	:
     bool _mainLoop();
     bool _handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]);
     bool _handleConnection(epoll_event &event);
-    bool _closeConnection(epoll_event &event);
+    bool _closeConnection(Client * client);
 
 		//	DataType	attributes.
     bool _acceptConnection(Server *server);
