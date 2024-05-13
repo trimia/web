@@ -25,14 +25,20 @@ class	Client : public sType
     ~Client ();
 		Client &operator= (const Client &obj);
 
-	private	:
-        friend class Socket;
+    const Socket &getClientSock() const;
+
+    int setClientFdSock(int fd);
+
+private	:
+//        friend class Socket;
+    friend class Webserver;
+
 
 
 
         int             _id;
 //        int             _fd;
-        Socket			*_clientSock;
+        Socket			_clientSock;
         Server          *_server;
         Request		    *_request;
         Response        *_response;

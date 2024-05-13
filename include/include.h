@@ -84,9 +84,20 @@ struct sConnection :public sType
 {
     bool            error;
     bool            cgi;
+    bool            ended;
     std::time_t     timeStart;
 
     sConnection(){ timeStart=0;error=false;cgi= false;}
+};
+
+enum HttpMethod
+{
+    GET,
+    POST,
+    DELETE,
+    PUT,
+    HEAD,
+    NONE
 };
 
 //other file
