@@ -21,7 +21,7 @@ void Request::setRequestHeaders(const std::map<std::string, std::string> &reques
     _request_headers = requestHeaders;
 }
 
-    int Request::parseRequest(std::string input, Request httpRequest)
+int Request::parseRequest(std::string input, Request httpRequest)
 {
     size_t pos = 0;
     while ((pos = input.find("\n")) != std::string::npos)
@@ -38,7 +38,8 @@ void Request::setRequestHeaders(const std::map<std::string, std::string> &reques
             httpRequest._request_headers[key] = value;
         }
     }
-	if(_request_headers["BODY"]=="")
+	// if(_request_headers["BODY"]=="")
+		// ;
 //fix this code with c++98
     // for (const auto& pair : httpRequest._request_headers) {
     //     std::cout << pair.first << ": " << pair.second << std::endl;

@@ -12,7 +12,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 //class config;
-class Socket;
+// class Socket;
 //class Webserver;
 class	Server : public sType
 {
@@ -66,13 +66,14 @@ class	Server : public sType
 
     void setLocations(const std::vector<Location> &locations);
 
-    Socket *getServerSocket() const;
-
-    void setServerSocket(Socket *serverSocket);
-
     const epoll_event &getEvent() const;
 
     void setEvent(const epoll_event &event);
+
+	Socket getserver_socket();
+
+	void set_server_socket( Socket &server_socket);
+
 
 
 private	:

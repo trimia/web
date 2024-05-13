@@ -104,7 +104,7 @@ enum HttpMethod
 //# include "Location.hpp"
 //# include "Request.hpp"
 //# include "Response.hpp"
-//# include "Socket.hpp"
+# include "Socket.hpp"
 //# include "Server.hpp"
 //# include "Client.hpp"
 //# include "Webserver.hpp"
@@ -113,7 +113,7 @@ enum HttpMethod
 //class Request;
 //class Response;
 //class Server;
-//class Socket;
+// class Socket;
 //class client;
 //class Webserver;
 //class Parser;

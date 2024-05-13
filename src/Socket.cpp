@@ -89,7 +89,7 @@ bool Socket::_listenOnSocket() {
         return true;
     }
 }
-*
+
 
 bool Socket::createServerSock(int optName, char *ip, uint16_t port)
 {

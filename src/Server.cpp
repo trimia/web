@@ -79,11 +79,11 @@ Server    setupServer()
 
 
 
-    sock.createSocket(server);
-    sock.setSocketOption(server);
-    sock.bindSocket(server);
-    sock.listenOnSocket(server.getServerSocket()->getFdSock());
-    fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
+    // sock.createSocket(server);
+    // sock.setSocketOption(server);
+    // sock.bindSocket(server);
+    // sock.listenOnSocket(server.getServerSocket()->getFdSock());
+    // fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
     return server;
     //build server objetc with parser info
     //    Server server(infobyparser);
@@ -200,12 +200,12 @@ void Server::setLocations(const std::vector<Location> &locations) {
     }
 }
 
-Socket *Server::getServerSocket() const {
+Socket Server::getserver_socket() {
     return _server_socket;
 }
 
-void Server::setServerSocket(Socket *serverSocket) {
-    _server_socket = serverSocket;
+void Server::set_server_socket(Socket &server_socket) {
+    _server_socket = server_socket;
 }
 
 const epoll_event &Server::getEvent() const {
