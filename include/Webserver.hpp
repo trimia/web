@@ -17,7 +17,7 @@ class	Webserver
 {
 	public	:
 		Webserver ();
-        Webserver(std::string conf);
+        Webserver(char * conf);
 		Webserver (Webserver const &obj);
 
     explicit Webserver(const std::string &conf);

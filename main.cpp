@@ -26,21 +26,23 @@ int tryToStart(Webserver webserver)
     return 1;
 }
 
+//int main(int argc, char** argv)
 int main(int argc, char* argv[]) {
-    Webserver webserver;
-    ws_ptr=&webserver;
 
 
     if (argc != 2) {
         std::cerr << "Error: wrong number of arguments." << std::endl;
         exit(2);
     }
-    ConfigBlock     confBlock;
-    ConfigParser    confParser(argv[1], confBlock);
+    Webserver webserver(argv[1]);
+    ws_ptr=&webserver;
+
+    // ConfigBlock     confBlock;
+    // ConfigParser    confParser(argv[1], confBlock);
     //TODO maybe this take webserver and fill it or return a list of server
 
     std::cout<<RED<<"\n\n\t\t\tTEST FROM PARSER TO LIST OF SERVERS -> LIST OF LOCATIONS\n\n"<<RESET_COLOR<<std::endl;
-    std::vector<Server> listOfServer = confParser.parseConfigFile();
+    std::vector<Server> listOfServer = webserver.getListOfServer();
     for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
     {
         std::cout<<GREEN << "SERVER_NAME: " << it->getServerName() << std::endl;
@@ -58,16 +60,15 @@ int main(int argc, char* argv[]) {
     }
     std::cout<<"END\n\n"<<std::endl;
 
-//understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
-//    if(tryToStart(webserver))
-//    {
-//        std::cout<<"failed to timeStart"<<std::endl;
-//        exit(0);//understand if is good to exit or no
-//    }
+    //understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
+    if(tryToStart(webserver))
+    {
+        std::cout<<"failed to timeStart"<<std::endl;
+        exit(0);//understand if is good to exit or no
+    }
 
 }
 
-//int main(int argc, char** argv)
 //{
 //    (void ) argc;
 //    (void ) argv;
