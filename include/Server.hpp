@@ -36,6 +36,12 @@ class	Server : public sType
  *			getter & setter
  */
 
+    void unset() {
+        this->_server_name = "";
+        this->_ip = null;
+        this->_port = 0;
+    };
+
     uint16_t getPort() const;
 
     void setPort(uint16_t port);

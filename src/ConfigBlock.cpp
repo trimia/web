@@ -28,8 +28,8 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
 
     (void)vecString; //////////////////////// fix it
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
-            it != keyValue.end(); ++it) {
-//        printf("K %s\tV %s\n", it->first.c_str(), it->second.c_str());
+            it != keyValue.end(); it++) {
+        printf("K %s\tV %s\n", it->first.c_str(), it->second.c_str());
             if (it->first == "server_name") {
                 server.setServerName(it->second);
             } else if (it->first == "listen") {
@@ -45,7 +45,7 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
             } else if (it->first == "host") {
                 //if we do _ip const we elide the cast but don't ḱnow if is good for htons()
                 server.setIp((char *) it->second.c_str());
-//                printf("-------------------- %s\n", server.getIp().c_str());
+                printf("-------------------- %s\n", server.getIp());
 //            } if (vecString[0] == "error_page") {
 //                    server.setErrorPages(vecString);
 //            } else {
@@ -54,7 +54,7 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
             }
     }
 
-//    printf("\n\n%s|%s| |%s| |%hu| %s\n\n", BLUE, server.getServerName().c_str(), server.getIp().c_str(), server.getPort(), RESET_COLOR);
+    printf("\n\n%s|%s| |%s| |%hu| %s\n\n", BLUE, server.getServerName().c_str(), server.getIp(), server.getPort(), RESET_COLOR);
     return server;
 }
 
@@ -102,7 +102,7 @@ Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std
  * */
 std::vector<Server> ConfigBlock::handleBlock() {
 
-    Server                  server;
+//    Server                  server;
     Location                location;
     std::vector<Location>   listOfLocation;
     std::vector<Server>     listOfServers;
@@ -111,8 +111,10 @@ std::vector<Server> ConfigBlock::handleBlock() {
     // listOfServers.reserve(countServBlocks);
     // listOfLocation.reserve(countLocBlocks);
     for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin();
-        it != getServerBlocks().end();++ it) {
+        it != getServerBlocks().end(); it++) {
 
+        Server                  server;
+//        Server*                 newServer = &server;
         listOfLocation.clear();
         for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
              it3 != it->locationBlock.end(); ++it3) {
@@ -122,11 +124,21 @@ std::vector<Server> ConfigBlock::handleBlock() {
 
         server.setLocations(listOfLocation);
         server = handleServerBlock(it->keyValue, it->errorPages);
+        printf("//////////////////////////// %s : %s\n", server.getServerName().c_str(), server.getIp());
         //trimia: this necessary for every server to setup socket tell me if is the right place
         server.initSock();
+        printf("\n\n%s|%s| |%s| |%hu| %s\n\n", MAGENTA, server.getServerName().c_str(), server.getIp(), server.getPort(), RESET_COLOR);
         //
         listOfServers.push_back(server);
+
+        server.unset();
+
+
     }
+    for (auto x : listOfServers) {
+        printf("%sCONFIGBLOCK\nSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp(), RESET_COLOR);
+    }
+
 
     return listOfServers;
 }

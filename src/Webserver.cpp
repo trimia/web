@@ -11,6 +11,10 @@ Webserver::Webserver(char * conf)
     ConfigParser    confParser(conf, confBlock);
     this->_listOfServer=confParser.parseConfigFile();
 
+    for (auto x : _listOfServer) {
+        printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp(), RESET_COLOR);
+    }
+
 }
 
 Webserver::~Webserver()
