@@ -4,17 +4,46 @@
 #include <stdio.h>
 
 
-std::string    parseLine(std::string line) {
-    std::string out;
+unsigned int countIsSpace(const char* str) {
+    unsigned int count = 0;
 
-    for (size_t i = 0; i < line.length(); ++i) {
-        char c = line[i];
-        if (c == '#') {
-            break ;
-        } else {
-            out += c;
+    while (*str) {
+        if (std::isspace(*str)) {
+            count++;
         }
+        str++;
     }
+    return count;
+}
+
+std::string trim(std::string str) {
+    size_t start = 0;
+    size_t end = str.length();
+
+    while (start < end && std::isspace(str[start])) {
+        start++;
+    }
+
+    while (end > start && std::isspace(str[end - 1])) {
+        end--;
+    }
+
+    return str.substr(start, end - start);
+}
+
+std::string parseLine(std::string line) {
+    std::string out;
+    size_t commentStart = line.find('#');
+
+    if (commentStart != std::string::npos) {
+        out = line.substr(0, commentStart);
+    } else {
+        out = line;
+    }
+
+    out = trim(out);
+    if (out.length() == countIsSpace(out.c_str()))
+        return "";
     return out;
 }
 
@@ -56,12 +85,6 @@ std::string preProcessConfig(std::string conf) {
     }
 }
 
-std::string trim(std::string& str, char char_to_trim = ' ') {
-    str.erase(0, str.find_first_not_of(char_to_trim));
-    str.erase(str.find_last_not_of(char_to_trim) + 1);
-    return str;
-}
-
 std::vector<std::string> tokenize(std::string s, std::string del = " ")
 {
     std::vector<std::string>    tokens;
@@ -88,11 +111,11 @@ std::string trimLastChar(std::string line) {
     return newString;
 }
 
-std::vector<std::string> AKAftSplit(std::string& str, char delimiter = ' ') {
+std::vector<std::string> AKAftSplit(std::string& str) {
     std::vector<std::string>    tokens;
     std::string                 temp;
 
-    temp = trim(str, delimiter);
+    temp = trim(str);
     tokens = tokenize(temp, " ");
     return tokens;
 }
@@ -141,7 +164,8 @@ void    ConfigParser::handleLine(std::string line) {
  * State HTTP
  * */
 void    ConfigParser::handleHttpState(std::string line) {
-    std::vector<std::string> lineToks = AKAftSplit(line, ' ');
+    std::vector<std::string> lineToks = AKAftSplit(line);
+
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = End;
         return ;
@@ -168,7 +192,8 @@ void    ConfigParser::handleHttpState(std::string line) {
  * State Server
  * */
 void    ConfigParser::handleServerState(std::string line) {
-    std::vector<std::string> lineToks = AKAftSplit(line, ' ');
+    std::vector<std::string> lineToks = AKAftSplit(line);
+
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->insideServerBlock = false;
         this->currentState = HttpState;
@@ -203,7 +228,7 @@ void    ConfigParser::handleServerState(std::string line) {
  * State Location
  * */
 void    ConfigParser::handleLocationState(std::string line) {
-    std::vector<std::string> lineToks = AKAftSplit(line, ' ');
+    std::vector<std::string> lineToks = AKAftSplit(line);
 
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = ServerState;
@@ -304,6 +329,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     std::string         out;
 
     this->_parsed_config = preProcessConfig(this->_config_file);
+    printf("%s\n", this->_parsed_config.c_str());
     if (this->_parsed_config == "CONF ERROR") {
         std::cerr << "Found error in conf file.\n" << this->_parsed_config << std::endl;
         exit(2);
@@ -322,7 +348,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     this->printConfig();
 
     //////////
-    return this->_configBlock.handleBlock(this->countServBlocks, this->countLocBlocks);
+    return this->_configBlock.handleBlock();
 }
 
 //void    ConfigParser::extractKeyword() {

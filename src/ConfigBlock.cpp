@@ -100,7 +100,7 @@ Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std
  *      set list of locations inside single server
  *      set server inside list of servers
  * */
-std::vector<Server> ConfigBlock::handleBlock(int countServBlocks, int countLocBlocks) {
+std::vector<Server> ConfigBlock::handleBlock() {
 
     Server                  server;
     Location                location;
@@ -108,8 +108,8 @@ std::vector<Server> ConfigBlock::handleBlock(int countServBlocks, int countLocBl
     std::vector<Server>     listOfServers;
 
     ///////////////// check if we need to free space
-    listOfServers.reserve(countServBlocks);
-    listOfLocation.reserve(countLocBlocks);
+    // listOfServers.reserve(countServBlocks);
+    // listOfLocation.reserve(countLocBlocks);
     for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin();
         it != getServerBlocks().end();++ it) {
 
