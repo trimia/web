@@ -70,14 +70,14 @@ bool Webserver::_addServerToEpoll() {
  * has been commented for testing purpose
  */
 bool Webserver::_mainLoop() {
-    int eventNumber;
+    int eventNumber=0;
     epoll_event events[MAX_EVENTS];
     do{
         eventNumber= epoll_wait(this->_epollFd,events,MAX_EVENTS,EPOLL_TIMEOUT);
         if(eventNumber>0)
         {
-            _handleEpollEvents(eventNumber,events);
-            return true;
+            if(_handleEpollEvents(eventNumber,events))
+                return true;
         }
 
     } while (eventNumber>=0);
@@ -85,6 +85,7 @@ bool Webserver::_mainLoop() {
         return false;
     return true;
 }
+
 bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     for (int i = 0; i < eventNumber; ++i)
     {
@@ -95,8 +96,7 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
            if(this->_acceptConnection(server))
                 return false;
         }
-        else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) &&
-                _handleConnection(events[i]))
+        else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) && _handleConnection(events[i]))
         {
             std::cout<<"error handling connection"<<std::endl;
             return false;
@@ -122,15 +122,16 @@ bool Webserver::_acceptConnection(Server *server) {
     if ((client.setClientFdSock(accept(server->_server_socket.getFdSock(),
                                        (sockaddr *) &server->_server_socket.getService(),
                                        &temp))) == INVALID_SOCKET) {
-        std::cout << "accepted failed" << GETSOCKETERRNO() << std::endl;
+        std::cout <<RED << "accepted failed" <<RESET_COLOR << std::endl;
         return false;
     }
     client._event.events=EPOLLIN | EPOLLOUT;
     client._event.data.ptr=&client;
     client.socketType=CLIENT_SOCK;
-    this->addClientToList(client);
-//    webserver->addClientToList(client);
+    client.getClientSock().;
+    //TODO setsockoption for client sock after client class rewiew
     fcntl(client._clientSock.getFdSock(),F_SETFL,O_NONBLOCK);
+    this->addClientToList(client);
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock.getFdSock(), &client._event)<1)
         return false;
     std::cout<<"client sock added to epoll instance"<<std::endl;

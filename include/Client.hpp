@@ -25,7 +25,7 @@ class	Client : public sType
     ~Client ();
 		Client &operator= (const Client &obj);
 
-    const Socket &getClientSock() const;
+	Socket getClientSock();
 
     int setClientFdSock(int fd);
 
@@ -37,14 +37,11 @@ private	:
 
 
         int             _id;
-//        int             _fd;
         Socket			_clientSock;
         Server          *_server;
         Request		    *_request;
         Response        *_response;
         epoll_event     _event;
-//        int             _type;
-
 
         int				_method;
         bool			_isFirstLine;
