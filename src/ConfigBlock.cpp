@@ -44,8 +44,8 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
                 server.setClientMaxBodySize(it->second);
             } else if (it->first == "host") {
                 //if we do _ip const we elide the cast but don't ḱnow if is good for htons()
-                server.setIp((char *) it->second.c_str());
-                printf("-------------------- %s\n", server.getIp());
+                server.setIp(it->second);
+                printf("-------------------- %s\n", server.getIp().c_str());
 //            } if (vecString[0] == "error_page") {
 //                    server.setErrorPages(vecString);
 //            } else {
@@ -54,7 +54,7 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
             }
     }
 
-    printf("\n\n%s|%s| |%s| |%hu| %s\n\n", BLUE, server.getServerName().c_str(), server.getIp(), server.getPort(), RESET_COLOR);
+    printf("\n\n%s|%s| |%s| |%hu| %s\n\n", BLUE, server.getServerName().c_str(), server.getIp().c_str(), server.getPort(), RESET_COLOR);
     return server;
 }
 
@@ -124,19 +124,16 @@ std::vector<Server> ConfigBlock::handleBlock() {
 
         server.setLocations(listOfLocation);
         server = handleServerBlock(it->keyValue, it->errorPages);
-        printf("//////////////////////////// %s : %s\n", server.getServerName().c_str(), server.getIp());
+        // printf("//////////////////////////// %s : %s\n", server.getServerName().c_str(), server.getIp().c_str());
         //trimia: this necessary for every server to setup socket tell me if is the right place
         server.initSock();
-        printf("\n\n%s|%s| |%s| |%hu| %s\n\n", MAGENTA, server.getServerName().c_str(), server.getIp(), server.getPort(), RESET_COLOR);
+        printf("\n\n%s|%s| |%s| |%hu| %s\n\n", MAGENTA, server.getServerName().c_str(), server.getIp().c_str(), server.getPort(), RESET_COLOR);
         //
         listOfServers.push_back(server);
 
-        server.unset();
-
-
     }
     for (auto x : listOfServers) {
-        printf("%sCONFIGBLOCK\nSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp(), RESET_COLOR);
+        printf("%sCONFIGBLOCK\nSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
     }
 
 

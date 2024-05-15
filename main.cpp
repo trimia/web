@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     {
         std::cout<<GREEN << "SERVER_NAME: " << it->getServerName() << std::endl;
         std::cout << "PORT: " << it->getPort() << std::endl;
-        std::cout << "IP: " << it->getIp() <<RESET_COLOR <<std::endl;
+        std::cout << "IP: " << it->getIp().c_str() <<RESET_COLOR <<std::endl;
         std::vector<Location> listOfLocation = it->getLocations();
         if (!listOfLocation.empty())
         {

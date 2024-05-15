@@ -36,19 +36,19 @@ class	Server : public sType
  *			getter & setter
  */
 
-    void unset() {
-        this->_server_name = "";
-        this->_ip = null;
-        this->_port = 0;
-    };
+    // void unset() {
+    //     this->_server_name = "";
+    //     this->_ip = null;
+    //     this->_port = 0;
+    // };
 
     uint16_t getPort() const;
 
     void setPort(uint16_t port);
 
-    char* getIp();
+    std::string &getIp();
 
-    void setIp(char *ip);
+    void setIp(std::string ip);
 
     const std::string &getServerName() const;
 
@@ -92,7 +92,7 @@ private	:
 //        friend class Socket;
         friend class Webserver;
         uint16_t						_port;
-        char *                          _ip;
+        std::string                         _ip;
         std::string						_server_name;
         std::string						_root;
         std::string						_index;

@@ -7,8 +7,9 @@ Socket::Socket() {
     {
         std::cout<<"error in creating socket"<<std::endl;
 //        return false;
-    }else
-        std::cout<<"socket successfully created"<<std::endl;
+    }
+    // else
+        // std::cout<<"socket successfully created"<<std::endl;
 //    return true;
 }
 
@@ -93,6 +94,7 @@ bool Socket::_listenOnSocket() {
 
 bool Socket::createServerSock(int optName, char *ip, uint16_t port)
 {
+    // std::cout<<std::endl<<MAGENTA<<"***************    IP  ********************"<<ip<<RESET_COLOR<<std::endl;
     if (_setSocketOption(optName))
         return false;
     if (_bindSocket(ip,port))
