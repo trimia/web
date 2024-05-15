@@ -122,6 +122,9 @@ std::vector<Server> ConfigBlock::handleBlock(int countServBlocks, int countLocBl
 
         server.setLocations(listOfLocation);
         server = handleServerBlock(it->keyValue, it->errorPages);
+        //trimia: this necessary for every server to setup socket tell me if is the right place
+        server.initSock();
+        //
         listOfServers.push_back(server);
     }
 

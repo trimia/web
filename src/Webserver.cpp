@@ -71,10 +71,15 @@ bool Webserver::_mainLoop() {
     do{
         eventNumber= epoll_wait(this->_epollFd,events,MAX_EVENTS,EPOLL_TIMEOUT);
         if(eventNumber>0)
+        {
             _handleEpollEvents(eventNumber,events);
+            return true;
+        }
 
-    } while (eventNumber<=0);
-    return false;
+    } while (eventNumber>=0);
+    if(eventNumber<0)
+        return false;
+    return true;
 }
 bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     for (int i = 0; i < eventNumber; ++i)
@@ -200,34 +205,14 @@ bool Webserver::_closeConnection(Client *client) {
     return false;
 }
 
-/*
- * Trimia this is a fake and modified runEpoll
- * by remy garcia
- * just to let the shit run!
- * yours is the next one (untouched)
- * */
-//bool Webserver::runEpoll()
-//{
-//    bool a,b = false;//,c= false;
-//    a=this->_initEpoll();
-//    b=this->_addServerToEpoll();
-////    c=this->_mainLoop();
-//    if(a == false || b == false)// || c == false)
-//        return false;
-//    return true;
-//
-//// understand if is necessary to allocate event
-////    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
-////    struct epoll_event event;
-//}
 
 bool Webserver::runEpoll()
 {
-    bool a,b,c= false;
-    a=this->_initEpoll();
-    b=this->_addServerToEpoll();
-    c=this->_mainLoop();
-    if(a == false || b == false || c == false)
+    if(this->_initEpoll())
+        return false;
+    if(this->_addServerToEpoll())
+        return false;
+    if(this->_mainLoop())
         return false;
     return true;
 

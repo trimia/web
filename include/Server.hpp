@@ -21,20 +21,26 @@ class	Server : public sType
 		Server(Server const &obj);
 
 
-    Server(uint16_t port, char *ip, std::string &serverName, std::string &root, std::string &index,
-           unsigned long clientMaxBodySize, bool autoindex, std::vector<std::string> &errorPages,
-           std::vector<Location> &locations, Socket *serverSocket);
+    // Server(uint16_t port, char *ip, std::string &serverName, std::string &root, std::string &index,
+    //        unsigned long clientMaxBodySize, bool autoindex, std::vector<std::string> &errorPages,
+    //        std::vector<Location> &locations, Socket *serverSocket);
+
 
     ~Server();
 		Server  &operator= (const Server &obj);
+		void initSock();
 //        Server    setupServer(Co conf);
 //        std::vector<Server> setup(std::vector<config> allConf);
+
+/*
+ *			getter & setter
+ */
 
     uint16_t getPort() const;
 
     void setPort(uint16_t port);
 
-    const std::basic_string<char> getIp() const;
+    char* getIp();
 
     void setIp(char *ip);
 
