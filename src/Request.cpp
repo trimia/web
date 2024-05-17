@@ -16,10 +16,32 @@ Request::Request(Request const &obj)
 	if (this != &obj)
 		*this = obj;
 }
+/*
+ *receiveData: old prototype must be upgrated read the fd and put it on buffer
+ */
+int Request::receiveData(int acceptedSocket, Request httpRequest)
+{
+	char rcv_buffer[RCV_BUF_SIZE];
+	memset(rcv_buffer,0,RCV_BUF_SIZE);
+	int byteCount=(int)recv(acceptedSocket,rcv_buffer, RCV_BUF_SIZE,0);
+	if(byteCount<=0)
+	{
+		std::cout<<"receive data error"<<GETSOCKETERRNO()<<std::endl;
+		return SOCKET_ERROR;
+	}else
+	{
+		std::cout<<"receive data, "<<byteCount<<" byte"<<std::endl;
+		httpRequest.parseRequest(rcv_buffer,httpRequest);
+		return byteCount;
+	}
 
-void Request::setRequestHeaders(const std::map<std::string, std::string> &requestHeaders) {
-    _request_headers = requestHeaders;
 }
+
+/*
+ *parseRequest: parse http request all heather
+ *necessary to fill information like hethere body method etc
+ */
+
 
 int Request::parseRequest(std::string input, Request httpRequest)
 {
@@ -56,4 +78,12 @@ Request	&Request::operator= (const Request &obj)
 		//	...
 	}
 	return (*this);
+}
+
+/*
+ *getter & setter
+ */
+
+void Request::setRequestHeaders(const std::map<std::string, std::string> &requestHeaders) {
+	_request_headers = requestHeaders;
 }

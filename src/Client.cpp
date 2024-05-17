@@ -43,7 +43,6 @@ Socket Client::getClientSock() {
 
 int Client::setClientFdSock(int fd) {
     _clientSock.setFdSock(fd);
-	_clientSock.
     return fd;
 //    _clientSock.setService()
 //    _clientSock = clientSock;

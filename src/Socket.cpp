@@ -59,15 +59,18 @@ bool Socket::_setSocketOption(int optName) {
         return true;
 }
 
-
-
-bool Socket::_bindSocket(char * ip,uint16_t port) {
-//    sockaddr_in service;
+void Socket::_initializeService(char *ip, uint16_t port)
+{
     this->_service.sin_family=AF_INET;
     //inet_addr or htonl
     this->_service.sin_addr.s_addr= inet_addr(ip);
     this->_service.sin_port= htons(port);
     this->_sockSize= sizeof(this->_service);
+}
+
+bool Socket::_bindSocket(char * ip,uint16_t port) {
+//    sockaddr_in service;
+    _initializeService(ip,port);
     if((int)bind(this->_fd_sock,(sockaddr*)&this->_service, sizeof(this->_service)) == SOCKET_ERROR)
     {
         std::cout<<"bind failed"<<GETSOCKETERRNO()<<std::endl;
@@ -105,27 +108,20 @@ bool Socket::createServerSock(int optName, char *ip, uint16_t port)
     return true;
 }
 
-//bool Socket::acceptConnection(Server *server, int epollFd, Webserver *webserver) {
-////    SOCKET acceptSocket;
-////    acceptSocket= accept(server._fd,server._server_socket._service, sizeof(server._server_socket._service));
-////    if(acceptSocket==INVALID_SOCKET)
-//    Client client;
-//
-//    if((client._clientSock->_fd_sock = accept(server->_server_socket->_fd_sock, (sockaddr *) &server->_server_socket->_service,&server->_server_socket->_sockSize)) == INVALID_SOCKET)
-//    {
-//        std::cout<<"accepted failed"<<GETSOCKETERRNO()<<std::endl;
-//        return false;
-//    }
-//    client._event.events=EPOLLIN | EPOLLOUT;
-//    client._event.data.ptr=&client;
-//    client.socketType=CLIENT_SOCK;
-//    webserver->addClientToList(client);
-//    fcntl(client._clientSock->_fd_sock,F_SETFL,O_NONBLOCK);
-//    if(epoll_ctl(epollFd,EPOLL_CTL_ADD, client._clientSock->_fd_sock, &client._event)<1)
-//            return false;
-//    std::cout<<"client sock added to epoll instance"<<std::endl;
-//    return true;
-//}
+bool Socket::setClientSock(int optName, char *ip, uint16_t port)
+{
+    _initializeService(ip,port);
+    //TODO think if is necessary change socketopt for client considering time ??
+    if(!_setSocketOption(optName))
+        return false;
+    //TODO F_SETFL o F_GETFL??
+    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+    return true;
+}
+/*
+ *
+ */
+
 
 bool Socket::connectSocket(SOCKET clientSocket, uint16_t port) {
     sockaddr_in clientService;
@@ -157,21 +153,6 @@ int Socket::sendData(SOCKET connectedSocket, Response msg) {
     }
 }
 
-int Socket::receiveData(SOCKET acceptedSocket, Request httpRequest) {
-    char rcv_buffer[RCV_BUF_SIZE];
-    memset(rcv_buffer,0,RCV_BUF_SIZE);
-    int byteCount=(int)recv(acceptedSocket,rcv_buffer, RCV_BUF_SIZE,0);
-    if(byteCount<=0)
-    {
-        std::cout<<"receive data error"<<GETSOCKETERRNO()<<std::endl;
-        return SOCKET_ERROR;
-    }else
-    {
-        std::cout<<"receive data, "<<byteCount<<" byte"<<std::endl;
-        httpRequest.parseRequest(rcv_buffer,httpRequest);
-        return byteCount;
-    }
-}
 
 /*
  * getter and setter

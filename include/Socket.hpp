@@ -27,6 +27,7 @@ class	Socket
         ~Socket ();
 		Socket &operator= (const Socket &obj);
         bool createServerSock(int optName,char* ip,uint16_t port);
+        bool setClientSock(int optName,char * ip,uint16_t port);
     //choose what option socket hav to do: keepalive etc...
 //        bool createSocket(Server server);
     //server side
@@ -36,7 +37,6 @@ class	Socket
         //client side
         bool connectSocket(SOCKET clientSocket, uint16_t port);
         int sendData(SOCKET connectedSocket, Response msg);
-        int receiveData(SOCKET acceptedSocket,Request httpRequest);
 
     int getFdSock() const;
 
@@ -57,6 +57,7 @@ private	:
         sockaddr_in     _service;
         socklen_t       _sockSize;
     bool _setSocketOption(int optName);
+    void _initializeService(char * ip,uint16_t port);
     bool _bindSocket(char * ip,uint16_t port); //maybe the port is not necessary -> getport
     bool _listenOnSocket();
 

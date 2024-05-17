@@ -128,9 +128,7 @@ bool Webserver::_acceptConnection(Server *server) {
     client._event.events=EPOLLIN | EPOLLOUT;
     client._event.data.ptr=&client;
     client.socketType=CLIENT_SOCK;
-    client.getClientSock().;
-    //TODO setsockoption for client sock after client class rewiew
-    fcntl(client._clientSock.getFdSock(),F_SETFL,O_NONBLOCK);
+    client.getClientSock().setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
     this->addClientToList(client);
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock.getFdSock(), &client._event)<1)
         return false;
@@ -144,13 +142,20 @@ bool Webserver::_handleConnection(epoll_event &event) {
 //    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
     sConnection& ptr= *reinterpret_cast<sConnection*>(event.data.ptr);
     Client * client = static_cast<Client *>(event.data.ptr);
-    Request request;
-    //understand how to initialize request and what is necessary to read from fd and work on response
     if(ptr.timeStart == 0)
-        ptr.timeStart=std::time(NULL);
+            ptr.timeStart=std::time(NULL);
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, ptr.timeStart);
-    if (elapsedTime>=15)
+    //understand how to initialize request and what is necessary to read from fd and work on response
+
+    /*
+     * TODO working progress understandig if this workflow is good
+     *    <Request request(currentTime,elapsedTime);
+     *    request.receiveData();
+     *    request.parseRequest();
+     */
+
+if (elapsedTime>=15)
     {
         this->_closeConnection(client);
         return false;
@@ -195,18 +200,13 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
 
 bool Webserver::_closeConnection(Client *client) {
-    // (void)event;
+
     //TODO handle keepalive
-
-// if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
-
 
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock().getFdSock(),&client->_event))
         return true;
     if(close(client->getClientSock().getFdSock()))
         return true;
-
-
     return false;
 }
 
@@ -223,7 +223,6 @@ bool Webserver::runEpoll()
 
 // understand if is necessary to allocate event
 //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
-//    struct epoll_event event;
 }
 
 void Webserver::addClientToList(Client client) {

@@ -16,9 +16,13 @@ class	Request
 		Request (Request const &obj);
 		~Request ();
 		Request &operator= (const Request &obj);
+
+        int receiveData(SOCKET acceptedSocket,Request httpRequest);
+
         int parseRequest(std::string input, Request httpRequest);
 
-    void setRequestHeaders(const std::map<std::string, std::string> &requestHeaders);
+
+        void setRequestHeaders(const std::map<std::string, std::string> &requestHeaders);
 
     private	:
 
