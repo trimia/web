@@ -20,7 +20,6 @@ char findLastChar(std::vector<std::string> matrix) {
     size_t last = matrix.size() - 1;
     char character =  matrix[last][matrix[last].length() - 1];
 
-    printf("/////////////////////////////////////////////// %c\n", character);
     return character;
 }
 
@@ -134,17 +133,13 @@ std::vector<std::string> AKAftSplit(std::string& str) {
 void ConfigParser::stateCheck(std::string line) {
     if (line.find("http {") != std::string::npos) {
         this->currentState = HttpState;
-        std::cout << "\t\t\t\t\t\t\t\t\t\tHTTP" << std::endl;
     } else if (line.find("server {") != std::string::npos) {
         this->currentState = ServerState;
         this->insideServerBlock = true;
         this->_configBlock.getServerBlocks().resize(this->countServBlocks + 1);
-        std::cout << "\t\t\t\t\t\t\t\t\t\tSERVER" << std::endl;
     } else if (line.find("location") != std::string::npos && this->insideServerBlock) {
         this->currentState = LocationState;
-        std::cout << "\t\t\t\t\t\t\t\t\t\tLOCATION" << std::endl;
-        this->_configBlock.getServerBlocks()[countServBlocks]
-            .locationBlock.resize(this->countLocBlocks + 1);
+        this->_configBlock.getServerBlocks()[countServBlocks].locationBlock.resize(this->countLocBlocks + 1);
     }
 }
 
@@ -210,23 +205,17 @@ void    ConfigParser::handleServerState(std::string line) {
     } else if (lineToks.size() == 2) {
         if (lineToks[1] == "{") {
             return ;
-        } else {
-            if (lineToks[1][lineToks[1].length() - 1] == ';') {
+        } else if (findLastChar(lineToks) == ';') {
                 lineToks[1] = trimLastChar(lineToks[1]);
                 this->_configBlock.getServerBlocks()[countServBlocks]
-                    .keyValue.insert(std::make_pair(lineToks[0], lineToks[1]));
-            }
+                .keyValue.insert(std::make_pair(lineToks[0], lineToks[1]));
         }
-    } else if (lineToks.size() > 2 && lineToks[0] == "error_page") {
-        size_t last = lineToks.size() - 1;
-        if (lineToks[last][lineToks[last].length() - 1] == ';') {
-            this->_configBlock.getServerBlocks()[countServBlocks].errorPages = lineToks;
-        }
-    } else if (lineToks.size() > 2 && lineToks[0] == "cgi_enable") {
-        size_t last = lineToks.size() - 1;
-        if (lineToks[last][lineToks[last].length() - 1] == ';') {
-            this->_configBlock.getServerBlocks()[countServBlocks].cgiPath = lineToks;
-        }
+    } else if (lineToks.size() > 2 && lineToks[0] == "error_page" && findLastChar(lineToks) == ';') {
+        lineToks[lineToks.size() - 1] = trimLastChar(lineToks[lineToks.size() - 1]);
+        this->_configBlock.getServerBlocks()[countServBlocks].errorPages = lineToks;
+    } else if (lineToks.size() > 2 && lineToks[0] == "cgi_enable" && findLastChar(lineToks) == ';') {
+        lineToks[lineToks.size() - 1] = trimLastChar(lineToks[lineToks.size() - 1]);
+        this->_configBlock.getServerBlocks()[countServBlocks].cgiPath = lineToks;
     } else {
         std::cerr << "Error: Server block got wrong configuration" << std::endl;
     }
@@ -241,7 +230,7 @@ void    ConfigParser::handleLocationState(std::string line) {
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = ServerState;
         this->countLocBlocks += 1;
-    } else if (lineToks.size() == 2) {
+    } else if (lineToks.size() == 2 && lineToks[0] != "method" && lineToks[0] != "return") {
         if (lineToks[1][lineToks[1].length() - 1] == ';') {
             lineToks[1] = trimLastChar(lineToks[1]);
             this->_configBlock.getServerBlocks()[countServBlocks]
@@ -253,22 +242,6 @@ void    ConfigParser::handleLocationState(std::string line) {
                 .locationBlock[countLocBlocks].keyValue
                 .insert(std::make_pair(lineToks[0], lineToks[1]));
     }
-//        if (lineToks[0] == "return") {
-//            size_t last = lineToks.size() - 1;
-//
-//            if (lineToks[last][lineToks[last].length() - 1] == ';') {
-//                lineToks[last] = trimLastChar(lineToks[last]);
-//                this->_configBlock.getServerBlocks()[countServBlocks]
-//                        .locationBlock[countLocBlocks].retErrorPages = lineToks;
-//                printf("%s\n", this->_configBlock.getServerBlocks()[countServBlocks] //////////// check this case
-//                        .locationBlock[countLocBlocks].retErrorPages[0].c_str());
-//            }
-//        } else if (lineToks[0] == "location" && lineToks[2] == "{") {
-//            this->_configBlock.getServerBlocks()[countServBlocks]
-//                .locationBlock[countLocBlocks].keyValue
-//                .insert(std::make_pair(lineToks[0], lineToks[1]));
-//        }
-//    }
     if (lineToks[0] == "method" && findLastChar(lineToks) == ';') {
         lineToks[lineToks.size() - 1] = trimLastChar(lineToks[lineToks.size() - 1]);
         this->_configBlock.getServerBlocks()[countServBlocks].locationBlock[countLocBlocks].methods = lineToks;
@@ -277,9 +250,6 @@ void    ConfigParser::handleLocationState(std::string line) {
         lineToks[lineToks.size() - 1] = trimLastChar(lineToks[lineToks.size() - 1]);
         this->_configBlock.getServerBlocks()[countServBlocks].locationBlock[countLocBlocks].retErrorPages = lineToks;
     }
-
-    //    } else {
-//        std::cerr << "Error: Location block got wrong configuration" << std::endl;
 }
 
 /*
@@ -306,7 +276,7 @@ void ConfigParser::printConfig() {
         }
         // Print error pages for this server block
         if (!it->errorPages.empty()) {
-            std::cout << "      Default error pages:";
+            std::cout << "      Default error pages: ";
             for (std::vector<std::string>::iterator it22 = it->errorPages.begin();
                  it22 != it->errorPages.end(); ++it22) {
                 std::cout << *it22 << " ";
@@ -347,7 +317,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     std::string         out;
 
     this->_parsed_config = preProcessConfig(this->_config_file);
-    printf("%s\n", this->_parsed_config.c_str()); /////////// debug
+//    printf("%s\n", this->_parsed_config.c_str()); /////////// debug
     if (this->_parsed_config == "CONF ERROR") {
         std::cerr << "Found error in conf file.\n" << this->_parsed_config << std::endl;
         exit(2);
@@ -363,8 +333,9 @@ std::vector<Server> ConfigParser::parseConfigFile() {
         this->handleLine(line);
     }
 
-    this->printConfig();
-
     //////////
+    this->printConfig();
+    //////////
+
     return this->_configBlock.handleBlock();
 }

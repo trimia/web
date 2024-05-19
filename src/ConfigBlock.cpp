@@ -32,16 +32,14 @@ void    ConfigBlock::handleHTTPBlock() {
 }
 
 /////// static ?
-Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
+static Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
     Server  server;
 
-    ////////////////////////////////
     if (!vecString.empty() && vecString[0] == "error_page")
         server.setErrorPages(vecString);
 
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
             it != keyValue.end(); it++) {
-        printf("K %s\tV %s\n", it->first.c_str(), it->second.c_str());
             if (it->first == "server_name") {
                 server.setServerName(it->second);
             } else if (it->first == "listen") {
@@ -63,11 +61,10 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
             }
     }
 
-    printf("\n\n%s|%s| |%s| |%hu| %s\n\n", BLUE, server.getServerName().c_str(), server.getIp().c_str(), server.getPort(), RESET_COLOR);
     return server;
 }
 
-Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> methods, std::vector<std::string> errPage) {
+static Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> methods, std::vector<std::string> errPage) {
     Location location;
 
     //////////// cgi_path ???
@@ -78,7 +75,6 @@ Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std
 
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
          it != keyValue.end(); ++it) {
-//        printf("KL %s\tVL %s\n", it->first.c_str(), it->second.c_str());
         if (it->first == "location") {
             location.setPath(it->second);
         } else if (it->first == "autoindex") {
@@ -125,11 +121,9 @@ std::vector<Server> ConfigBlock::handleBlock() {
 
         server.setLocations(listOfLocation);
         server = handleServerBlock(it->keyValue, it->errorPages);
-        // printf("//////////////////////////// %s : %s\n", server.getServerName().c_str(), server.getIp().c_str());
-        //trimia: this necessary for every server to setup socket tell me if is the right place
+        //////// trimia: this necessary for every server to setup socket tell me if is the right place
         server.initSock();
-        printf("\n\n%s|%s| |%s| |%hu| %s\n\n", MAGENTA, server.getServerName().c_str(), server.getIp().c_str(), server.getPort(), RESET_COLOR);
-        //
+        ///////
         listOfServers.push_back(server);
 
     }
