@@ -2,6 +2,15 @@
 #include "../include/ConfigParser.hpp"
 #include <sstream>
 
+static bool    tokenAdmitted(std::string token) {
+    if (token != "host" && token != "listen" && token != "server_name"
+        && token != "root" && token != "error_page" && token != "body_size"
+        && token != "autoindex" && token != "method" && token != "return"
+        && token != "cgi_enable" && token != "index") {
+        return false;
+    }
+    return true;
+}
 
 /*
  * Implement the simil Data Transfer Object
@@ -26,7 +35,10 @@ void    ConfigBlock::handleHTTPBlock() {
 Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
     Server  server;
 
-    (void)vecString; //////////////////////// fix it
+    ////////////////////////////////
+    if (!vecString.empty() && vecString[0] == "error_page")
+        server.setErrorPages(vecString);
+
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
             it != keyValue.end(); it++) {
         printf("K %s\tV %s\n", it->first.c_str(), it->second.c_str());
@@ -45,12 +57,9 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
             } else if (it->first == "host") {
                 //if we do _ip const we elide the cast but don't ḱnow if is good for htons()
                 server.setIp(it->second);
-                printf("-------------------- %s\n", server.getIp().c_str());
-//            } if (vecString[0] == "error_page") {
-//                    server.setErrorPages(vecString);
-//            } else {
-//                std::cout << "Error: wrong error page in server block from config file" << std::endl;
-//                exit(2);
+            } else if (!tokenAdmitted(it->first)) {
+                std::cout << "Error: wrong error page in server block from config file, found: " << it->first << std::endl;
+                exit(2);
             }
     }
 
@@ -59,9 +68,13 @@ Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vect
 }
 
 Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> methods, std::vector<std::string> errPage) {
-    //////////// cgi_path ???
-    (void)errPage;
     Location location;
+
+    //////////// cgi_path ???
+    if (!methods.empty() && methods[0] == "method")
+        location.setMethods(methods);
+    if (!errPage.empty() && errPage[0] == "return")
+        location.setReturn(errPage);
 
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
          it != keyValue.end(); ++it) {
@@ -76,16 +89,10 @@ Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std
             location.setRoot(it->second);
         } else if (it->first == "body_size") {
             location.setClientMaxBodySize(it->second);
-        } if (methods[0] == "method") {
-                location.setMethods(methods);
-//        } if (errPage[0] == "return") {
-//                    location.setReturn(errPage);
+        } else if (!tokenAdmitted(it->first)) {
+            std::cout << "Error: wrong configuration in location block from config file, found: " << it->first << std::endl;
+            exit(2);
         }
-//            }
-//        } else {
-//            std::cout << "Error: wrong configuration in location block from config file" << std::endl;
-//            exit(2);
-//        }
     }
     return location;
 }
@@ -101,20 +108,14 @@ Location    handleLocationBlock(std::map<std::string, std::string> keyValue, std
  *      set server inside list of servers
  * */
 std::vector<Server> ConfigBlock::handleBlock() {
-
-//    Server                  server;
+    Server                  server;
     Location                location;
     std::vector<Location>   listOfLocation;
     std::vector<Server>     listOfServers;
 
-    ///////////////// check if we need to free space
-    // listOfServers.reserve(countServBlocks);
-    // listOfLocation.reserve(countLocBlocks);
     for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin();
         it != getServerBlocks().end(); it++) {
 
-        Server                  server;
-//        Server*                 newServer = &server;
         listOfLocation.clear();
         for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
              it3 != it->locationBlock.end(); ++it3) {
@@ -132,10 +133,6 @@ std::vector<Server> ConfigBlock::handleBlock() {
         listOfServers.push_back(server);
 
     }
-    for (auto x : listOfServers) {
-        printf("%sCONFIGBLOCK\nSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
-    }
-
 
     return listOfServers;
 }
