@@ -29,11 +29,7 @@ class	Socket
         bool createServerSock(int optName,char* ip,uint16_t port);
         bool setClientSock(int optName,char * ip,uint16_t port);
     //choose what option socket hav to do: keepalive etc...
-//        bool createSocket(Server server);
-    //server side
-    //maybe int is better because of bind listen and accept return an int 0 or errno
-    //think about pass socket to function or the object server;
-//        bool acceptConnection(Server *server, int epollFd,Webserver *webserver);
+
         //client side
         bool connectSocket(SOCKET clientSocket, uint16_t port);
         int sendData(SOCKET connectedSocket, Response msg);

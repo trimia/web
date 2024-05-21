@@ -176,7 +176,7 @@ if (elapsedTime>=15)
 
 
 
-//
+//prototype
 //    int str_len;
 //    void *buf;
 //    buf=(void *)"";
