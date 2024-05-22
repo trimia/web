@@ -37,6 +37,7 @@ Client	&Client::operator= (const Client &obj)
  * getter and setter
  *
  */
+
 Socket Client::getClientSock() {
     return _clientSock;
 }
@@ -46,4 +47,36 @@ int Client::setClientFdSock(int fd) {
     return fd;
 //    _clientSock.setService()
 //    _clientSock = clientSock;
+}
+
+Request * Client::request() const {
+	return _request;
+}
+
+void Client::set_request(Request *request) {
+	_request = request;
+}
+
+Response * Client::response() const {
+	return _response;
+}
+
+void Client::set_response(Response *response) {
+	_response = response;
+}
+
+size_t Client::header_size() const {
+	return _headerSize;
+}
+
+void Client::set_header_size(size_t header_size) {
+	_headerSize = header_size;
+}
+
+size_t Client::body_size() const {
+	return _bodySize;
+}
+
+void Client::set_body_size(size_t body_size) {
+	_bodySize = body_size;
 }

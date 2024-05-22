@@ -10,9 +10,6 @@ Response::~Response()
 	std::cout << "Response : Destructor Called" << std::endl;
 }
 
-const std::string &Response::getContent() const {
-    return _content;
-}
 
 Response::Response(Response const &obj)
 {
@@ -30,4 +27,35 @@ Response	&Response::operator= (const Response &obj)
 		//	...
 	}
 	return (*this);
+}
+
+int Response::sendData(Client client, std::string body)
+{
+	char		*response = new char[client.header_size() + client.body_size() + 4];
+	memset(response, 0, client.header_size() + client.body_size() + 4);
+	// Response *ptr= reinterpret_cast<Response *>(client.response());
+
+	int byteCount = (int)send(client.getClientSock().getFdSock(),response, sizeof(response), 0);
+	if(byteCount==SOCKET_ERROR)
+	{
+		std::cout<<"send error"<<std::endl;
+		return SOCKET_ERROR;
+	}else if (byteCount==0)
+	{
+		std::cout<<"send "<<byteCount<<" byte"<<std::endl;
+		// return error handling
+	}else {
+		std::cout<<"send "<<byteCount<<" byte"<<std::endl;
+		return byteCount;
+	}
+}
+/*
+ *
+ *
+ *GETTER & SETTER
+ *
+ *
+ */
+const std::string &Response::getContent() const {
+	return _content;
 }

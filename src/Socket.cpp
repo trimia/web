@@ -140,18 +140,6 @@ bool Socket::connectSocket(SOCKET clientSocket, uint16_t port) {
     }
 }
 
-int Socket::sendData(SOCKET connectedSocket, Response msg) {
-    int byteCount = (int)send(connectedSocket,(char*)&msg.getContent() , sizeof(msg), 0);
-    if(byteCount==SOCKET_ERROR)
-    {
-        std::cout<<"send error"<<GETSOCKETERRNO()<<std::endl;
-        return SOCKET_ERROR;
-    }else
-    {
-        std::cout<<"send "<<byteCount<<" byte"<<std::endl;
-        return byteCount;
-    }
-}
 
 
 /*

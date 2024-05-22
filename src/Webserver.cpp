@@ -140,12 +140,15 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
 //    events[i].data.ptr
 //    sType 	*ptr = static_cast<sType*>(events[i].data.ptr);
-    sConnection& ptr= *reinterpret_cast<sConnection*>(event.data.ptr);
+    // sConnection& ptr= *reinterpret_cast<sConnection*>(event.data.ptr);
     Client * client = static_cast<Client *>(event.data.ptr);
-    if(ptr.timeStart == 0)
-            ptr.timeStart=std::time(NULL);
+    if(client->_request->time_start() == 0)
+            client->_request->set_time_start(std::time(NULL));
     std::time_t currentTime = std::time(NULL);
-    double elapsedTime = std::difftime(currentTime, ptr.timeStart);
+    double elapsedTime = std::difftime(currentTime, client->_request->time_start());
+    // Request request;
+    // request.receiveData(client);
+    client->_request->receiveData(client);
     //understand how to initialize request and what is necessary to read from fd and work on response
 
     /*
@@ -155,21 +158,26 @@ bool Webserver::_handleConnection(epoll_event &event) {
      *    request.parseRequest();
      */
 
-if (elapsedTime>=15)
+    if (elapsedTime>=15)
     {
         this->_closeConnection(client);
         return false;
     }
-    else if (ptr.cgi)
+    else if (client->_request->cgi())
     {
         //TODO handle cgi
     }
-    else if(ptr.ended)
+    else if(client->_request->ended())
     {
+        //TODO body? send response
+        //pathtofiel probably come from client headher or location i've to understand
+        std::string pathtofile="";
+        client->_response->sendData(readFromFile(pathtofile));
+
         this->_closeConnection(client);
 
     }
-    else if (ptr.error)
+    else if (client->_request->error())
     {
         this->_closeConnection(client);
     }
@@ -223,6 +231,33 @@ bool Webserver::runEpoll()
 
 // understand if is necessary to allocate event
 //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
+}
+
+std::string Webserver::readFromFile(std::string path) {
+    int	body_fd = open(path.c_str(), O_RDONLY);
+    struct stat file;
+    stat(path.c_str(),&file);
+
+    if (body_fd > 0 && file.st_size > 0)
+    {
+        char			body[file.st_size];
+        memset(body, 0, file.st_size);
+
+        int	size = read(body_fd, body, file.st_size);
+        switch (size){
+            case -1:
+                std::cout<< "read error"<<std::endl;
+            break ;
+            case 0:
+                std::cout<< "Body size 0"<<std::endl;
+            break ;
+            default:
+                std::cout<< "Body read -> " << size << " Byte"<<std::endl;
+        }
+        if(body_fd != -1)
+            close(body_fd);
+        return body;
+    }
 }
 
 void Webserver::addClientToList(Client client) {

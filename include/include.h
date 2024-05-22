@@ -46,7 +46,6 @@
 # include <fcntl.h>
 
 # define BUFFER_SIZE 4096
-# define GETSOCKETERRNO() (errno)
 # define ISVALIDSOCKET(s) ((s) >= 0)
 # define CLOSESOCKET(s) close(s)
 # define SOCKET_ERROR -1
@@ -79,7 +78,7 @@ struct sType
     int     socketType;
     sType() { socketType=0;}
 };
-
+//understand if is necessary or could be deleted
 struct sConnection :public sType
 {
     bool            error;
@@ -90,6 +89,11 @@ struct sConnection :public sType
     sConnection(){ timeStart=0;error=false;cgi= false;}
 };
 
+enum e_resource_type
+{
+    RT_FILE,
+    RT_DIR
+};
 enum HttpMethod
 {
     GET,

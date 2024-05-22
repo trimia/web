@@ -29,7 +29,23 @@ class	Client : public sType
 
     int setClientFdSock(int fd);
 
-private	:
+		Request * request() const;
+
+		void set_request(Request *request);
+
+		Response * response() const;
+
+		void set_response(Response *response);
+
+		size_t header_size() const;
+
+		void set_header_size(size_t header_size);
+
+		size_t body_size() const;
+
+		void set_body_size(size_t body_size);
+
+	private	:
 //        friend class Socket;
     friend class Webserver;
 
@@ -43,19 +59,25 @@ private	:
         Response        *_response;
         epoll_event     _event;
 
-        int				_method;
-        bool			_isFirstLine;
-        bool			_isQuery;
-        bool			_recvHeader;
-        std::string		_cgiBody;
-        size_t			_headerSize;
-        size_t			_totSize;
-        bool			_isContentLen;
-        bool			_recvBlockSize;
-        size_t			_readBlock;
-        size_t			_blockSize;
-        bool			_hasBeenClosed;
-        //	DataType	attributes.
+		// bool            _error;
+		// bool            _cgi;
+		// bool            _ended;
+		// std::time_t     _timeStart;
+		// bool			_hasBeenClosed;
+
+		size_t			_headerSize;
+		size_t			_bodySize;
+		int				_method;
+		bool			_isFirstLine;
+		bool			_isQuery;
+		bool			_recvHeader;
+		std::string		_cgiBody;
+		size_t			_totSize;
+		bool			_isContentLen;
+		bool			_recvBlockSize;
+		size_t			_readBlock;
+		size_t			_blockSize;
+		//	DataType	attributes.
 };
 
 // ******************************************************** //

@@ -2,17 +2,14 @@
 #define _Response_HPP_
 
 #include "include.h"
+#include "Client.hpp"
 //#include "Request.hpp"
 //#include "Server.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
 // ****************************************************** //
-enum e_resource_type
-{
-    RT_FILE,
-    RT_DIR
-};
+
 class Request;
 //class Server;
 class	Response
@@ -22,6 +19,8 @@ class	Response
 		Response (Response const &obj);
 		~Response ();
 		Response &operator= (const Response &obj);
+
+    int sendData(Client client, std::string body);
 
     const std::string &getContent() const;
 
