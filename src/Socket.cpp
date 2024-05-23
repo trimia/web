@@ -8,8 +8,8 @@ Socket::Socket() {
         std::cout<<"error in creating socket"<<std::endl;
 //        return false;
     }
-    // else
-        // std::cout<<"socket successfully created"<<std::endl;
+    else
+        std::cout<<"socket successfully created"<<std::endl;
 //    return true;
 }
 
@@ -42,7 +42,6 @@ Socket	&Socket::operator= (const Socket &obj)
     return (*this);
 }
 
-
 /*
  * setsocketoption:
  * choose what option socket hav to do: keepalive etc... see the link in TODO for differnt option
@@ -53,7 +52,7 @@ bool Socket::_setSocketOption(int optName) {
     //understand if the cast to char is necessary!!
     if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &optVal, sizeof(optVal)) ==
         SOCKET_ERROR) {
-        std::cout << "cannot set socket option" << GETSOCKETERRNO() << std::endl;
+        std::cout << "cannot set socket option" << std::endl;
         return false;
     } else
         return true;
@@ -73,7 +72,7 @@ bool Socket::_bindSocket(char * ip,uint16_t port) {
     _initializeService(ip,port);
     if((int)bind(this->_fd_sock,(sockaddr*)&this->_service, sizeof(this->_service)) == SOCKET_ERROR)
     {
-        std::cout<<"bind failed"<<GETSOCKETERRNO()<<std::endl;
+        std::cout<<"bind failed"<<std::endl;
         return (false);
     }
     else{
@@ -86,7 +85,7 @@ bool Socket::_listenOnSocket() {
     //choose how much connection ????
     if(listen(this->_fd_sock,MAX_N_CONNECTION))
     {
-        std::cout<<"error on listen"<<GETSOCKETERRNO()<<std::endl;
+        std::cout<<"error on listen"<<std::endl;
         return false;
     }else{
         std::cout<<"listen is ok waiting for connection"<<std::endl;
@@ -131,7 +130,7 @@ bool Socket::connectSocket(SOCKET clientSocket, uint16_t port) {
     clientService.sin_port = htons(port);
     if(connect(clientSocket,(sockaddr*)&clientService, sizeof(clientService))==SOCKET_ERROR)
     {
-        std::cout<<"connection to socket failed"<<GETSOCKETERRNO()<<std::endl;
+        std::cout<<"connection to socket failed"<<std::endl;
         return false;
     }else
     {

@@ -63,7 +63,7 @@ Server	&Server::operator= (const Server &obj)
  *      fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
  */
 void Server::initSock() {
-    this->_server_socket.createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
 }
 
 /*
@@ -155,11 +155,11 @@ void Server::setLocations(const std::vector<Location> &locations) {
     }
 }
 
-Socket Server::getserver_socket() {
+Socket *Server::getserver_socket() {
     return _server_socket;
 }
 
-void Server::set_server_socket(Socket &server_socket) {
+void Server::set_server_socket(Socket *server_socket) {
     _server_socket = server_socket;
 }
 

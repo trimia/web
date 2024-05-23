@@ -38,17 +38,17 @@ Client	&Client::operator= (const Client &obj)
  *
  */
 
-Socket Client::getClientSock() {
+Socket *Client::getClientSock() {
     return _clientSock;
 }
 
 int Client::setClientFdSock(int fd) {
-    _clientSock.setFdSock(fd);
+	this->_clientSock->setFdSock(fd);
     return fd;
 //    _clientSock.setService()
 //    _clientSock = clientSock;
 }
-
+//
 Request * Client::request() const {
 	return _request;
 }

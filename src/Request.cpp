@@ -27,7 +27,7 @@ void Request::receiveData(Client *client)
 {
 	char rcv_buffer[RCV_BUF_SIZE];
 	memset(rcv_buffer,0,RCV_BUF_SIZE);
-	int byteCount=(int)recv(client->getClientSock().getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
+	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
 	if(byteCount==0)
 	{
 

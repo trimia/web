@@ -2,7 +2,7 @@
 #define _Response_HPP_
 
 #include "include.h"
-#include "Client.hpp"
+// #include "Client.hpp"
 //#include "Request.hpp"
 //#include "Server.hpp"
 
@@ -10,7 +10,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 
-class Request;
+// class Request;
 //class Server;
 class	Response
 {
@@ -20,8 +20,8 @@ class	Response
 		~Response ();
 		Response &operator= (const Response &obj);
 
-    int sendData(Client *client, std::string body);
-	void setResponseForMethod(Client *client);
+ //    int sendData(Client *client, std::string body);
+	// void setResponseForMethod(Client *client);
 
     const std::string &getContent() const;
 
@@ -41,7 +41,7 @@ private	:
         size_t			_cgi_response_length;
         bool            _auto_index;
     //second:
-        Request					*_request;
+        // Request					*_request;
         bool					_isFinished;
         int						_statusCode;
         std::string				_resource;

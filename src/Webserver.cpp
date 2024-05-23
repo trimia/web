@@ -54,7 +54,7 @@ bool Webserver::_addServerToEpoll() {
     for (std::vector<Server>::iterator item = this->_listOfServer.begin(); item != this->_listOfServer.end(); ++item)
     {
             //            if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
-        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket.getFdSock(), &item->_event)<1)
+        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket->getFdSock(), &item->_event)<1)
             return false;
         item->_event.events=EPOLLIN;
         item->_event.data.ptr=&item;
@@ -118,9 +118,9 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
 
 bool Webserver::_acceptConnection(Server *server) {
     Client client;
-    socklen_t temp=sizeof(server->_server_socket.getService());
-    if ((client.setClientFdSock(accept(server->_server_socket.getFdSock(),
-                                       (sockaddr *) &server->_server_socket.getService(),
+    socklen_t temp=sizeof(server->_server_socket->getService());
+    if ((client.setClientFdSock(accept(server->_server_socket->getFdSock(),
+                                       (sockaddr *) &server->_server_socket->getService(),
                                        &temp))) == INVALID_SOCKET) {
         std::cout <<RED << "accepted failed" <<RESET_COLOR << std::endl;
         return false;
@@ -128,9 +128,9 @@ bool Webserver::_acceptConnection(Server *server) {
     client._event.events=EPOLLIN | EPOLLOUT;
     client._event.data.ptr=&client;
     client.socketType=CLIENT_SOCK;
-    client.getClientSock().setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
+    client.getClientSock()->setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
     this->addClientToList(client);
-    if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock.getFdSock(), &client._event)<1)
+    if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock->getFdSock(), &client._event)<1)
         return false;
     std::cout<<"client sock added to epoll instance"<<std::endl;
     return true;
@@ -172,7 +172,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         //TODO body? send response
         //pathtofile probably come from client headher or location i've to understand
         std::string pathtofile="";
-        client->_response->sendData(client,readFromFile(pathtofile));
+        // client->_response.sendData(client,readFromFile(pathtofile));
 
         this->_closeConnection(client);
 
@@ -211,9 +211,9 @@ bool Webserver::_closeConnection(Client *client) {
 
     //TODO handle keepalive
 
-    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock().getFdSock(),&client->_event))
+    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event))
         return true;
-    if(close(client->getClientSock().getFdSock()))
+    if(close(client->getClientSock()->getFdSock()))
         return true;
     return false;
 }
@@ -258,6 +258,7 @@ std::string Webserver::readFromFile(std::string path) {
             close(body_fd);
         return body;
     }
+    return 0;
 }
 
 void Webserver::addClientToList(Client client) {

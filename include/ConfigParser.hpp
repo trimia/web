@@ -9,7 +9,6 @@
 //# include <map>
 //# include <cstdlib>
 //# include <stdint.h>
-# include "StateMachine.hpp"
 # include "ConfigBlock.hpp"
 
 # define IN 0

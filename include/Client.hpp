@@ -1,19 +1,19 @@
 #ifndef _Client_HPP_
 #define _Client_HPP_
 
-//#include "Socket.hpp"
 #include "include.h"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Server.hpp"
 #include "Socket.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
 // ****************************************************** //
-class Socket;
 class Server;
-//class Response;
-//class Request;
+class Response;
+class Request;
+class Socket;
 class	Client : public sType
 {
 	public	:
@@ -25,9 +25,9 @@ class	Client : public sType
     ~Client ();
 		Client &operator= (const Client &obj);
 
-	Socket getClientSock();
+	Socket *getClientSock();
 
-    int setClientFdSock(int fd);
+  int setClientFdSock(int fd);
 
 		Request * request() const;
 
@@ -53,7 +53,7 @@ class	Client : public sType
 
 
         int             _id;
-        Socket			_clientSock;
+        Socket			*_clientSock;
         Server          *_server;
         Request		    *_request;
         Response        *_response;

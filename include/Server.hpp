@@ -12,7 +12,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 //class config;
-// class Socket;
+class Socket;
 //class Webserver;
 class	Server : public sType
 {
@@ -82,9 +82,9 @@ class	Server : public sType
 
     void setEvent(const epoll_event &event);
 
-	Socket getserver_socket();
+	Socket *getserver_socket();
 
-	void set_server_socket( Socket &server_socket);
+	void set_server_socket( Socket *server_socket);
 
 
 
@@ -100,7 +100,7 @@ private	:
         bool							_autoindex;
         std::vector<std::string>        _error_pages;
         std::vector<Location> 			_locations;
-        Socket                          _server_socket;
+        Socket                          *_server_socket;
         epoll_event                     _event;
 //        in_addr_t						_host;
 //        struct sockaddr_in 				_server_address;

@@ -12,7 +12,7 @@
 // ******************************************************** //
 //                         CLASSES                         //
 // ****************************************************** //
-class Response;
+// class Response;
 //class Request;
 // class Webserver;
 // class Server;
@@ -32,7 +32,6 @@ class	Socket
 
         //client side
         bool connectSocket(SOCKET clientSocket, uint16_t port);
-        int sendData(SOCKET connectedSocket, Response msg);
 
     int getFdSock() const;
 
