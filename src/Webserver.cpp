@@ -170,9 +170,9 @@ bool Webserver::_handleConnection(epoll_event &event) {
     else if(client->_request->ended())
     {
         //TODO body? send response
-        //pathtofiel probably come from client headher or location i've to understand
+        //pathtofile probably come from client headher or location i've to understand
         std::string pathtofile="";
-        client->_response->sendData(readFromFile(pathtofile));
+        client->_response->sendData(client,readFromFile(pathtofile));
 
         this->_closeConnection(client);
 

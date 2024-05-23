@@ -21,6 +21,8 @@ class	Request
         void receiveData(Client *client);
 
         int parseRequest(std::string input);
+		void fillRequest();
+		std::string checktype(std::string input);
 
 		bool error() const;
 

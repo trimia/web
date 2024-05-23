@@ -20,7 +20,8 @@ class	Response
 		~Response ();
 		Response &operator= (const Response &obj);
 
-    int sendData(Client client, std::string body);
+    int sendData(Client *client, std::string body);
+	void setResponseForMethod(Client *client);
 
     const std::string &getContent() const;
 
