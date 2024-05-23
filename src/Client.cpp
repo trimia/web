@@ -31,6 +31,12 @@ Client	&Client::operator= (const Client &obj)
 	}
 	return (*this);
 }
+
+void Client::initSocket() {
+	this->_clientSock = new Socket();
+
+}
+
 /*
  *
  *
@@ -43,6 +49,7 @@ Socket *Client::getClientSock() {
 }
 
 int Client::setClientFdSock(int fd) {
+	// this->_clientSock = new Socket();
 	this->_clientSock->setFdSock(fd);
     return fd;
 //    _clientSock.setService()

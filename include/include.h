@@ -44,6 +44,8 @@
 # include <sys/epoll.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
+//TODO remove this line
+# define GETSOCKETERRNO() (errno)
 
 # define BUFFER_SIZE 4096
 # define ISVALIDSOCKET(s) ((s) >= 0)
@@ -76,7 +78,7 @@ struct sType
 //    sType();
 //    sType(int n):socketType(n){}
     int     socketType;
-    sType() { socketType=0;}
+    // sType() { socketType=0;}
 };
 //understand if is necessary or could be deleted
 struct sConnection :public sType

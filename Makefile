@@ -19,7 +19,7 @@ OBJS_DIR = ./objs/
 
 INCLUDE_DIR = include/
 CC = c++ -I$(INCLUDE_DIR)
-FLAG = -Wall -Wextra -Werror -g -std=c++98
+FLAG = #-Wall -Wextra -Werror -g #-std=c++98
 
 
 %.o: %.cpp

@@ -1,4 +1,24 @@
 #include "../include/Socket.hpp"
+Socket::Socket(int optName, char *ip, uint16_t port) {
+    //TODO maybe try catch block
+    this->_fd_sock=INVALID_SOCKET;
+    this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+    if(this->_fd_sock==INVALID_SOCKET)
+    {
+        std::cout<<"error in creating socket"<<std::endl;
+        return;
+    }
+    _initializeService(ip,port);
+    if (_setSocketOption(optName))
+        return;
+    if (_bindSocket(ip,port))
+        return;
+    if (_listenOnSocket())
+        return;
+    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+    std::cout<<"socket successfully created"<<std::endl;
+    //    return true;
+}
 Socket::Socket() {
     //TODO maybe try catch block
     this->_fd_sock=INVALID_SOCKET;
@@ -6,11 +26,10 @@ Socket::Socket() {
     if(this->_fd_sock==INVALID_SOCKET)
     {
         std::cout<<"error in creating socket"<<std::endl;
-//        return false;
+        return;
     }
-    else
-        std::cout<<"socket successfully created"<<std::endl;
-//    return true;
+    std::cout<<"socket successfully created"<<std::endl;
+    //    return true;
 }
 
 Socket::Socket(int fdSock) : _fd_sock(fdSock) {}
@@ -62,14 +81,17 @@ void Socket::_initializeService(char *ip, uint16_t port)
 {
     this->_service.sin_family=AF_INET;
     //inet_addr or htonl
-    this->_service.sin_addr.s_addr= inet_addr(ip);
+    // this->_service.sin_addr.s_addr= inet_addr(ip);
     this->_service.sin_port= htons(port);
+    std::cout<<"port: "<<this->_service.sin_port<<std::endl;
     this->_sockSize= sizeof(this->_service);
+    // inet_pton(AF_INET, ip, &serverAddr.sin_addr.s_addr);
+    inet_pton(AF_INET, ip, &this->_service.sin_addr.s_addr);
 }
 
 bool Socket::_bindSocket(char * ip,uint16_t port) {
 //    sockaddr_in service;
-    _initializeService(ip,port);
+    // _initializeService(ip,port);
     if((int)bind(this->_fd_sock,(sockaddr*)&this->_service, sizeof(this->_service)) == SOCKET_ERROR)
     {
         std::cout<<"bind failed"<<std::endl;
@@ -96,7 +118,7 @@ bool Socket::_listenOnSocket() {
 
 bool Socket::createServerSock(int optName, char *ip, uint16_t port)
 {
-    // std::cout<<std::endl<<MAGENTA<<"***************    IP  ********************"<<ip<<RESET_COLOR<<std::endl;
+    _initializeService(ip,port);
     if (_setSocketOption(optName))
         return false;
     if (_bindSocket(ip,port))
@@ -139,19 +161,26 @@ bool Socket::connectSocket(SOCKET clientSocket, uint16_t port) {
     }
 }
 
+int Socket::getFdSock() const {
+    return _fd_sock;
+}
+
+void Socket::setFdSock(int fd_sock) {
+    _fd_sock = fd_sock;
+}
 
 
 /*
  * getter and setter
  */
-int Socket::getFdSock() const {
-    return _fd_sock;
-}
-void Socket::setFdSock(int fdSock) {
-    _fd_sock = fdSock;
-}
+// int Socket::getFdSock() const {
+//     return _fd_sock;
+// }
+// void Socket::setFdSock(int fdSock) {
+//     _fd_sock = fdSock;
+// }
 
-const sockaddr_in &Socket::getService() const {
+sockaddr_in &Socket::getService() {
     return _service;
 }
 
@@ -159,8 +188,8 @@ void Socket::setService(const sockaddr_in &service) {
     _service = service;
 }
 
-socklen_t Socket::getSockSize() const {
-    return _sockSize;
+socklen_t *Socket::getSockSize(){
+    return &_sockSize;
 }
 
 void Socket::setSockSize(socklen_t sockSize) {

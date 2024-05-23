@@ -11,7 +11,8 @@ Server::Server()
 //        socket.listenOnSocket(server.getServerSocket()->getFdSock());
 //        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
 	// std::cout << "Server : Default Constructor Called" << std::endl;
-    this->_autoindex="";
+    this->_autoindex=false;
+    // this->socketType=SERVER_SOCK;
 
 //	std::cout << "Server : Default Constructor Called" << std::endl;
 }
@@ -63,7 +64,12 @@ Server	&Server::operator= (const Server &obj)
  *      fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
  */
 void Server::initSock() {
-    this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    //TODO remember to free socket
+    this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    // this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    // this->socketType=SERVER_SOCK;
+    // std::cout<<BLUE<<"socket type"<<this->socketType<<RESET_COLOR<<std::endl;
+
 }
 
 /*

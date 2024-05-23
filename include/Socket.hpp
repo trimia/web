@@ -20,8 +20,11 @@
 class	Socket
 {
 	public	:
-		Socket ();
-		Socket (Socket const &obj);
+		Socket (int optName, char *ip, uint16_t port);
+
+        Socket();
+
+        Socket (Socket const &obj);
         explicit Socket(int fdSock);
 
         ~Socket ();
@@ -33,15 +36,18 @@ class	Socket
         //client side
         bool connectSocket(SOCKET clientSocket, uint16_t port);
 
-    int getFdSock() const;
+    // int getFdSock() const;
+    //
+    // void setFdSock(int fdSock);
+        int getFdSock() const;
 
-    void setFdSock(int fdSock);
+        void setFdSock(int fd_sock);
 
-    const sockaddr_in &getService() const;
+        sockaddr_in &getService();
 
     void setService(const sockaddr_in &service);
 
-    socklen_t getSockSize() const;
+    socklen_t *getSockSize();
 
     void setSockSize(socklen_t sockSize);
 

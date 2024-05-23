@@ -24,6 +24,7 @@ class	Client : public sType
 
     ~Client ();
 		Client &operator= (const Client &obj);
+	void initSocket();
 
 	Socket *getClientSock();
 

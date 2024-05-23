@@ -15,11 +15,10 @@ void	sigint_handler(int sig)
 
 int tryToStart(Webserver webserver)
 {
-//necessary only if we have to setup server
-//    for (const auto &item: listOfConf)
-//    {
-//
-//    }
+    for (auto x : webserver.getListOfServer()) {
+        printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
+    }
+
     std::signal(SIGINT, sigint_handler);
     if(webserver.runEpoll())
         return 0;
@@ -35,32 +34,36 @@ int main(int argc, char* argv[]) {
         exit(2);
     }
     Webserver webserver(argv[1]);
+    for (auto x : webserver.getListOfServer()) {
+        printf("post constructor %sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
+    }
+
     ws_ptr=&webserver;
 
     // ConfigBlock     confBlock;
     // ConfigParser    confParser(argv[1], confBlock);
     //TODO maybe this take webserver and fill it or return a list of server
 
-    std::cout<<RED<<"\n\n\t\t\tTEST FROM PARSER TO LIST OF SERVERS -> LIST OF LOCATIONS\n\n"<<RESET_COLOR<<std::endl;
-    std::vector<Server> listOfServer = webserver.getListOfServer();
-    for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
-    {
-        std::cout<<GREEN << "SERVER_NAME: " << it->getServerName() << std::endl;
-        std::cout << "PORT: " << it->getPort() << std::endl;
-        std::cout << "IP: " << it->getIp().c_str() <<RESET_COLOR <<std::endl;
-        std::vector<Location> listOfLocation = it->getLocations();
-        if (!listOfLocation.empty())
-        {
-            for (std::vector<Location>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
-            {
-                std::cout<<BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-                if (!it1->getMethods().empty()) {
-                    std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
-                }
-            }
-        }
-    }
-    std::cout<<"END\n\n"<<std::endl;
+    // std::cout<<RED<<"\n\n\t\t\tTEST FROM PARSER TO LIST OF SERVERS -> LIST OF LOCATIONS\n\n"<<RESET_COLOR<<std::endl;
+    // std::vector<Server> listOfServer = webserver.getListOfServer();
+    // for (std::vector<Server>::iterator it = listOfServer.begin(); it != listOfServer.end(); ++it)
+    // {
+    //     std::cout<<GREEN << "SERVER_NAME: " << it->getServerName() << std::endl;
+    //     std::cout << "PORT: " << it->getPort() << std::endl;
+    //     std::cout << "IP: " << it->getIp().c_str() <<RESET_COLOR <<std::endl;
+    //     std::vector<Location> listOfLocation = it->getLocations();
+    //     if (!listOfLocation.empty())
+    //     {
+    //         for (std::vector<Location>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
+    //         {
+    //             std::cout<<BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+    //             if (!it1->getMethods().empty()) {
+    //                 std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
+    //             }
+    //         }
+    //     }
+    // }
+    // std::cout<<"END\n\n"<<std::endl;
 
     //understand if unnecessary and (where setup server) it could be directly replaced with webserver.runEpoll()
     if(tryToStart(webserver))
