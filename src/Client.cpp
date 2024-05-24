@@ -25,6 +25,14 @@ Client	&Client::operator= (const Client &obj)
 	if (this != &obj)
 	{
         this->_id=obj._id;
+		this->_clientSock=obj._clientSock;
+		// this->set_client_sock(obj._clientSock);
+		this->_request=obj._request;
+		this->_response=obj._response;
+		this->_event=obj._event;
+		this->_headerSize=obj._headerSize;
+		this->_bodySize=obj._bodySize;
+		// this->_server=obj._server;
 //        this->_server=obj;
 		//	this->attributes = obj.attributes;
 		//	...
@@ -32,8 +40,10 @@ Client	&Client::operator= (const Client &obj)
 	return (*this);
 }
 
-void Client::initSocket() {
-	this->_clientSock = new Socket();
+void Client::initSocket(char *ip, uint16_t port, char type, int fd) {
+	// this->set_client_sock(new Socket());
+	this->_clientSock=new Socket(fd);
+	this->_clientSock->setClientSock(SO_REUSEADDR,ip,port,type);
 
 }
 
@@ -46,6 +56,14 @@ void Client::initSocket() {
 
 Socket *Client::getClientSock() {
     return _clientSock;
+}
+
+Socket * Client::client_sock() const {
+	return _clientSock;
+}
+
+void Client::set_client_sock(Socket *client_sock) {
+	_clientSock = client_sock;
 }
 
 int Client::setClientFdSock(int fd) {

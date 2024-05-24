@@ -29,8 +29,8 @@ class	Socket
 
         ~Socket ();
 		Socket &operator= (const Socket &obj);
-        bool createServerSock(int optName,char* ip,uint16_t port);
-        bool setClientSock(int optName,char * ip,uint16_t port);
+        bool createServerSock(int optName,char* ip,uint16_t port,int type);
+        bool setClientSock(int optName,char * ip,uint16_t port,int type);
     //choose what option socket hav to do: keepalive etc...
 
         //client side
@@ -58,8 +58,8 @@ private	:
         sockaddr_in     _service;
         socklen_t       _sockSize;
     bool _setSocketOption(int optName);
-    void _initializeService(char * ip,uint16_t port);
-    bool _bindSocket(char * ip,uint16_t port); //maybe the port is not necessary -> getport
+    bool _initializeService(char * ip,uint16_t port,int type);
+    bool _bindSocket();
     bool _listenOnSocket();
 
     //	DataType	attributes.

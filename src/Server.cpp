@@ -2,22 +2,13 @@
 
 Server::Server()
 {
-// Socket servsock;
-    // this->_server_socket=servsock.createServerSock(SO_REUSEADDR,);
-//    this->_server_socket.bindSocket();
-//        socket.createSocket(server);
-//        socket.setSocketOption(server);
-//        socket.bindSocket(server);
-//        socket.listenOnSocket(server.getServerSocket()->getFdSock());
-//        fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
 	// std::cout << "Server : Default Constructor Called" << std::endl;
     this->_autoindex=false;
     // this->socketType=SERVER_SOCK;
-
-//	std::cout << "Server : Default Constructor Called" << std::endl;
 }
 Server::~Server()
 {
+    // delete this->_server_socket;
 //	std::cout << "Server : Destructor Called" << std::endl;
 }
 
@@ -53,6 +44,8 @@ Server	&Server::operator= (const Server &obj)
 /*
  * function
  */
+
+
 /*
  * init sock:
  * SO_REUSADOR is a flag only for server!
@@ -65,10 +58,11 @@ Server	&Server::operator= (const Server &obj)
  */
 void Server::initSock() {
     //TODO remember to free socket
-    this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
-    // this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    // this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
+    // this->set_server_socket(new Socket());
+    this->_server_socket=new Socket();
+    this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port,SERVER_SOCK);
     // this->socketType=SERVER_SOCK;
-    // std::cout<<BLUE<<"socket type"<<this->socketType<<RESET_COLOR<<std::endl;
 
 }
 

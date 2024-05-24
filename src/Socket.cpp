@@ -1,35 +1,28 @@
 #include "../include/Socket.hpp"
-Socket::Socket(int optName, char *ip, uint16_t port) {
-    //TODO maybe try catch block
-    this->_fd_sock=INVALID_SOCKET;
-    this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-    if(this->_fd_sock==INVALID_SOCKET)
-    {
-        std::cout<<"error in creating socket"<<std::endl;
-        return;
-    }
-    _initializeService(ip,port);
-    if (_setSocketOption(optName))
-        return;
-    if (_bindSocket(ip,port))
-        return;
-    if (_listenOnSocket())
-        return;
-    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
-    std::cout<<"socket successfully created"<<std::endl;
-    //    return true;
-}
+// Socket::Socket(int optName, char *ip, uint16_t port) {
+//     //TODO maybe try catch block
+//     this->_fd_sock=INVALID_SOCKET;
+//     this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+//     if(this->_fd_sock==INVALID_SOCKET)
+//     {
+//         std::cout<<"Error in creating socket"<<std::endl;
+//         return;
+//     }
+//     _initializeService(ip,port);
+//     if (_setSocketOption(optName))
+//         return;
+//     if (_bindSocket(ip,port))
+//         return;
+//     if (_listenOnSocket())
+//         return;
+//     fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+//     std::cout<<"socket successfully created"<<std::endl;
+//     //    return true;
+// }
 Socket::Socket() {
     //TODO maybe try catch block
     this->_fd_sock=INVALID_SOCKET;
-    this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-    if(this->_fd_sock==INVALID_SOCKET)
-    {
-        std::cout<<"error in creating socket"<<std::endl;
-        return;
-    }
-    std::cout<<"socket successfully created"<<std::endl;
-    //    return true;
+
 }
 
 Socket::Socket(int fdSock) : _fd_sock(fdSock) {}
@@ -53,6 +46,7 @@ Socket	&Socket::operator= (const Socket &obj)
     {
         this->_fd_sock=obj._fd_sock;
         this->_service=obj._service;
+        this->_sockSize=obj._sockSize;
 
 
         //	this->attributes = obj.attributes;
@@ -60,78 +54,112 @@ Socket	&Socket::operator= (const Socket &obj)
     }
     return (*this);
 }
+bool Socket::createServerSock(int optName, char *ip, uint16_t port,int type)
+{
+    if(!_initializeService(ip,port,type))
+        return false;
+    if (!_setSocketOption(optName)) {
+        close(this->_fd_sock);
+        return false;
+    }
+    if (!_bindSocket())
+        return false;
+    if (!_listenOnSocket())
+        return false;
+    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+    return true;
+}
+
+bool Socket::_initializeService(char *ip, uint16_t port,int type)
+{
+    // std::cout<<YELLOW<<"ip: "<<ip<<RESET_COLOR<<std::endl;
+    this->_service.sin_family=AF_INET;
+    this->_service.sin_port= htons(port);
+    // inet_pton(AF_INET, ip, &this->_service.sin_addr.s_addr);
+    this->_service.sin_addr.s_addr= inet_addr(ip);
+    this->_sockSize= (socklen_t)sizeof(this->_service);
+    if(type==SERVER_SOCK)
+    {
+        this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+        if(this->_fd_sock==INVALID_SOCKET)
+        {
+            std::cout<<RED<<"Error in creating socket"<<RESET_COLOR<<std::endl;
+            return false;
+        }
+    }
+    std::cout<<GREEN<<"socket successfully created"<<RESET_COLOR<<std::endl;
+    // std::cout<<CYAN<<"initialize service"<<std::endl;
+    // std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
+    // std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
+    // std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
+    // std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
+    // std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
+    return true;
+
+    // std::cout<<"port: "<<this->_service.sin_port<<std::endl;
+    // inet_pton(AF_INET, ip, &serverAddr.sin_addr.s_addr);
+    // inet_pton(AF_INET, ip, &this->_service.sin_addr.s_addr);
+}
+
 
 /*
  * setsocketoption:
  * choose what option socket hav to do: keepalive etc... see the link in TODO for differnt option
  * optname value SO_RCVTIMEO =20 for client or SO_REUSEADDR = 2 for server
  */
+
 bool Socket::_setSocketOption(int optName) {
     int optVal = 1;
+    std::cout<<CYAN<<"set socket option"<<std::endl;
+    std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
+    std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
+    std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
+    std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
+    std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
     //understand if the cast to char is necessary!!
     if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &optVal, sizeof(optVal)) ==
         SOCKET_ERROR) {
-        std::cout << "cannot set socket option" << std::endl;
+        std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;
         return false;
-    } else
-        return true;
+    }
+    std::cout<<GREEN<<"socket option set"<<RESET_COLOR<<std::endl;
+    return true;
 }
 
-void Socket::_initializeService(char *ip, uint16_t port)
-{
-    this->_service.sin_family=AF_INET;
-    //inet_addr or htonl
-    // this->_service.sin_addr.s_addr= inet_addr(ip);
-    this->_service.sin_port= htons(port);
-    std::cout<<"port: "<<this->_service.sin_port<<std::endl;
-    this->_sockSize= sizeof(this->_service);
-    // inet_pton(AF_INET, ip, &serverAddr.sin_addr.s_addr);
-    inet_pton(AF_INET, ip, &this->_service.sin_addr.s_addr);
-}
 
-bool Socket::_bindSocket(char * ip,uint16_t port) {
+bool Socket::_bindSocket() {
 //    sockaddr_in service;
-    // _initializeService(ip,port);
-    if((int)bind(this->_fd_sock,(sockaddr*)&this->_service, sizeof(this->_service)) == SOCKET_ERROR)
+    // std::cout<<CYAN<<"bind socket"<<std::endl;
+    // std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
+    // std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
+    // std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
+    // std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
+    // std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
+    if(bind(this->_fd_sock,(sockaddr*)&this->_service, sizeof(this->_service)) == SOCKET_ERROR)
     {
-        std::cout<<"bind failed"<<std::endl;
+        std::cout<<RED<<"bind failed"<<RESET_COLOR<<std::endl;
         return (false);
     }
-    else{
-
-        return true;
-    }
+    std::cout<<GREEN<<"bind is ok"<<RESET_COLOR<<std::endl;
+    return true;
 }
 
 bool Socket::_listenOnSocket() {
     //choose how much connection ????
-    if(listen(this->_fd_sock,MAX_N_CONNECTION))
+    if(listen(this->_fd_sock,SOMAXCONN)==SOCKET_ERROR)
     {
-        std::cout<<"error on listen"<<std::endl;
+        std::cout<<RED<<"Error on listen"<<RESET_COLOR<<std::endl;
         return false;
-    }else{
-        std::cout<<"listen is ok waiting for connection"<<std::endl;
-        return true;
     }
-}
-
-
-bool Socket::createServerSock(int optName, char *ip, uint16_t port)
-{
-    _initializeService(ip,port);
-    if (_setSocketOption(optName))
-        return false;
-    if (_bindSocket(ip,port))
-        return false;
-    if (_listenOnSocket())
-        return false;
-    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+    std::cout<<GREEN<<"listen is ok waiting for connection"<<RESET_COLOR<<std::endl;
     return true;
 }
 
-bool Socket::setClientSock(int optName, char *ip, uint16_t port)
+
+
+bool Socket::setClientSock(int optName, char *ip, uint16_t port,int type)
 {
-    _initializeService(ip,port);
+    _initializeService(ip,port,type);
     //TODO think if is necessary change socketopt for client considering time ??
     if(!_setSocketOption(optName))
         return false;

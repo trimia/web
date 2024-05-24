@@ -7,13 +7,14 @@ Webserver::Webserver()
 
 Webserver::Webserver(char * conf)
 {
+    _initEpoll();
     ConfigBlock     confBlock;
     ConfigParser    confParser(conf, confBlock);
     this->_listOfServer=confParser.parseConfigFile();
 
-    for (auto x : _listOfServer) {
-        printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
-    }
+    // for (auto x : _listOfServer) {
+    //     printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
+    // }
 
 }
 
@@ -54,61 +55,6 @@ bool Webserver::_initEpoll() {
     return false;
 }
 
-bool Webserver::_addServerToEpoll() {
-    std::cout<<"adding server to epoll instance"<<std::endl;
-    for (std::vector<Server>::iterator item = this->_listOfServer.begin(); item != this->_listOfServer.end(); ++item)
-    {
-        std::cout<<"server name: "<<item->getServerName()<<std::endl;
-        std::cout<<"server sock: "<<item->getserver_socket()->getFdSock()<<std::endl;
-        std::cout<<"web epolfd: "<<this->_epollFd<<std::endl;
-        //            if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->getServerSocket()->getFdSock(), *item->getEvent())<1)
-        item->_event.events=EPOLLIN;
-        item->_event.data.ptr=item.base();
-        item->socketType=SERVER_SOCK;
-        std::cout<<BLUE<<"socket type"<<item->socketType<<RESET_COLOR<<std::endl;
-
-        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket->getFdSock(), &item->_event)<0)
-            return false;
-        //        item.setType(SERVER_SOCK);
-
-    }
-
-    std::cout<<"all server sock added to epoll instance"<<std::endl;
-    return true;
-}
-/*
- * It was causing problems during compilation
- * has been commented for testing purpose
- */
-bool Webserver::_mainLoop() {
-    int eventNumber=0;
-    epoll_event events[MAX_EVENTS];
-    do{
-        std::cout<<"main loop"<<std::endl;
-        for(auto &server : this->_listOfServer)
-        {
-            std::cout<<"server name: "<<server.getServerName()<<std::endl;
-            std::cout<<"server ip: "<<server.getIp()<<std::endl;
-        }
-        eventNumber= epoll_wait(this->_epollFd,events,MAX_EVENTS,EPOLL_TIMEOUT);
-        std::cout<<RED<<"event number: "<<eventNumber<<RESET_COLOR<<std::endl;
-        if(eventNumber>0)
-        {
-            if(!_handleEpollEvents(eventNumber,events)) {
-                std::cout<<"error handling epoll events"<<std::endl;
-                return true;
-            }
-        }
-        sleep(3);
-    } while (eventNumber>=0);
-    if(eventNumber<0) {
-        std::cout<<"i'm here"<<std::endl;
-        std::cout<<"error epoll wait"<<GETSOCKETERRNO()<<std::endl;
-        return false;
-    }
-        return false;
-    return true;
-}
 /*  runEpoll:
  *  - init epoll
  *  - add server to epoll
@@ -118,16 +64,16 @@ bool Webserver::_mainLoop() {
 
 bool Webserver::runEpoll()
 {
-    if(this->_initEpoll()) {
-        std::cout<<"error init epoll"<<std::endl;
-        return false;
-    }
+    // if(this->_initEpoll()) {
+    //     std::cout<<"Error init epoll"<<std::endl;
+    //     return false;
+    // }
     if(!this->_addServerToEpoll()) {
-        std::cout<<"error adding server to epoll"<<std::endl;
+        std::cout<<"Error adding server to epoll"<<std::endl;
         return false;
     }
     if(this->_mainLoop()) {
-        std::cout<<"error main loop"<<std::endl;
+        std::cout<<"Error main loop"<<std::endl;
         return false;
     }
     return true;
@@ -136,6 +82,55 @@ bool Webserver::runEpoll()
     //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
 }
 
+bool Webserver::_addServerToEpoll() {
+    std::cout<<"adding server to epoll instance"<<std::endl;
+    for (std::vector<Server>::iterator item = this->_listOfServer.begin(); item != this->_listOfServer.end(); ++item)
+    {
+        item->_event.events=EPOLLIN;
+        item->_event.data.ptr=item.base();
+        item->socketType=SERVER_SOCK;
+        std::cout<<BLUE<<"adding server to epoll instance"<<std::endl;
+        std::cout<<"socket type 1 for server 2 for client ---->   "<<item->socketType<<std::endl;
+        std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
+        std::cout<<"server socket fd: "<<item->_server_socket->getFdSock()<<RESET_COLOR<<std::endl;
+
+        if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket->getFdSock(), &item->_event)<0) {
+            std::cout << "Error adding connection: " << strerror(errno) << std::endl;
+            return false;
+        }
+
+    }
+
+    std::cout<<"all server sock added to epoll instance"<<std::endl;
+    return true;
+}
+
+bool Webserver::_mainLoop() {
+    int eventNumber=0;
+    epoll_event events[MAX_EVENTS];
+    do{
+        std::cout<<"main loop"<<std::endl;
+        eventNumber= epoll_wait(this->_epollFd,events,MAX_EVENTS,EPOLL_TIMEOUT);
+        std::cout<<RED<<"event number: "<<eventNumber<<RESET_COLOR<<std::endl;
+        if(eventNumber>0)
+        {
+            if(!_handleEpollEvents(eventNumber,events)) {
+                std::cout<<"Error handling epoll events"<<std::endl;
+                return true;
+            }
+        }
+        sleep(3);
+    } while (eventNumber>=0);
+    if(eventNumber<0) {
+        std::cout<<"i'm here"<<std::endl;
+        std::cout<<"Error epoll wait"<<GETSOCKETERRNO()<<std::endl;
+        return false;
+    }
+        return false;
+    return true;
+}
+
+
 bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     std::cout<<"handling epoll events"<<std::endl;
     // std::cout<<"event number: "<<eventNumber<<std::endl;
@@ -143,8 +138,9 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
     {
         std::cout<<"handling event number: "<<i<<std::endl;
         sType *type =static_cast<sType*>(events[i].data.ptr);
-        Server &server = *reinterpret_cast<Server *>(events[i].data.ptr);
-        std::cout<<RED<<"ptr->socketType: "<<server.socketType<<RESET_COLOR<<std::endl;
+        // Server &server = *reinterpret_cast<Server *>(events[i].data.ptr);
+        // Server *server = reinterpret_cast<Server *>(events[i].data.ptr);
+        // std::cout<<RED<<"ptr->socketType: "<<server->socketType<<RESET_COLOR<<std::endl;
         // sType 	&ptr = *static_cast<sType *>(events[i].data.ptr);
         std::cout<<"ptr->socketType: "<<type->socketType<<std::endl;
         if(type->socketType==SERVER_SOCK)
@@ -152,13 +148,13 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
             std::cout<<MAGENTA<<"server sock"<<RESET_COLOR<<std::endl;
             Server *server = static_cast<Server *>(events[i].data.ptr);
            if(!this->_acceptConnection(server)) {
-               std::cout<<"error accepting connection"<<std::endl;
+               std::cout<<"Error accepting connection"<<std::endl;
                 return false;
            }
         }
         else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) && _handleConnection(events[i]))
         {
-            std::cout<<"error handling connection"<<std::endl;
+            std::cout<<"Error handling connection"<<std::endl;
             return false;
         }
 
@@ -171,27 +167,24 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  * call read()? or receiveData() write() or sendData() -see the snippet code in the function-,request, response and parser
  * TODO study and complete _handleconnection understand how we want handle response request etc..
  *
- * TODO remy garcia's compilation says :
- * The error message indicates a potential buffer overflow issue in the line: /////////////////
- *  str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
  */
 
 bool Webserver::_acceptConnection(Server *server) {
-    Client client;
     // socklen_t temp=sizeof(server->_server_socket->getService());
-    std::cout<<"accepting connection"<<std::endl;
-    client.initSocket();
-    std::cout<<BLUE<<"server socket fd: "<<server->_server_socket->getFdSock()<<std::endl;
-    std::cout<<"server socket service: "<<server->_server_socket->getService().sin_port<<std::endl;
-    std::cout<<"server socket size: "<<server->_server_socket->getSockSize()<<RESET_COLOR<<std::endl;
+    std::cout<<BLUE<<"accepting connection"<<std::endl;
+    std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
+    std::cout<<"server socket fd: "<<server->_server_socket->getFdSock()<<std::endl;
+    std::cout<<"server socket service: "<<ntohs(server->_server_socket->getService().sin_port)<<std::endl;
+    std::cout<<"server socket service: "<<inet_ntoa(server->_server_socket->getService().sin_addr)<<std::endl;
+    std::cout<<"server socket size: "<<*server->_server_socket->getSockSize()<<std::endl;
+    std::cout << "Service sin family: " << server->_server_socket->getService().sin_family<<RESET_COLOR<< std::endl;
 
-std::cout << "Service: " << server->_server_socket->getService().sin_family << std::endl;
-std::cout << "SockSize: " << *(server->_server_socket->getSockSize()) << std::endl;
+    // Socket  *ptr = static_cast<Socket *> (server->_server_socket);
 
-    int clientFd = accept(server->_server_socket->getFdSock(),
-                      (sockaddr *) &server->_server_socket->getService(),
-                      server->_server_socket->getSockSize());
-
+    int clientFd = accept(server->getserver_socket()->getFdSock(),(sockaddr *)&server->getserver_socket()->getService(),server->getserver_socket()->getSockSize());
+    // (sockaddr *) &server->_server_socket->getService(),(socklen_t*)sizeof(server->_server_socket->getService()));
+    // (sockaddr *) &server->_server_socket->getService(),(socklen_t*)sizeof(server->_server_socket->getService()));
+    std::cout<<RED<<"client fd from accept: "<<clientFd<<RESET_COLOR<<std::endl;
     if (clientFd == -1) {
         std::cout << "Error accepting connection: " << strerror(errno) << std::endl;
         return false;
@@ -203,13 +196,16 @@ std::cout << "SockSize: " << *(server->_server_socket->getSockSize()) << std::en
     //     std::cout << "accepted failed" <<RESET_COLOR << std::endl;
     //     return false;
     // }
-    std::cout<<MAGENTA<<client.getClientSock()->getFdSock() << "  accepted connection" << std::endl;
-    std::cout<<"setting client sock"<<RESET_COLOR<<std::endl;
+    Client client;
+    // client.getClientSock()->setFdSock(clientFd);
+    client.initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
+    // std::cout<<MAGENTA<<client.getClientSock()->getFdSock() << "  accepted connection" << std::endl;
+    std::cout<<MAGENTA<<"setting client sock"<<RESET_COLOR<<std::endl;
     client._event.events=EPOLLIN | EPOLLOUT;
     client._event.data.ptr=&client;
     client.socketType=CLIENT_SOCK;
     std::cout<<YELLOW<<"socket type"<<client.socketType<<RESET_COLOR<<std::endl;
-    client.getClientSock()->setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
+    // client.getClientSock()->setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
     this->addClientToList(client);
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock->getFdSock(), &client._event)<0)
         return false;
@@ -315,7 +311,7 @@ std::string Webserver::readFromFile(std::string path) {
         int	size = read(body_fd, body, file.st_size);
         switch (size){
             case -1:
-                std::cout<< "read error"<<std::endl;
+                std::cout<< "read Error"<<std::endl;
             break ;
             case 0:
                 std::cout<< "Body size 0"<<std::endl;

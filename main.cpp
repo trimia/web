@@ -15,9 +15,9 @@ void	sigint_handler(int sig)
 
 int tryToStart(Webserver webserver)
 {
-    for (auto x : webserver.getListOfServer()) {
-        printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
-    }
+    // for (auto x : webserver.getListOfServer()) {
+    //     printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
+    // }
 
     std::signal(SIGINT, sigint_handler);
     if(webserver.runEpoll())
@@ -34,9 +34,9 @@ int main(int argc, char* argv[]) {
         exit(2);
     }
     Webserver webserver(argv[1]);
-    for (auto x : webserver.getListOfServer()) {
-        printf("post constructor %sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
-    }
+    // for (auto x : webserver.getListOfServer()) {
+    //     printf("post constructor %sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
+    // }
 
     ws_ptr=&webserver;
 

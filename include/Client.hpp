@@ -24,11 +24,15 @@ class	Client : public sType
 
     ~Client ();
 		Client &operator= (const Client &obj);
-	void initSocket();
+	void initSocket(char*ip, uint16_t port, char type, int fd);
 
 	Socket *getClientSock();
 
-  int setClientFdSock(int fd);
+		Socket * client_sock() const;
+
+		void set_client_sock(Socket *client_sock);
+
+		int setClientFdSock(int fd);
 
 		Request * request() const;
 
