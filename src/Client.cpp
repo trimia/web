@@ -25,8 +25,8 @@ Client	&Client::operator= (const Client &obj)
 	if (this != &obj)
 	{
         this->_id=obj._id;
-		this->_clientSock=obj._clientSock;
-		// this->set_client_sock(obj._clientSock);
+		// this->_clientSock=obj._clientSock;
+		this->set_client_sock(obj._clientSock);
 		this->_request=obj._request;
 		this->_response=obj._response;
 		this->_event=obj._event;
@@ -42,13 +42,19 @@ Client	&Client::operator= (const Client &obj)
 
 void Client::initSocket(char *ip, uint16_t port, char type, int fd) {
 	// this->set_client_sock(new Socket());
+	std::cout<<RED<<"fd value   "<<fd<<RESET_COLOR<<std::endl;
 	this->_clientSock=new Socket(fd);
-	this->_clientSock->setClientSock(SO_REUSEADDR,ip,port,type);
+	this->_clientSock->setClientSock(SO_RCVTIMEO,ip,port,type);
+	std::cout<<CYAN<<"init sock"<<std::endl;
+	std::cout<<"server socket fd: "<<this->_clientSock->getFdSock()<<std::endl;
+	std::cout<<"server socket service: "<<ntohs(this->_clientSock->getService().sin_port)<<std::endl;
+	std::cout<<"server socket service: "<<inet_ntoa(this->_clientSock->getService().sin_addr)<<std::endl;
+	std::cout<<"server socket size: "<<*this->_clientSock->getSockSize()<<std::endl;
+	std::cout << "Service sin family: " << this->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
 
 }
 
 /*
- *
  *
  * getter and setter
  *

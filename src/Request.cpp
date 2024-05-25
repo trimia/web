@@ -25,6 +25,14 @@ Request::Request(Request const &obj)
  */
 void Request::receiveData(Client *client)
 {
+
+	std::cout<<BLUE<<"receiving data"<<std::endl;
+	std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
+	std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
+	std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
+	std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
+	std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
+
 	char rcv_buffer[RCV_BUF_SIZE];
 	memset(rcv_buffer,0,RCV_BUF_SIZE);
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
@@ -40,7 +48,8 @@ void Request::receiveData(Client *client)
 	}
 	else if(byteCount !=0)
 	{
-		std::cout<<"receive data, "<<byteCount<<" byte"<<std::endl;
+		std::cout<<CYAN<<"buffer: "<<rcv_buffer<<RESET_COLOR<<std::endl;
+		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
 		client->set_header_size(byteCount);
 		this->parseRequest(rcv_buffer);
 		// return byteCount;

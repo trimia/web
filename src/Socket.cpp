@@ -110,20 +110,35 @@ bool Socket::_initializeService(char *ip, uint16_t port,int type)
 
 bool Socket::_setSocketOption(int optName) {
     int optVal = 1;
-    std::cout<<CYAN<<"set socket option"<<std::endl;
-    std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
-    std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
-    std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
-    std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
-    std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
+    // std::cout<<CYAN<<"set socket option"<<std::endl;
+    // std::cout<<"socket fd: "<<this->_fd_sock<<std::endl;
+    // std::cout<<"socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
+    // std::cout<<"socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
+    // std::cout<<"socket size: "<<this->_sockSize<<std::endl;
+    // std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
     //understand if the cast to char is necessary!!
-    if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &optVal, sizeof(optVal)) ==
-        SOCKET_ERROR) {
-        std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;
-        return false;
+    if(optName==SO_REUSEADDR)
+    {
+        if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &optVal, sizeof(optVal)) ==
+            SOCKET_ERROR) {
+            std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;
+            return false;
+        }
+    }
+    else
+    {
+        struct timeval tv;
+        tv.tv_sec = 5;
+        tv.tv_usec = 0;
+        if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &tv, sizeof(tv)) ==
+            SOCKET_ERROR) {
+            std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;
+            return false;
+        }
     }
     std::cout<<GREEN<<"socket option set"<<RESET_COLOR<<std::endl;
     return true;
+
 }
 
 
@@ -164,7 +179,9 @@ bool Socket::setClientSock(int optName, char *ip, uint16_t port,int type)
     if(!_setSocketOption(optName))
         return false;
     //TODO F_SETFL o F_GETFL??
-    fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
+    int flags = fcntl(this->_fd_sock, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(this->_fd_sock, F_SETFL, flags);
     return true;
 }
 /*
