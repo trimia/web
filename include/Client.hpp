@@ -50,6 +50,26 @@ class	Client : public sType
 
 		void set_body_size(size_t body_size);
 
+		bool error() const;
+
+		void set_error(bool error);
+
+		bool cgi() const;
+
+		void set_cgi(bool cgi);
+
+		bool ended() const;
+
+		void set_ended(bool ended);
+
+		std::time_t time_start() const;
+
+		void set_time_start(std::time_t time_start);
+
+		bool has_been_closed() const;
+
+		void set_has_been_closed(bool has_been_closed);
+
 	private	:
 //        friend class Socket;
     friend class Webserver;
@@ -64,11 +84,11 @@ class	Client : public sType
         Response        *_response;
         epoll_event     _event;
 
-		// bool            _error;
-		// bool            _cgi;
-		// bool            _ended;
-		// std::time_t     _timeStart;
-		// bool			_hasBeenClosed;
+		bool            _error;
+		bool            _cgi;
+		bool            _ended;
+		std::time_t     _timeStart;
+		bool			_hasBeenClosed;
 
 		size_t			_headerSize;
 		size_t			_bodySize;

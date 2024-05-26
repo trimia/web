@@ -111,3 +111,43 @@ size_t Client::body_size() const {
 void Client::set_body_size(size_t body_size) {
 	_bodySize = body_size;
 }
+
+bool Client::error() const {
+	return _error;
+}
+
+void Client::set_error(bool error) {
+	_error = error;
+}
+
+bool Client::cgi() const {
+	return _cgi;
+}
+
+void Client::set_cgi(bool cgi) {
+	_cgi = cgi;
+}
+
+bool Client::ended() const {
+	return _ended;
+}
+
+void Client::set_ended(bool ended) {
+	_ended = ended;
+}
+
+std::time_t Client::time_start() const {
+	return _timeStart;
+}
+
+void Client::set_time_start(std::time_t time_start) {
+	_timeStart = time_start;
+}
+
+bool Client::has_been_closed() const {
+	return _hasBeenClosed;
+}
+
+void Client::set_has_been_closed(bool has_been_closed) {
+	_hasBeenClosed = has_been_closed;
+}

@@ -274,7 +274,6 @@ bool Webserver::_handleConnection(epoll_event &event) {
     }
 
 
-
 //prototype
 //    int str_len;
 //    void *buf;
@@ -308,8 +307,6 @@ bool Webserver::_closeConnection(Client *client) {
         return true;
     return false;
 }
-
-
 
 
 std::string Webserver::readFromFile(std::string path) {

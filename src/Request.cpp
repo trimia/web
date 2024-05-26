@@ -11,6 +11,7 @@ Request::~Request()
 	this->_cgi=false;
 	this->_error=false;
 	this->_ended=false;
+	this->_complete=false;
 	std::cout << "Request : Destructor Called" << std::endl;
 }
 
@@ -20,12 +21,31 @@ Request::Request(Request const &obj)
 	if (this != &obj)
 		*this = obj;
 }
+
+Request	&Request::operator= (const Request &obj)
+{
+	std::cout << "Copy Assignment Operator Called" << std::endl;
+	if (this != &obj)
+	{
+		this->_timeStart=obj._timeStart;
+		this->_cgi=obj._cgi;
+		this->_error=obj._error;
+		this->_ended=obj._ended;
+		this->_complete=obj._complete;
+		//	this->attributes = obj.attributes;
+		//	...
+	}
+	return (*this);
+}
+
 /*
  *receiveData: old prototype must be upgrated read the fd and put it on buffer
  */
+
 void Request::receiveData(Client *client)
 {
-
+	if(client->ended())
+		return;
 	std::cout<<BLUE<<"receiving data"<<std::endl;
 	std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
 	std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
@@ -44,41 +64,47 @@ void Request::receiveData(Client *client)
 	}else if(byteCount<0)
 	{
 		this->_error=true;
-		std::cout<<"cliente read error"<<std::endl;
+		std::cout<<"client read error"<<std::endl;
 	}
 	else if(byteCount !=0)
 	{
-		std::cout<<CYAN<<"buffer: "<<rcv_buffer<<RESET_COLOR<<std::endl;
+		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
 		client->set_header_size(byteCount);
+		client->set_ended(true);
+		//understand if we want to register the parsed request in the client
+		// client->request()->setRequestHeaders(client->request()->parseRequest(rcv_buffer));
+		this->checktype(rcv_buffer);
 		this->parseRequest(rcv_buffer);
 		// return byteCount;
 	}
 
 }
-//
-// void Request::fillRequest() {
-//
-// 	for(std::map<std::string, std::string>::iterator it = this->_request_headers.begin();it != this->_request_headers.end(); it++)
-// 	{
-// 		if(it->first=="")
-// 			this.=it->second;
-// 		if(it->first=="")
-// 			this.=it->second;
-// 		if(it->first=="")
-// 			this.=it->second;
-// 		if(it->first=="")
-// 			this.=it->second;
-// 	}
-// }
-//
-// std::string Request::checktype(std::string input) {
-// 	if (input.find("GET ") == 0 || input.find("POST ") == 0 || input.find("DELETE ") == 0 || input.find("HEAD ") == 0) {
-// 		return REQUEST;
-// 	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
-// 		return INVALID;
-// 	}
-//}
+
+ void Request::fillRequest() {
+
+ 	for(std::map<std::string, std::string>::iterator it = this->_request_headers.begin();it != this->_request_headers.end(); it++)
+ 	{
+ 		if(it->first=="")
+ 			this.=it->second;
+ 		if(it->first=="")
+ 			this.=it->second;
+ 		if(it->first=="")
+ 			this.=it->second;
+ 		if(it->first=="")
+ 			this.=it->second;
+ 	}
+ }
+
+ std::string Request::checktype(std::istream input) {
+	std::string method;
+	std::getline(input, method);
+ 	if (method.find("GET ") == 0 || method.find("POST ") == 0 || method.find("DELETE ") == 0 || method.find("HEAD ") == 0) {
+ 		return REQUEST;
+ 	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
+ 		return INVALID;
+ 	}
+}
 
 /*
  *parseRequest: parse http request all heather
@@ -112,17 +138,6 @@ int Request::parseRequest(std::string input)
 
 
 
-Request	&Request::operator= (const Request &obj)
-{
-	std::cout << "Copy Assignment Operator Called" << std::endl;
-	if (this != &obj)
-	{
-
-		//	this->attributes = obj.attributes;
-		//	...
-	}
-	return (*this);
-}
 
 /*
  *getter & setter
