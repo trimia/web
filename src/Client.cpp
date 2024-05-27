@@ -61,6 +61,12 @@ void Client::initRequest() {
 
 }
 
+void Client::initResponse() {
+	this->_response = new Response();
+	// Response *response = new Response();
+	// this->_response = response;
+}
+
 /*
  *
  * getter and setter

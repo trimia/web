@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     if(tryToStart(webserver))
     {
         std::cout<<"failed to timeStart"<<std::endl;
-        exit(0);//understand if is good to exit or no
+        // exit(0);//understand if is good to exit or no
     }
 
 }

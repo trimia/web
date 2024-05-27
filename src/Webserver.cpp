@@ -281,6 +281,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         //TODO body? send response
         //pathtofile probably come from client headher or location i've to understand
         std::string pathtofile="";
+        client.initResponse();
         client.response()->setResponseForMethod(&client);
         // client._response.sendData(client,readFromFile(pathtofile));
 

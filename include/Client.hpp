@@ -26,6 +26,7 @@ class	Client : public sType
 		Client &operator= (const Client &obj);
 	void initSocket(char*ip, uint16_t port, char type, int fd);
 	void initRequest();
+	void initResponse();
 
 		Socket *getClientSock();
 
