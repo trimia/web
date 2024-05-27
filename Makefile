@@ -6,6 +6,7 @@ SRCS = main.cpp \
 		src/ConfigBlock.cpp \
 		src/Socket.cpp \
 		src/Server.cpp \
+		src/Cgi.cpp \
 		src/Client.cpp \
 		src/Location.cpp \
 		src/Request.cpp \
