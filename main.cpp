@@ -6,6 +6,8 @@
 
 Webserver *ws_ptr;
 
+
+
 void	sigint_handler(int sig)
 {
     std::cout << RED << "# SIGINT " << sig << " Called #" << RESET_COLOR << std::endl;

@@ -102,10 +102,27 @@ enum HttpMethod
     POST,
     DELETE,
     PUT,
-    HEAD,
-    NONE
+    HEAD
 };
 
+
+// std::map<std::string, HttpMethod> methodMap;
+// class include
+// {
+//     public:
+//         include() {
+//             methodMap.insert(std::make_pair("GET", GET));
+//             methodMap.insert(std::make_pair("POST", POST));
+//             methodMap.insert(std::make_pair("DELETE", DELETE));
+//             methodMap.insert(std::make_pair("PUT", PUT));
+//             methodMap.insert(std::make_pair("HEAD", HEAD));
+//         };
+//         include(include const &obj);
+//         ~include();
+//         include &operator= (const include &obj);
+//     private:
+//         /* data */
+// };
 //other file
 // # include "Location.hpp"
 // # include "Request.hpp"

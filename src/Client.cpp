@@ -27,7 +27,7 @@ Client	&Client::operator= (const Client &obj)
         this->_id=obj._id;
 		// this->_clientSock=obj._clientSock;
 		this->set_client_sock(obj._clientSock);
-		this->_request=obj._request;
+		this->set_request(obj.request());
 		this->_response=obj._response;
 		this->_event=obj._event;
 		this->_headerSize=obj._headerSize;
@@ -51,6 +51,13 @@ void Client::initSocket(char *ip, uint16_t port, char type, int fd) {
 	std::cout<<"server socket service: "<<inet_ntoa(this->_clientSock->getService().sin_addr)<<std::endl;
 	std::cout<<"server socket size: "<<*this->_clientSock->getSockSize()<<std::endl;
 	std::cout << "Service sin family: " << this->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
+
+}
+
+void Client::initRequest() {
+	this->_request = new Request();
+	// Request *request = new Request();
+	// this->_request = request;
 
 }
 

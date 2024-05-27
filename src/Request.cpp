@@ -2,16 +2,26 @@
 
 Request::Request()
 {
-	std::cout << "Request : Default Constructor Called" << std::endl;
-}
-
-Request::~Request()
-{
 	this->_timeStart=0;
 	this->_cgi=false;
 	this->_error=false;
 	this->_ended=false;
 	this->_complete=false;
+	this->_body_size=0;
+	this->_headerSize=0;
+	this->_method="";
+	this->_httpMessage="";
+
+	std::cout << "Request : Default Constructor Called" << std::endl;
+}
+
+Request::~Request()
+{
+	// this->_timeStart=0;
+	// this->_cgi=false;
+	// this->_error=false;
+	// this->_ended=false;
+	// this->_complete=false;
 	std::cout << "Request : Destructor Called" << std::endl;
 }
 
@@ -27,11 +37,16 @@ Request	&Request::operator= (const Request &obj)
 	std::cout << "Copy Assignment Operator Called" << std::endl;
 	if (this != &obj)
 	{
-		this->_timeStart=obj._timeStart;
-		this->_cgi=obj._cgi;
 		this->_error=obj._error;
+		this->_cgi=obj._cgi;
 		this->_ended=obj._ended;
 		this->_complete=obj._complete;
+		this->_timeStart=obj._timeStart;
+		this->_body_size=obj._body_size;
+		this->_requestHeaders=obj._requestHeaders;
+		this->_method=obj._method;
+		this->_headerSize=obj._headerSize;
+		this->_httpMessage=obj._httpMessage;
 		//	this->attributes = obj.attributes;
 		//	...
 	}
@@ -46,19 +61,18 @@ void Request::receiveData(Client *client)
 {
 	if(client->ended())
 		return;
-	std::cout<<BLUE<<"receiving data"<<std::endl;
-	std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
-	std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
-	std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
-	std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
-	std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
+	// std::cout<<MAGENTA<<"receiving data"<<std::endl;
+	// std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
+	// std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
+	// std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
+	// std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
+	// std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
 
 	char rcv_buffer[RCV_BUF_SIZE];
 	memset(rcv_buffer,0,RCV_BUF_SIZE);
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
 	if(byteCount==0)
 	{
-
 		std::cout<<"ready to close connection"<<std::endl;
 		this->_complete=true;
 	}else if(byteCount<0)
@@ -70,48 +84,112 @@ void Request::receiveData(Client *client)
 	{
 		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		client->set_header_size(byteCount);
-		client->set_ended(true);
+		this->_headerSize=byteCount;
+		this->_ended=true;
+		this->_httpMessage=checktype(rcv_buffer);
+		parseRequest();
+		return;
 		//understand if we want to register the parsed request in the client
 		// client->request()->setRequestHeaders(client->request()->parseRequest(rcv_buffer));
-		this->checktype(rcv_buffer);
-		this->parseRequest(rcv_buffer);
+		// this->checktype(rcv_buffer);
 		// return byteCount;
 	}
+	std::cout<<MAGENTA<<"receive data"<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
+	// std::cout<<MAGENTA<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<std::endl<<"http message :"<<std::endl<<client->request()->_httpMessage<<RESET_COLOR<<std::endl<<std::endl;
+	std::cout<<MAGENTA<<"request headers :"<<client->request()->_requestHeaders["Host"]<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"request headers :"<<client->request()->_requestHeaders["User-Agent"]<<RESET_COLOR<<std::endl;
 
 }
 
- void Request::fillRequest() {
+ // void Request::fillRequest() {
+ //
+ // 	for(std::map<std::string, std::string>::iterator it = this->_request_headers.begin();it != this->_request_headers.end(); it++)
+ // 	{
+ // 		if(it->first=="")
+ // 			this.=it->second;
+ // 		if(it->first=="")
+ // 			this.=it->second;
+ // 		if(it->first=="")
+ // 			this.=it->second;
+ // 		if(it->first=="")
+ // 			this.=it->second;
+ // 	}
+ // }
 
- 	for(std::map<std::string, std::string>::iterator it = this->_request_headers.begin();it != this->_request_headers.end(); it++)
- 	{
- 		if(it->first=="")
- 			this.=it->second;
- 		if(it->first=="")
- 			this.=it->second;
- 		if(it->first=="")
- 			this.=it->second;
- 		if(it->first=="")
- 			this.=it->second;
- 	}
- }
-
- std::string Request::checktype(std::istream input) {
+ std::string Request::checktype(std::string httprequest) {
+	std::istringstream input(httprequest);
 	std::string method;
-	std::getline(input, method);
- 	if (method.find("GET ") == 0 || method.find("POST ") == 0 || method.find("DELETE ") == 0 || method.find("HEAD ") == 0) {
- 		return REQUEST;
- 	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
- 		return INVALID;
- 	}
+	input>> method;
+	std::cout<<YELLOW<<"checktype method :"<<method<<RESET_COLOR<<std::endl;
+	if (method.find("GET") == 0 || method.find("POST") == 0 || method.find("DELETE") == 0 || method.find("HEAD") == 0) {
+		set_method(method);
+	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
+		this->_error = true;
+	}
+	int lastLineStart=httprequest.find("Content-Length: ");
+	int lastLineEnd=httprequest.find("\n",lastLineStart);
+	this->_body_size=atoi(httprequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str());
+	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
+	size_t pos = httprequest.find("\n");
+	if (pos != std::string::npos) {
+		// Erase the first line including the newline character
+		httprequest.erase(0, pos + 1);
+	}
+	return httprequest;
+	// methodMap.insert(std::make_pair("GET", GET));
+	// methodMap.insert(std::make_pair("POST", POST));
+	// methodMap.insert(std::make_pair("DELETE", DELETE));
+	// methodMap.insert(std::make_pair("PUT", PUT));
+	// methodMap.insert(std::make_pair("HEAD", HEAD));
+	//
+	// for (std::map<std::string, HttpMethod>::iterator it = methodMap.begin();
+	// 		it != methodMap.end(); it++)
+	// {
+	// 	if (it->first == method)
+	// 	{
+	// 		this->_method = it->second;
+	// 		break;
+	// 	}
+	// }
+	// switch (method)
+	// {
+	// 	case GET:
+	// 		this->_method = GET;
+	// 		break;
+	// 	case PUT:
+	// 		this->_method = PUT;
+	// 		break;
+	// 	case DELETE:
+	// 		this->_method = DELETE;
+	// 		break;
+	// 	case POST:
+	// 		this->_method = POST;
+	// 		break;
+	// 	case HEAD:
+	// 		this->_method = HEAD;
+	// 		break;
+	// 	default:
+	// 		this->_method = GET;
+	// }
+	// std::getline(input, method);
 }
 
 /*
  *parseRequest: parse http request all heather
  *necessary to fill information like hethere body method etc
  */
-int Request::parseRequest(std::string input)
+
+int Request::parseRequest()
 {
+	std::cout<<YELLOW<<"parseRequest"<<RESET_COLOR<<std::endl;
+	std::string input= this->_httpMessage;
     size_t pos = 0;
     while ((pos = input.find("\n")) != std::string::npos)
     {
@@ -124,24 +202,21 @@ int Request::parseRequest(std::string input)
         {
             std::string key = line.substr(0, colonPos);
             std::string value = line.substr(colonPos + 2); // Skip the colon and space
-        	this->_request_headers[key]= value;
+        	this->_requestHeaders[key]= value;
         }
     }
-	// if(_request_headers["BODY"]=="")
-		// ;
-//fix this code with c++98
-    // for (const auto& pair : httpRequest._request_headers) {
-    //     std::cout << pair.first << ": " << pair.second << std::endl;
+
+	//print for debug
+    // for (const auto& pair : this->_request_headers) {
+    //     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
     // }
     return 0;
 }
 
-
-
-
 /*
  *getter & setter
  */
+
 bool Request::error() const {
 	return _error;
 }
@@ -191,4 +266,35 @@ size_t Request::body_size() const {
 
 void Request::set_body_size(size_t body_size) {
 	_body_size = body_size;
+}
+
+std::string Request::method() const {
+	return _method;
+}
+
+void Request::set_method(const std::string &method) {
+	_method = method;
+}
+
+size_t Request::header_size(){
+	return _headerSize;
+}
+
+void Request::set_header_size(size_t header_size) {
+	_headerSize = header_size;
+}
+inline std::map<std::string, std::string> Request::request_headers() const {
+	return _requestHeaders;
+}
+
+inline void Request::set_request_headers(const std::map<std::string, std::string> &request_headers) {
+	_requestHeaders = request_headers;
+}
+
+std::string Request::http_message(){
+	return _httpMessage;
+}
+
+inline void Request::set_http_message(const std::string &http_message) {
+	_httpMessage = http_message;
 }
