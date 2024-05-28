@@ -72,6 +72,22 @@ class	Client : public sType
 
 		void set_has_been_closed(bool has_been_closed);
 
+		std::vector<int> allowmethods() const;
+
+		void set_allowmethods(const std::vector<std::string> &allowmethods);
+
+		bool is_location() const;
+
+		void set_is_location(bool is_location);
+
+		int location_number() const;
+
+		void set_location_number(int location_number);
+
+		std::vector<Location> locations() const;
+
+		void set_locations(const std::vector<Location> &locations);
+
 	private	:
 //        friend class Socket;
     friend class Webserver;
@@ -79,12 +95,17 @@ class	Client : public sType
 
 
 
-        int             _id;
-        Socket			*_clientSock;
-        Server          *_server;
-        Request		    *_request;
-        Response        *_response;
-        epoll_event     _event;
+        int							_id;
+        Socket						*_clientSock;
+        Server						*_server;
+        Request						*_request;
+        Response					*_response;
+        epoll_event					_event;
+		std::vector<int>			_allowmethods;
+		bool						_isLocation;
+		int							_locationNumber;
+		std::vector<Location>		_locations;
+
 
 		bool            _error;
 		bool            _cgi;

@@ -102,7 +102,9 @@ enum HttpMethod
     POST,
     DELETE,
     PUT,
-    HEAD
+    HEAD,
+    ALL,
+    METHOD_COUNT
 };
 
 

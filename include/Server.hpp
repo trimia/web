@@ -86,22 +86,35 @@ class	Server : public sType
 
 	void set_server_socket( Socket *server_socket);
 
+        bool is_location();
 
+        void setIsLocation(bool is_location);
+
+        int location_number();
+
+        void set_location_number(int location_number);
+
+        // std::vector<int> allowmethods() const;
+        //
+        // void set_allowmethods(const std::vector<int> &allowmethods);
 
 private	:
 //        friend class Socket;
         friend class Webserver;
         uint16_t						_port;
-        std::string                         _ip;
+        std::string                     _ip;
         std::string						_server_name;
         std::string						_root;
         std::string						_index;
         std::basic_string<char>         _client_max_body_size;
         bool							_autoindex;
         std::vector<std::string>        _error_pages;
+		bool							_isLocation;
+		int								_locationNumber;
         std::vector<Location> 			_locations;
         Socket                          *_server_socket;
         epoll_event                     _event;
+		// std::vector<int>				_allowmethods;
 //        in_addr_t						_host;
 //        struct sockaddr_in 				_server_address;
         //understand if _socket is necessary or _fd is good maybe have to change socket function return

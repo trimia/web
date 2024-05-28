@@ -11,6 +11,7 @@ Webserver::Webserver(char * conf)
     ConfigBlock     confBlock;
     ConfigParser    confParser(conf, confBlock);
     this->_listOfServer=confParser.parseConfigFile();
+    std::cout<<std::boolalpha<<YELLOW<<"islocation: "<<this->_listOfServer[1].is_location()<<RESET_COLOR<<std::endl;
 
     // for (auto x : _listOfServer) {
     //     printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
@@ -191,6 +192,7 @@ bool Webserver::_acceptConnection(Server *server) {
     Client client;
     // client.getClientSock()->setFdSock(clientFd);
     client.initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
+    // client.set_allowmethods(server->allowmethods());
     std::cout<<BLUE<<"accepting connection"<<std::endl;
     std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;

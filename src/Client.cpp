@@ -164,3 +164,61 @@ bool Client::has_been_closed() const {
 void Client::set_has_been_closed(bool has_been_closed) {
 	_hasBeenClosed = has_been_closed;
 }
+
+std::vector<int> Client::allowmethods() const {
+	return _allowmethods;
+}
+
+void Client::set_allowmethods(const std::vector<std::string> &allowmethods) {
+	for (std::vector<std::string>::const_iterator it = allowmethods.begin();
+		 it != allowmethods.end(); ++it) {
+		if(it->c_str()=="GET")
+			this->_allowmethods.push_back(GET);
+		else if(it->c_str()=="POST")
+			this->_allowmethods[POST]=1;
+		else if(it->c_str()=="DELETE")
+			this->_allowmethods[DELETE]=1;
+		else if(it->c_str()=="PUT")
+			this->_allowmethods[PUT]=1;
+		else if(it->c_str()=="HEAD")
+			this->_allowmethods[HEAD]=1;
+		// else if(it->c_str()=="OPTIONS")
+		// 	this->_allowmethods.push_back(OPTIONS);
+		// else if(it->c_str()=="TRACE")
+		// 	this->_allowmethods.push_back(TRACE);
+		// else if(it->c_str()=="CONNECT")
+		// 	this->_allowmethods.push_back(CONNECT);
+		// else if(it->c_str()=="PATCH")
+		// 	this->_allowmethods.push_back(PATCH);
+		// else
+		// 	this->_allowmethods.push_back(0);
+
+	}
+}
+
+bool Client::is_location() const {
+	return _isLocation;
+}
+
+void Client::set_is_location(bool is_location) {
+	_isLocation = is_location;
+}
+
+int Client::location_number() const {
+	return _locationNumber;
+}
+
+void Client::set_location_number(int location_number) {
+	_locationNumber = location_number;
+}
+
+std::vector<Location> Client::locations() const {
+	return _locations;
+}
+
+void Client::set_locations(const std::vector<Location> &locations) {
+	for (std::vector<Location>::const_iterator it = locations.begin();
+		 it != locations.end(); ++it) {
+		this->_locations.push_back(*it);
+		 }
+}

@@ -270,9 +270,6 @@ std::time_t Request::time_start() const {
 void Request::set_time_start(std::time_t time_start) {
 	_timeStart = time_start;
 }
-void Request::setRequestHeaders(const std::map<std::string, std::string> &requestHeaders) {
-	_request_headers = requestHeaders;
-}
 
 size_t Request::body_size() const {
 	return _body_size;

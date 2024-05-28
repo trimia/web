@@ -64,6 +64,8 @@ std::string Response::buildHttpResponseHeader(std::string& httpVersion, int stat
 
 void Response::getMethod(Client *client)
 {
+
+	// if (if client.)
 	// std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;

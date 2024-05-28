@@ -2,8 +2,11 @@
 
 Server::Server()
 {
-	// std::cout << "Server : Default Constructor Called" << std::endl;
+	std::cout << "Server : Default Constructor Called" << std::endl;
     this->_autoindex=false;
+    // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
+    // this->_isLocation=false;
+    // this->_locationNumber=0;
     // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
@@ -21,9 +24,9 @@ Server::Server(Server const &obj)
 
 Server	&Server::operator= (const Server &obj)
 {
-//	std::cout << "Copy Assignment Operator Called" << std::endl;
-	if (this != &obj)
-	{
+    //	std::cout << "Copy Assignment Operator Called" << std::endl;
+    if (this != &obj)
+    {
         this->_server_name=obj._server_name;
         this->_ip=obj._ip;
         this->_port=obj._port;
@@ -35,10 +38,16 @@ Server	&Server::operator= (const Server &obj)
         this->_event=obj._event;
         this->setLocations(obj._locations);
         this->setErrorPages(obj._error_pages);
+        // this->set_location_number(obj._locationNumber);
+        this->setIsLocation(obj._isLocation);
+        this->_locationNumber=obj._locationNumber;
+
+        // this->_allowmethods=obj._allowmethods;
+        // this->_isLocation=obj._isLocation;
         //	this->attributes = obj.attributes;
-		//	...
-	}
-	return (*this);
+        //	...
+    }
+    return (*this);
 }
 
 /*
@@ -162,6 +171,30 @@ Socket *Server::getserver_socket() {
 void Server::set_server_socket(Socket *server_socket) {
     _server_socket = server_socket;
 }
+
+bool Server::is_location(){
+    return _isLocation;
+}
+
+void Server::setIsLocation(bool is_location) {
+    _isLocation = is_location;
+}
+
+int Server::location_number(){
+    return _locationNumber;
+}
+
+void Server::set_location_number(int location_number) {
+    _locationNumber = location_number;
+}
+
+// std::vector<int> Server::allowmethods() const {
+//     return _allowmethods;
+// }
+//
+// void Server::set_allowmethods(const std::vector<int> &allowmethods) {
+//     _allowmethods = allowmethods;
+// }
 
 const epoll_event &Server::getEvent() const {
     return _event;
