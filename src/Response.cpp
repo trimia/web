@@ -51,6 +51,17 @@ Response	&Response::operator= (const Response &obj)
 // 	client->setResponse(response);
 // }
 
+std::string Response::buildHttpResponseHeader(std::string& httpVersion, int statusCode,
+	std::string& statusText, std::string& contentType, size_t contentLength) {
+
+	std::ostringstream header;
+	header << httpVersion << " " << statusCode << " " << statusText << "\r\n";
+	header << "Content-Type: " << contentType << "\r\n";
+	header << "Content-Length: " << contentLength << "\r\n";
+	header << "\r\n";  // End of header
+	return header.str();
+}
+
 void Response::getMethod(Client *client)
 {
 	// std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
@@ -63,7 +74,6 @@ void Response::getMethod(Client *client)
 	// std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
 	//
 
-	std::cout<<"getMethod"<<std::endl;
 	std::stringstream toStrin;
 	// toStrin << client->request()->body_size();
 	std::string msg="ZI PUO FAREEEEEEE!!!";
@@ -137,54 +147,6 @@ void Response::setResponseForMethod(Client *client) {
 	methodMap["PUT"] = &Response::putMethod;
 	methodMap["HEAD"] = &Response::headMethod;
 	(this->*methodMap[method])(client);
-
-
-	// methodMap.insert(std::make_pair("GET", &Response::getMethod()));
-	// methodMap.insert(std::make_pair(POST, postMethod()));
-	// methodMap.insert(std::make_pair(DELETE, deleteMethod()));
-	// methodMap.insert(std::make_pair(PUT, putMethod()));
-	// methodMap.insert(std::make_pair(HEAD, headMethod()));
-
-	// // std::map<std::string, HttpMethod> methodMap;
-	// methodMap.insert(std::make_pair("POST", POST));
-	// methodMap.insert(std::make_pair("DELETE", DELETE));
-	// methodMap.insert(std::make_pair("PUT", PUT));
-	// methodMap.insert(std::make_pair("HEAD", HEAD));
-
-	// for (std::map<std::string, HttpMethod>::iterator it = methodMap.begin();
-	// 		it != methodMap.end(); it++)
-	// {
-	// 	if (it->first == method)
-	// 	{
-	// 		this->_method = it->second;
-	// 		break;
-	// 	}
-	// }
-	// switch ()
-	// {
-	// 	case GET:
-	// 		this->_method = GET;
-	// 		break;
-	// 	case PUT:
-	// 		this->_method = PUT;
-	// 		break;
-	// 	case DELETE:
-	// 		this->_method = DELETE;
-	// 		break;
-	// 	case POST:
-	// 		this->_method = POST;
-	// 		break;
-	// 	case HEAD:
-	// 		this->_method = HEAD;
-	// 		break;
-	// 	default:
-	// 		this->_method = GET;
-	// }
-	// std::getline(input, method);
-	// switch (EXPRESSION)
-	// {
-	// 	case
-	// }
 
 }
 //

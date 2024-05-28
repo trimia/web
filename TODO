@@ -47,6 +47,9 @@ client:
         connect to the server
         send and receive data
         disconnect??
+rest_API:
+        - https://www.codeproject.com/Articles/1192934/RESTful-API-Designing-Guidelines-The-Best-Practices
+        - https://medium.com/@ivan.mejia/modern-c-micro-serivce-rest-api-part-ii-7be067440ca8
 request: see webserver_flowchart
         - https://freedium.cfd/https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
 

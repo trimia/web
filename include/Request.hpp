@@ -18,11 +18,17 @@ class	Request
 		~Request ();
 		Request &operator= (const Request &obj);
 
-        void receiveData(Client *client);
+		void receiveData(Client *client);
 
-        int parseRequest();
-		void fillRequest();
 		std::string checktype(std::string input);
+
+		void fillRequest(std::string &httpRequest);
+
+		void setUrlPathQuery(std::string &url);
+
+		std::string getQueryFromHttpRequest(std::string &httpRequest);
+
+		int parseRequest();
 
 		bool error() const;
 
@@ -72,19 +78,24 @@ class	Request
         bool									_cgi;
         bool									_ended;
 		bool									_complete; // finito di leggere o serve un altro giro
+		std::string								_keep_alive;
 		std::time_t								_timeStart;
+		std::string								_body;
 		size_t									_body_size;
+		std::string								_httpMessage; // messaggio intero preso a pezzi
+		size_t									_headerSize;
 		std::map<std::string, std::string>		_requestHeaders;
 		std::string								_method; // GET, POST, DELETE //! GET
-		size_t									_headerSize;
-		std::string								_httpMessage; // messaggio intero preso a pezzi
+		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
+		bool									_isRequestURL;
+		std::string								_path_file; // la url senza query //! /www/html/index.html
 
+		std::string								_query;//?
+		bool									_isQuery;//?
 
 		bool			_hasBeenClosed;//?? necessary here or in client
 		bool									_parsed;
 		bool									_answered;
-		std::string								_requestURL; // tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		std::string								_path_file; // la url senza query //! /www/html/index.html
 		std::vector<std::string>				_folders; // le cartelle del URL //! www html
 		std::string								_fileName; // solo il file nella URL //! index.html
 		std::string								_extension; // estensione del file se esiste //! html
@@ -94,13 +105,10 @@ class	Request
 
 		std::string								_path;
 		//        //maybe insted of string string we can do httmethod string or maybe isn't necessary a map
-		std::map<std::string, std::string>  _request_headers;
 		//        HttpMethod                          _method;
-		std::string                         _body;
 		size_t                              _body_length;
-        short                               _error_code;
-        std::string                         _query;//?
-        //    std::vector<u_int8_t>               _body;
+		short                               _error_code;
+		//    std::vector<u_int8_t>               _body;
 
     //	DataType	attributes.
 };

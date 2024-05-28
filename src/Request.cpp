@@ -88,6 +88,7 @@ void Request::receiveData(Client *client)
 		this->_ended=true;
 		this->_httpMessage=checktype(rcv_buffer);
 		parseRequest();
+		fillRequest(this->_httpMessage);
 		return;
 		//understand if we want to register the parsed request in the client
 		// client->request()->setRequestHeaders(client->request()->parseRequest(rcv_buffer));
@@ -108,23 +109,65 @@ void Request::receiveData(Client *client)
 
 }
 
- // void Request::fillRequest() {
- //
- // 	for(std::map<std::string, std::string>::iterator it = this->_request_headers.begin();it != this->_request_headers.end(); it++)
- // 	{
- // 		if(it->first=="")
- // 			this.=it->second;
- // 		if(it->first=="")
- // 			this.=it->second;
- // 		if(it->first=="")
- // 			this.=it->second;
- // 		if(it->first=="")
- // 			this.=it->second;
- // 	}
- // }
+ void Request::fillRequest(std::string &httpRequest) {
+	size_t methodEndPos = httpRequest.find(" ");
+	if (methodEndPos == std::string::npos)
+		this->_error= true;
+	std::istringstream input(httpRequest);
+	std::string firsline;
+	std::getline(input, firsline);
+	setUrlPathQuery(firsline);
+ 	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
+ 	{
+ 		if(it->first=="Connection")
+ 			this->_keep_alive=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 	}
+ }
 
- std::string Request::checktype(std::string httprequest) {
-	std::istringstream input(httprequest);
+void Request::setUrlPathQuery(std::string &url) {
+	size_t methodEndPos = url.find(" ");
+	if (methodEndPos == std::string::npos)
+		this->_error= true;
+	size_t urlStartPos = methodEndPos + 1;
+	size_t urlEndPos = url.find(" ", urlStartPos);
+	if (urlEndPos == std::string::npos)
+		this->_isRequestURL=false;
+	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
+	this->_query= getQueryFromHttpRequest(url);
+	size_t patEndPos = url.find("?");
+	this->_path=url.substr(urlStartPos, patEndPos - urlStartPos);
+
+
+}
+
+std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
+	size_t queryStartPos = httpRequest.find("?");
+	if (queryStartPos == std::string::npos) {
+		this->_isQuery=false;
+		return "";
+	}
+	size_t queryEndPos = httpRequest.find(" ", queryStartPos);
+	if (queryEndPos == std::string::npos) {
+		// The query is at the end of the HTTP request
+		return httpRequest.substr(queryStartPos + 1);
+	}
+	return httpRequest.substr(queryStartPos + 1, queryEndPos - queryStartPos - 1);
+}
+
+ std::string Request::checktype(std::string httpRequest) {
+	size_t methodEndPos = httpRequest.find(" ");
+	if (methodEndPos == std::string::npos) {
+		this->_error= true;
+		// Handle error: Invalid HTTP request
+		return "";
+	}
+	std::istringstream input(httpRequest);
 	std::string method;
 	input>> method;
 	std::cout<<YELLOW<<"checktype method :"<<method<<RESET_COLOR<<std::endl;
@@ -133,52 +176,23 @@ void Request::receiveData(Client *client)
 	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
 		this->_error = true;
 	}
-	int lastLineStart=httprequest.find("Content-Length: ");
-	int lastLineEnd=httprequest.find("\n",lastLineStart);
-	this->_body_size=atoi(httprequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str());
+	int lastLineStart=httpRequest.find("Content-Length: ");
+	int lastLineEnd=httpRequest.find("\n",lastLineStart);
+	char *p{};
+	this->_body_size=std::strtol(httpRequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str(),&p,10);
+	if(httpRequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str()==p)
+	{
+		std::cout<<RED<<"error in conversion"<<RESET_COLOR<<std::endl;
+	}
 	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
-	size_t pos = httprequest.find("\n");
+
+	//maybe we can delete this:
+	size_t pos = httpRequest.find("\n");
 	if (pos != std::string::npos) {
 		// Erase the first line including the newline character
-		httprequest.erase(0, pos + 1);
+		httpRequest.erase(0, pos + 1);
 	}
-	return httprequest;
-	// methodMap.insert(std::make_pair("GET", GET));
-	// methodMap.insert(std::make_pair("POST", POST));
-	// methodMap.insert(std::make_pair("DELETE", DELETE));
-	// methodMap.insert(std::make_pair("PUT", PUT));
-	// methodMap.insert(std::make_pair("HEAD", HEAD));
-	//
-	// for (std::map<std::string, HttpMethod>::iterator it = methodMap.begin();
-	// 		it != methodMap.end(); it++)
-	// {
-	// 	if (it->first == method)
-	// 	{
-	// 		this->_method = it->second;
-	// 		break;
-	// 	}
-	// }
-	// switch (method)
-	// {
-	// 	case GET:
-	// 		this->_method = GET;
-	// 		break;
-	// 	case PUT:
-	// 		this->_method = PUT;
-	// 		break;
-	// 	case DELETE:
-	// 		this->_method = DELETE;
-	// 		break;
-	// 	case POST:
-	// 		this->_method = POST;
-	// 		break;
-	// 	case HEAD:
-	// 		this->_method = HEAD;
-	// 		break;
-	// 	default:
-	// 		this->_method = GET;
-	// }
-	// std::getline(input, method);
+	return httpRequest;
 }
 
 /*
@@ -206,10 +220,10 @@ int Request::parseRequest()
         }
     }
 
-	//print for debug
-    // for (const auto& pair : this->_request_headers) {
-    //     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
-    // }
+	// print for debug
+     for (const auto& pair : this->_requestHeaders) {
+         std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
+     }
     return 0;
 }
 

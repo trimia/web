@@ -24,6 +24,9 @@ public	:
 	~Response ();
 	Response &operator= (const Response &obj);
 
+	std::string buildHttpResponseHeader(std::string &httpVersion, int statusCode, std::string &statusText,
+	                                    std::string &contentType, size_t contentLength);
+
 	int sendData(Client *client, std::string body);
 	void setResponseForMethod(Client *client);
 
@@ -56,9 +59,15 @@ private	:
 	std::string     _content_type;
 	bool			_complete;
 	bool			_error;
+	std::string     _body;
+	size_t			_bodySize;
+	std::string     _response;
+	size_t			_responseSize;
+	int				_errorCode;
+
 
 	std::string     _target_file;
-	std::vector<uint8_t> _body;
+	// std::vector<uint8_t> _body;
 	size_t          _body_length;
 	std::string     _response_body;
 	std::string     _location;
