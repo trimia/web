@@ -273,10 +273,6 @@ bool Webserver::_handleConnection(epoll_event &event) {
         this->_closeConnection(&client);
         return false;
     }
-    else if (client._request->cgi())
-    {
-        //TODO handle cgi
-    }
     else if(client._request->ended())
     {
         std::cout<<GREEN<<"Request ended"<<RESET_COLOR<<std::endl;
@@ -289,6 +285,12 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
         this->_closeConnection(&client);
         return true;
+    }
+    else if (client._request->cgi())
+    {
+        client.request()
+        client.response()
+        //TODO handle cgi
     }
     else if (client._request->error())
     {

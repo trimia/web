@@ -89,9 +89,11 @@ class	Request
 		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
 		bool									_isRequestURL;
 		std::string								_path_file; // la url senza query //! /www/html/index.html
-
 		std::string								_query;//?
 		bool									_isQuery;//?
+
+
+
 
 		bool			_hasBeenClosed;//?? necessary here or in client
 		bool									_parsed;
