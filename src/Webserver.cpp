@@ -288,8 +288,8 @@ bool Webserver::_handleConnection(epoll_event &event) {
     }
     else if (client._request->cgi())
     {
-        client.request()
-        client.response()
+        // client.request()
+        // client.response()
         //TODO handle cgi
     }
     else if (client._request->error())
