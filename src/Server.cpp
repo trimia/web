@@ -5,7 +5,7 @@ Server::Server()
 	std::cout << "Server : Default Constructor Called" << std::endl;
     this->_autoindex=false;
     // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
-    // this->_isLocation=false;
+    this->_isLocation=false;
     // this->_locationNumber=0;
     // this->socketType=SERVER_SOCK;
 }
@@ -38,8 +38,7 @@ Server	&Server::operator= (const Server &obj)
         this->_event=obj._event;
         this->setLocations(obj._locations);
         this->setErrorPages(obj._error_pages);
-        // this->set_location_number(obj._locationNumber);
-        this->setIsLocation(obj._isLocation);
+        this->_isLocation = obj._isLocation;
         this->_locationNumber=obj._locationNumber;
 
         // this->_allowmethods=obj._allowmethods;

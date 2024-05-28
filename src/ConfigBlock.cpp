@@ -31,9 +31,13 @@ void    ConfigBlock::handleHTTPBlock() {
     ;
 }
 
-/////// static ?
-static Server  handleServerBlock(std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
+static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
     Server  server;
+
+    server.set_location_number(it.size());
+    
+    if (!it.empty())
+        server.setIsLocation(true);
 
     if (!vecString.empty() && vecString[0] == "error_page")
         server.setErrorPages(vecString);
@@ -104,53 +108,26 @@ static Location    handleLocationBlock(std::map<std::string, std::string> keyVal
  *      set server inside list of servers
  * */
 std::vector<Server> ConfigBlock::handleBlock() {
-    Server server;
-    // server=new Server();
+    Server                  server;
     Location                location;
     std::vector<Location>   listOfLocation;
     std::vector<Server>     listOfServers;
 
     for (std::vector<ServerBlock>::iterator it = getServerBlocks().begin();
-        it != getServerBlocks().end(); it++) {
-        // Server *server;
-        // server=new Server();
+        it != getServerBlocks().end(); ++it) {
 
-
-        int i = 0;
-        server.setIsLocation(false);
-        server.set_location_number(0);
-        if(!it->locationBlock.empty()) {
-            server.setIsLocation(true);
-            std::cout<<std::boolalpha << server.is_location()<<std::endl;
-            listOfLocation.clear();
-            for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
-                it3 != it->locationBlock.end(); ++it3) {
-                i++;
-                location = handleLocationBlock(it3->keyValue, it3->methods, it3->retErrorPages);
-                listOfLocation.push_back(location);
-            }
-            std::cout<<"i: "<<i<<std::endl;
-            // if(server.is_location()==true)
-            server.set_location_number(i);
-            std::cout<<"location number" << server.location_number()<<std::endl;
-            server.setLocations(listOfLocation);
+        listOfLocation.clear();
+        for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
+            it3 != it->locationBlock.end(); ++it3) {
+            location = handleLocationBlock(it3->keyValue, it3->methods, it3->retErrorPages);
+            listOfLocation.push_back(location);
         }
-
-        server = handleServerBlock(it->keyValue, it->errorPages);
-        //////// trimia: this necessary for every server to setup socket tell me if is the right place
+        server.setLocations(listOfLocation);
+        server = handleServerBlock(it->locationBlock, it->keyValue, it->errorPages);
         server.initSock();
-        ///////
-        std::cout<<CYAN<<std::boolalpha << server.is_location()<<RESET_COLOR<<std::endl;
-        std::cout<<CYAN<<server.location_number()<<RESET_COLOR<<std::endl;
+
         listOfServers.push_back(server);
-
     }
-    std::cout<<RED<<std::boolalpha << listOfServers[0].is_location()<<RESET_COLOR<<std::endl;
-    std::cout<<CYAN<<listOfServers[0].location_number()<<RESET_COLOR<<std::endl;
-    std::cout<<CYAN<<listOfServers[0].getPort()<<std::endl;
 
-    std::cout<<CYAN<<std::boolalpha << listOfServers[1].is_location()<<RESET_COLOR<<std::endl;
-    std::cout<<CYAN<<listOfServers[1].location_number()<<RESET_COLOR<<std::endl;
-    std::cout<<CYAN<<listOfServers[1].getPort()<<RESET_COLOR<<std::endl;
     return listOfServers;
 }
