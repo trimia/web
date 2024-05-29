@@ -107,6 +107,10 @@ enum HttpMethod
     METHOD_COUNT
 };
 
+int toInt(char *str);
+std::string toStr(int n);
+std::string getFileExtension(const std::string &path);
+std::string getMimeType(const std::string &extension);
 
 // std::map<std::string, HttpMethod> methodMap;
 // class include

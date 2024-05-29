@@ -12,6 +12,7 @@ Webserver::Webserver(char * conf)
     ConfigParser    confParser(conf, confBlock);
     this->_listOfServer=confParser.parseConfigFile();
     std::cout<<std::boolalpha<<YELLOW<<"islocation: "<<this->_listOfServer[1].is_location()<<RESET_COLOR<<std::endl;
+    std::cout<<std::boolalpha<<YELLOW<<"location number: "<<this->_listOfServer[1].location_number()<<RESET_COLOR<<std::endl;
 
     // for (auto x : _listOfServer) {
     //     printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
@@ -173,7 +174,6 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
  */
 
 bool Webserver::_acceptConnection(Server *server) {
-    // socklen_t temp=sizeof(server->_server_socket->getService());
     // std::cout<<BLUE<<"accepting connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     // std::cout<<"server socket fd: "<<server->_server_socket->getFdSock()<<std::endl;
@@ -181,18 +181,16 @@ bool Webserver::_acceptConnection(Server *server) {
     // std::cout<<"server socket service: "<<inet_ntoa(server->_server_socket->getService().sin_addr)<<std::endl;
     // std::cout<<"server socket size: "<<*server->_server_socket->getSockSize()<<std::endl;
     // std::cout << "Service sin family: " << server->_server_socket->getService().sin_family<<RESET_COLOR<< std::endl;
+
     int clientFd = accept(server->getserver_socket()->getFdSock(),(sockaddr *)&server->getserver_socket()->getService(),server->getserver_socket()->getSockSize());
     std::cout<<CYAN<<"client fd from accept: "<<clientFd<<RESET_COLOR<<std::endl;
     if (clientFd == -1) {
         std::cout <<RED<< "Error accepting connection: " << RESET_COLOR<<std::endl;
         return false;
     }
-    // Client *client;
-    // client = new Client();
     Client client;
-    // client.getClientSock()->setFdSock(clientFd);
-    client.initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
-    // client.set_allowmethods(server->allowmethods());
+    client.initClient(server,clientFd);
+
     std::cout<<BLUE<<"accepting connection"<<std::endl;
     std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
@@ -200,13 +198,9 @@ bool Webserver::_acceptConnection(Server *server) {
     std::cout<<"client socket service: "<<inet_ntoa(client._clientSock->getService().sin_addr)<<std::endl;
     std::cout<<"client socket size: "<<*client._clientSock->getSockSize()<<std::endl;
     std::cout << "Service sin family: " << client._clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
-    // std::cout<<MAGENTA<<client.getClientSock()->getFdSock() << "  accepted connection" << std::endl;
-    // std::cout<<MAGENTA<<"setting client sock"<<RESET_COLOR<<std::endl;
-    client._event.events=EPOLLIN | EPOLLOUT;
-    client.socketType=CLIENT_SOCK;
-    // std::cout<<YELLOW<<"socket type"<<client.socketType<<RESET_COLOR<<std::endl;
-    // client.getClientSock()->setClientSock(SO_REUSEADDR,(char *)server->getIp().c_str(),server->getPort());
-    // this->addClientToList(client);
+
+    // client._event.events=EPOLLIN | EPOLLOUT;
+    // client.socketType=CLIENT_SOCK;
     this->_listOfClient.push_back(client);
     client._event.data.ptr=&this->_listOfClient.back();
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client._clientSock->getFdSock(), &client._event)<0)

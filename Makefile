@@ -12,6 +12,7 @@ SRCS = main.cpp \
 		src/Request.cpp \
 		src/Response.cpp \
 		src/Webserver.cpp \
+		src/utility.cpp \
 
 
 OBJS = $(SRCS:.cpp=.o)
@@ -20,7 +21,7 @@ OBJS_DIR = ./objs/
 
 INCLUDE_DIR = include/
 CC = c++ -I$(INCLUDE_DIR)
-FLAG = #-Wall -Wextra -Werror -g -std=c++98
+FLAG = -Wall -Wextra -Werror -g -std=c++98
 
 
 %.o: %.cpp

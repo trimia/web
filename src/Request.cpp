@@ -177,13 +177,10 @@ std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
 		this->_error = true;
 	}
 	int lastLineStart=httpRequest.find("Content-Length: ");
-	int lastLineEnd=httpRequest.find("\n",lastLineStart);
-	char *p{};
-	this->_body_size=std::strtol(httpRequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str(),&p,10);
-	if(httpRequest.substr(lastLineStart+16,lastLineEnd-lastLineStart).c_str()==p)
-	{
-		std::cout<<RED<<"error in conversion"<<RESET_COLOR<<std::endl;
-	}
+	int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
+	std::cout<<RED<<"numberEnd :"<<numberEnd<<RESET_COLOR<<std::endl;
+	this->_body_size=toInt((char *)httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+
 	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
 
 	//maybe we can delete this:
@@ -221,9 +218,9 @@ int Request::parseRequest()
     }
 
 	// print for debug
-     for (const auto& pair : this->_requestHeaders) {
-         std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
-     }
+     // for (const auto& pair : this->_requestHeaders) {
+     //     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
+     // }
     return 0;
 }
 

@@ -4,7 +4,7 @@
 #include "../include/include.h"
 
 
-std::string setResponseForMethod(std::string extension) {
+std::string getMimeType(const std::string &extension){
     std::map<std::string, std::string> extensionMap;
     extensionMap["txt"]="text/plain";
     extensionMap["html"]="text/html";
@@ -48,7 +48,8 @@ std::string getFileExtension(const std::string& filename) {
     return extension;
 }
 
-std::string StatusString(int statusCode) {
+std::string StatusString(int statusCode)
+{
     switch (statusCode) {
         case 100: return "100 Continue";
         case 101: return "101 Switching Protocols";
@@ -72,4 +73,56 @@ std::string StatusString(int statusCode) {
         default: return "Unknown Status";
     }
 }
+std::vector<int> allowmethods(std::vector<std::string> methods)
+{
+    std::vector<int>allowMethods;
+    for (std::vector<std::string>::const_iterator it = methods.begin();it != methods.end(); ++it)
+    {
+        if(it->compare("GET") ==0)
+            allowMethods[GET]=1;
+        else if(it->compare("POST") == 0)
+            allowMethods[POST]=1;
+        else if(it->compare("DELETE") == 0)
+            allowMethods[DELETE]=1;
+        else if(it->compare("PUT") == 0)
+            allowMethods[PUT]=1;
+        else if(it->compare("HEAD") == 0)
+            allowMethods[HEAD]=1;
+        // else if(it->c_str()=="OPTIONS")
+        // 	this->_allowmethods.push_back(OPTIONS);
+        // else if(it->c_str()=="TRACE")
+        // 	this->_allowmethods.push_back(TRACE);
+        // else if(it->c_str()=="CONNECT")
+        // 	this->_allowmethods.push_back(CONNECT);
+        // else if(it->c_str()=="PATCH")
+        // 	this->_allowmethods.push_back(PATCH);
+        // else
+        // 	this->_allowmethods.push_back(0);
 
+    }
+    return allowMethods;
+}
+
+std::string toString(int number)
+{
+    std::stringstream ss;
+    ss << number;
+    return ss.str();
+}
+
+/**
+ * @brief Convert a string to an integer
+ * pass it only a string that contains a number
+ * @param str
+ * @return int
+ */
+
+int toInt(char *str)
+{
+    int number=0;
+    char *p=NULL;
+    number=(int)std::strtol(str, &p, 10);
+    if(*p!='\0')
+        throw std::invalid_argument("toInt: invalid number");
+    return number;
+}

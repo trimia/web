@@ -32,6 +32,10 @@ Client	&Client::operator= (const Client &obj)
 		this->_event=obj._event;
 		this->_headerSize=obj._headerSize;
 		this->_bodySize=obj._bodySize;
+		// this->_allowmethods=obj._allowmethods;
+		this->_isLocation=obj._isLocation;
+		this->_locationNumber=obj._locationNumber;
+		this->set_locations(obj._locations);
 		// this->_server=obj._server;
 //        this->_server=obj;
 		//	this->attributes = obj.attributes;
@@ -40,7 +44,17 @@ Client	&Client::operator= (const Client &obj)
 	return (*this);
 }
 
-void Client::initSocket(char *ip, uint16_t port, char type, int fd) {
+void Client::initClient(Server *server, int clientFd) {
+	(void)clientFd;
+	_initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
+	set_is_location(server->is_location());
+	set_location_number(server->location_number());
+	set_locations(server->getLocations());
+	this->_event.events=EPOLLIN | EPOLLOUT;
+	this->socketType=CLIENT_SOCK;
+}
+
+void Client::_initSocket(char *ip, uint16_t port, char type, int fd) {
 	// this->set_client_sock(new Socket());
 	std::cout<<RED<<"fd value   "<<fd<<RESET_COLOR<<std::endl;
 	this->_clientSock=new Socket(fd);
@@ -165,36 +179,36 @@ void Client::set_has_been_closed(bool has_been_closed) {
 	_hasBeenClosed = has_been_closed;
 }
 
-std::vector<int> Client::allowmethods() const {
-	return _allowmethods;
-}
+// std::vector<int> Client::allowmethods() const {
+// 	return _allowmethods;
+// }
 
-void Client::set_allowmethods(const std::vector<std::string> &allowmethods) {
-	for (std::vector<std::string>::const_iterator it = allowmethods.begin();
-		 it != allowmethods.end(); ++it) {
-		if(it->c_str()=="GET")
-			this->_allowmethods.push_back(GET);
-		else if(it->c_str()=="POST")
-			this->_allowmethods[POST]=1;
-		else if(it->c_str()=="DELETE")
-			this->_allowmethods[DELETE]=1;
-		else if(it->c_str()=="PUT")
-			this->_allowmethods[PUT]=1;
-		else if(it->c_str()=="HEAD")
-			this->_allowmethods[HEAD]=1;
-		// else if(it->c_str()=="OPTIONS")
-		// 	this->_allowmethods.push_back(OPTIONS);
-		// else if(it->c_str()=="TRACE")
-		// 	this->_allowmethods.push_back(TRACE);
-		// else if(it->c_str()=="CONNECT")
-		// 	this->_allowmethods.push_back(CONNECT);
-		// else if(it->c_str()=="PATCH")
-		// 	this->_allowmethods.push_back(PATCH);
-		// else
-		// 	this->_allowmethods.push_back(0);
-
-	}
-}
+// void Client::set_allowmethods(const std::vector<std::string> &allowmethods) {
+// 	for (std::vector<std::string>::const_iterator it = allowmethods.begin();
+// 		 it != allowmethods.end(); ++it) {
+// 		if(it->c_str()=="GET")
+// 			this->_allowmethods.push_back(GET);
+// 		else if(it->c_str()=="POST")
+// 			this->_allowmethods[POST]=1;
+// 		else if(it->c_str()=="DELETE")
+// 			this->_allowmethods[DELETE]=1;
+// 		else if(it->c_str()=="PUT")
+// 			this->_allowmethods[PUT]=1;
+// 		else if(it->c_str()=="HEAD")
+// 			this->_allowmethods[HEAD]=1;
+// 		// else if(it->c_str()=="OPTIONS")
+// 		// 	this->_allowmethods.push_back(OPTIONS);
+// 		// else if(it->c_str()=="TRACE")
+// 		// 	this->_allowmethods.push_back(TRACE);
+// 		// else if(it->c_str()=="CONNECT")
+// 		// 	this->_allowmethods.push_back(CONNECT);
+// 		// else if(it->c_str()=="PATCH")
+// 		// 	this->_allowmethods.push_back(PATCH);
+// 		// else
+// 		// 	this->_allowmethods.push_back(0);
+//
+// 	}
+// }
 
 bool Client::is_location() const {
 	return _isLocation;

@@ -152,7 +152,7 @@ void Server::setErrorPages(std::vector<std::string> errorPages) {
     }
 }
 
-const std::vector<Location> &Server::getLocations() const {
+std::vector<Location> Server::getLocations() {
     return _locations;
 }
 

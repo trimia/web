@@ -74,7 +74,7 @@ class	Server : public sType
 
     void setErrorPages(std::vector<std::string> errorPages);
 
-    const std::vector<Location> &getLocations() const;
+    std::vector<Location> getLocations();
 
     void setLocations(const std::vector<Location> &locations);
 

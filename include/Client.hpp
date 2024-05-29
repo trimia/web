@@ -24,7 +24,7 @@ class	Client : public sType
 
     ~Client ();
 		Client &operator= (const Client &obj);
-	void initSocket(char*ip, uint16_t port, char type, int fd);
+	void initClient(Server *server, int clientFd);
 	void initRequest();
 	void initResponse();
 
@@ -72,9 +72,9 @@ class	Client : public sType
 
 		void set_has_been_closed(bool has_been_closed);
 
-		std::vector<int> allowmethods() const;
-
-		void set_allowmethods(const std::vector<std::string> &allowmethods);
+		// std::vector<int> allowmethods() const;
+		//
+		// void set_allowmethods(const std::vector<std::string> &allowmethods);
 
 		bool is_location() const;
 
@@ -101,10 +101,11 @@ class	Client : public sType
         Request						*_request;
         Response					*_response;
         epoll_event					_event;
-		std::vector<int>			_allowmethods;
+		// std::vector<int>			_allowmethods;
 		bool						_isLocation;
 		int							_locationNumber;
 		std::vector<Location>		_locations;
+		void _initSocket(char*ip, uint16_t port, char type, int fd);
 
 
 		bool            _error;
