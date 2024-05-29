@@ -45,6 +45,7 @@ clean:
 
 fclean: clean
 	@rm -rf $(NAME)
+	@rm -f main.o src/*.o
 	@echo "./$(NAME) deleted"
 
 

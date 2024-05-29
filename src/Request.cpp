@@ -109,58 +109,9 @@ void Request::receiveData(Client *client)
 
 }
 
- void Request::fillRequest(std::string &httpRequest) {
-	size_t methodEndPos = httpRequest.find(" ");
-	if (methodEndPos == std::string::npos)
-		this->_error= true;
-	std::istringstream input(httpRequest);
-	std::string firsline;
-	std::getline(input, firsline);
-	setUrlPathQuery(firsline);
- 	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
- 	{
- 		if(it->first=="Connection")
- 			this->_keep_alive=it->second;
- 		// if(it->first=="")
- 		// 	this.=it->second;
- 		// if(it->first=="")
- 		// 	this.=it->second;
- 		// if(it->first=="")
- 		// 	this.=it->second;
- 	}
- }
-
-void Request::setUrlPathQuery(std::string &url) {
-	size_t methodEndPos = url.find(" ");
-	if (methodEndPos == std::string::npos)
-		this->_error= true;
-	size_t urlStartPos = methodEndPos + 1;
-	size_t urlEndPos = url.find(" ", urlStartPos);
-	if (urlEndPos == std::string::npos)
-		this->_isRequestURL=false;
-	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
-	this->_query= getQueryFromHttpRequest(url);
-	size_t patEndPos = url.find("?");
-	this->_path=url.substr(urlStartPos, patEndPos - urlStartPos);
 
 
-}
-
-std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
-	size_t queryStartPos = httpRequest.find("?");
-	if (queryStartPos == std::string::npos) {
-		this->_isQuery=false;
-		return "";
-	}
-	size_t queryEndPos = httpRequest.find(" ", queryStartPos);
-	if (queryEndPos == std::string::npos) {
-		// The query is at the end of the HTTP request
-		return httpRequest.substr(queryStartPos + 1);
-	}
-	return httpRequest.substr(queryStartPos + 1, queryEndPos - queryStartPos - 1);
-}
-
- std::string Request::checktype(std::string httpRequest) {
+std::string Request::checktype(std::string httpRequest) {
 	size_t methodEndPos = httpRequest.find(" ");
 	if (methodEndPos == std::string::npos) {
 		this->_error= true;
@@ -178,17 +129,18 @@ std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
 	}
 	int lastLineStart=httpRequest.find("Content-Length: ");
 	int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
-	std::cout<<RED<<"numberEnd :"<<numberEnd<<RESET_COLOR<<std::endl;
+	// std::cout<<RED<<"numberEnd :"<<numberEnd<<RESET_COLOR<<std::endl;
 	this->_body_size=toInt((char *)httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
-
+	this->_headerSize=_headerSize-_body_size;
+	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
 	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
 
 	//maybe we can delete this:
-	size_t pos = httpRequest.find("\n");
-	if (pos != std::string::npos) {
-		// Erase the first line including the newline character
-		httpRequest.erase(0, pos + 1);
-	}
+	// size_t pos = httpRequest.find("\n");
+	// if (pos != std::string::npos) {
+	// 	// Erase the first line including the newline character
+	// 	httpRequest.erase(0, pos + 1);
+	// }
 	return httpRequest;
 }
 
@@ -201,28 +153,102 @@ int Request::parseRequest()
 {
 	std::cout<<YELLOW<<"parseRequest"<<RESET_COLOR<<std::endl;
 	std::string input= this->_httpMessage;
-    size_t pos = 0;
-    while ((pos = input.find("\n")) != std::string::npos)
-    {
-        std::string line = input.substr(0, pos);
-        input.erase(0, pos + 1);
-        if (line.empty())
+	size_t pos = 0;
+	while ((pos = input.find("\n")) != std::string::npos)
+	{
+		std::string line = input.substr(0, pos);
+		input.erase(0, pos + 1);
+		if (line.empty())
 			break;
-        size_t colonPos = line.find_first_of(':');
-        if (colonPos != std::string::npos)
-        {
-            std::string key = line.substr(0, colonPos);
-            std::string value = line.substr(colonPos + 2); // Skip the colon and space
-        	this->_requestHeaders[key]= value;
-        }
-    }
+		size_t colonPos = line.find_first_of(':');
+		if (colonPos != std::string::npos)
+		{
+			std::string key = line.substr(0, colonPos);
+			std::string value = line.substr(colonPos + 2); // Skip the colon and space
+			this->_requestHeaders[key]= value;
+		}
+	}
 
 	// print for debug
-     // for (const auto& pair : this->_requestHeaders) {
-     //     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
-     // }
-    return 0;
+	// for (const auto& pair : this->_requestHeaders) {
+	//     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
+	// }
+	return 0;
 }
+
+void Request::fillRequest(std::string &httpRequest) {
+	size_t methodEndPos = httpRequest.find(" ");
+	if (methodEndPos == std::string::npos)
+		this->_error= true;
+	std::istringstream input(httpRequest);
+	std::string firstLine;
+	std::getline(input, firstLine);
+	std::cout<<YELLOW<<"fillRequest firstLine :"<<firstLine<<RESET_COLOR<<std::endl;
+	setUrlPathQuery(firstLine);
+ 	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
+ 	{
+ 		if(it->first=="Connection")
+ 			this->_keep_alive=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 		// if(it->first=="")
+ 		// 	this.=it->second;
+ 	}
+ }
+#include <iostream>
+#include <iomanip>
+#include <cctype>
+
+// void printCharsAndSpecialChars(const std::string& str) {
+// 	for (char c : str) {
+// 		if (std::isprint(c)) {
+// 			std::cout << c << ' ';
+// 		} else {
+// 			std::cout << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' ';
+// 		}
+// 	}
+// 	std::cout << '\n';
+// }
+void Request::setUrlPathQuery(std::string &url) {
+	size_t methodEndPos = url.find(" ");
+	if (methodEndPos == std::string::npos)
+		this->_error= true;
+	size_t urlStartPos = methodEndPos + 1;
+	size_t urlEndPos = url.find(" ", urlStartPos);
+	if (urlEndPos == std::string::npos)
+		this->_isPathFileDir=false;
+	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
+	this->_query= getQueryFromHttpRequest(url);
+	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
+	size_t endLinePos = url.find("\r", urlEndPos);
+	if (endLinePos == std::string::npos) {
+		this->_HTTPVersion=url.substr(urlEndPos + 1);
+	} else {
+		this->_HTTPVersion=url.substr(urlEndPos + 1, endLinePos - urlEndPos - 1);
+	}
+	// printCharsAndSpecialChars(this->_requestURL);
+	// printCharsAndSpecialChars(this->_HTTPVersion);
+	std::cout<<RED<<"HTTPVersion :"<<this->_HTTPVersion<<RESET_COLOR<<std::endl;
+	size_t patEndPos = url.find("?");
+	this->_path_file=url.substr(urlStartPos, patEndPos - urlStartPos);
+}
+
+std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
+	size_t queryStartPos = httpRequest.find("?");
+	if (queryStartPos == std::string::npos) {
+		this->_isQuery=false;
+		return "";
+	}
+	size_t queryEndPos = httpRequest.find(" ", queryStartPos);
+	if (queryEndPos == std::string::npos) {
+		// The query is at the end of the HTTP request
+		return httpRequest.substr(queryStartPos + 1);
+	}
+	return httpRequest.substr(queryStartPos + 1, queryEndPos - queryStartPos - 1);
+}
+
 
 /*
  *getter & setter
@@ -282,6 +308,54 @@ std::string Request::method() const {
 
 void Request::set_method(const std::string &method) {
 	_method = method;
+}
+
+std::string Request::http_version() const {
+	return _HTTPVersion;
+}
+
+void Request::set_http_version(const std::string &http_version) {
+	_HTTPVersion = http_version;
+}
+
+bool Request::is_body() const {
+	return _isBody;
+}
+
+void Request::set_is_body(bool is_body) {
+	_isBody = is_body;
+}
+
+bool Request::is_path_file_dir() const {
+	return _isPathFileDir;
+}
+
+void Request::set_is_path_file_dir(bool is_path_file_dir) {
+	_isPathFileDir = is_path_file_dir;
+}
+
+bool Request::is_query() const {
+	return _isQuery;
+}
+
+void Request::set_is_query(bool is_query) {
+	_isQuery = is_query;
+}
+
+std::string Request::request_url() const {
+	return _requestURL;
+}
+
+void Request::set_request_url(const std::string &request_url) {
+	_requestURL = request_url;
+}
+
+std::string Request::path_file() const {
+	return _path_file;
+}
+
+void Request::set_path_file(const std::string &path_file) {
+	_path_file = path_file;
 }
 
 size_t Request::header_size(){

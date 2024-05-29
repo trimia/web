@@ -2,9 +2,12 @@
 // Created by trimia on 28/05/24.
 //
 #include "../include/include.h"
+#include "../include/Webserver.hpp"
+
+extern Webserver* ws_ptr;
 
 
-std::string getMimeType(const std::string &extension){
+std::string &getMimeType(std::string extension){
     std::map<std::string, std::string> extensionMap;
     extensionMap["txt"]="text/plain";
     extensionMap["html"]="text/html";
@@ -44,7 +47,11 @@ std::string getMimeType(const std::string &extension){
 }
 
 std::string getFileExtension(const std::string& filename) {
-    std::string extension = filename.substr(filename.find_last_of('.'));
+    std::string extension;
+    if(filename.find_last_of(".") == std::string::npos)
+        extension = filename.substr(filename.find_last_of('.'));
+    else
+        extension = "txt";
     return extension;
 }
 
@@ -73,22 +80,23 @@ std::string StatusString(int statusCode)
         default: return "Unknown Status";
     }
 }
-std::vector<int> allowmethods(std::vector<std::string> methods)
+bool allowMethod(std::vector<std::string> methods,std::string method)
 {
     std::vector<int>allowMethods;
     for (std::vector<std::string>::const_iterator it = methods.begin();it != methods.end(); ++it)
     {
-        if(it->compare("GET") ==0)
-            allowMethods[GET]=1;
-        else if(it->compare("POST") == 0)
-            allowMethods[POST]=1;
-        else if(it->compare("DELETE") == 0)
-            allowMethods[DELETE]=1;
-        else if(it->compare("PUT") == 0)
-            allowMethods[PUT]=1;
-        else if(it->compare("HEAD") == 0)
-            allowMethods[HEAD]=1;
-        // else if(it->c_str()=="OPTIONS")
+        if(it->compare(method) == 0)
+            return true;
+        //     allowMethods[GET]=1;
+        // else if(it->compare("POST") == 0)
+        //     allowMethods[POST]=1;
+        // else if(it->compare("DELETE") == 0)
+        //     allowMethods[DELETE]=1;
+        // else if(it->compare("PUT") == 0)
+        //     allowMethods[PUT]=1;
+        // else if(it->compare("HEAD") == 0)
+        //     allowMethods[HEAD]=1;
+        // // else if(it->c_str()=="OPTIONS")
         // 	this->_allowmethods.push_back(OPTIONS);
         // else if(it->c_str()=="TRACE")
         // 	this->_allowmethods.push_back(TRACE);
@@ -100,7 +108,8 @@ std::vector<int> allowmethods(std::vector<std::string> methods)
         // 	this->_allowmethods.push_back(0);
 
     }
-    return allowMethods;
+
+    return false;
 }
 
 std::string toString(int number)
@@ -126,3 +135,6 @@ int toInt(char *str)
         throw std::invalid_argument("toInt: invalid number");
     return number;
 }
+
+
+

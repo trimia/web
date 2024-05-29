@@ -8,6 +8,7 @@ Response::Response()
 	this->_header = "";
 	this->_headerSize = 0;
 	this->_content_type = "";
+	this->_statusCode = 0;
 	this->_complete = false;
 	this->_error = false;
 
@@ -50,88 +51,6 @@ Response	&Response::operator= (const Response &obj)
 // 	std::string response = header + body;
 // 	client->setResponse(response);
 // }
-
-std::string Response::buildHttpResponseHeader(std::string& httpVersion, int statusCode,
-	std::string& statusText, std::string& contentType, size_t contentLength) {
-
-	std::ostringstream header;
-	header << httpVersion << " " << statusCode << " " << statusText << "\r\n";
-	header << "Content-Type: " << contentType << "\r\n";
-	header << "Content-Length: " << contentLength << "\r\n";
-	header << "\r\n";  // End of header
-	return header.str();
-}
-
-void Response::getMethod(Client *client)
-{
-
-	// if (if client.)
-	// std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
-	//
-
-	std::stringstream toStrin;
-	// toStrin << client->request()->body_size();
-	std::string msg="ZI PUO FAREEEEEEE!!!";
-	toStrin << msg.size();
-	// std::cout<<YELLOW<<"header size: "<<toStrin.str()<<RESET_COLOR<<std::endl;
-	// this->_header = "HTTP/1.1 " + client._StatusString(client.getStatusCode()) + "\r\n";
-	this->_header = "HTTP/1.1 200 OK\n";
-	std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
-	this->_header += "Content-Type: text/plain\n";
-	this->_header += "Content-Length: " + toStrin.str() + "\n\n" +msg;
-	// client.response->header += "Content-Type: " + mimeTypes[getFileExtension(client.response->file_path)];
-	// if (client.request->fileName != "favicon.ico")
-	// 	client.response->header += "\r\nConnection: " + client.request->headers["Connection"];
-	// this->_header += "\r\n\r\n";
-	std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
-	this->_headerSize = this->_header.size();
-	std::cout<<YELLOW<<"header size: "<<this->_headerSize<<RESET_COLOR<<std::endl;
-	// size_t responseSize = this->header_size() + client->request()->body_size() + 4;
-	size_t responseSize = this->header_size() + msg.size();
-	char		*response = new char[responseSize];
-	memset(response, 0, responseSize);
-	for(size_t i=0; i < this->_headerSize;i++)
-	{
-		response[i]= this->_header.at(i);
-	}
-	std::cout<<YELLOW<<"response: "<<response<<RESET_COLOR<<std::endl;
-
-	// for(size_t i=0; i < client->header_size();i++)
-	// {
-	// 	response[i]= client->request()->http_message().at(i);
-	// }
-	// Response *ptr= reinterpret_cast<Response *>(client->response());
-
-
-
-	int byteCount = (int)send(client->getClientSock()->getFdSock(),this->header().c_str(), this->header().length(), 0);
-	std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-	if(byteCount==SOCKET_ERROR)
-	{
-		std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
-		this->_error = true;
-	}else if (byteCount==0)
-	{
-		std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		// return error handling
-	}else if(byteCount !=0){
-		std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		this->_complete = true;
-		// return byteCount;
-	}
-	// return 0;
-}
-
-
-
-
 void Response::setResponseForMethod(Client *client) {
 	// std::cout<<BLUE<<"set response method"<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
@@ -151,50 +70,244 @@ void Response::setResponseForMethod(Client *client) {
 	(this->*methodMap[method])(client);
 
 }
-//
-//
-//
-int Response::sendData(Client *client, std::string body)
+void Response::checkRequest(Client *client)
 {
-	(void) body;
-	size_t responseSize = client->request()->header_size() + client->request()->body_size() + 4;
-	// Request *requestPTR = reinterpret_cast<Request*>(client->request());
-	char		*response = new char[responseSize];
-	memset(response, 0, responseSize);
-
-	for(size_t i=0; i < client->header_size();i++)
+	if (!client->is_location())
 	{
-		response[i]= client->request()->http_message().at(i);
+		this->_root="./www";
+		// this->_path="/www/";
+		if(client->request()->is_path_file_dir())
+		{
+			if(client->request()->path_file().find_last_of(".") == std::string::npos)
+			{
+				// Get the file extension
+				std::string extension = getFileExtension(client->request()->path_file());
+				// Get the MIME type for the file extension
+				std::string mimeType = getMimeType(extension);
+				readFromFile(client->request()->path_file());
+				this->_statusCode = 200;
+				return sendData(client);
+			}
+			isDirectory(client->request()->path_file());
+		}
 	}
-	// Response *ptr= reinterpret_cast<Response *>(client->response());
+	// TODO handle location
+	// //check index autoindex
+	// this->_path += "index.html";
 
-	int byteCount = (int)send(client->getClientSock()->getFdSock(),response, sizeof(response), 0);
-	if(byteCount==SOCKET_ERROR)
-	{
-		std::cout<<"send error"<<std::endl;
-		return SOCKET_ERROR;
-	}else if (byteCount==0)
-	{
-		std::cout<<"send "<<byteCount<<" byte"<<std::endl;
-		// return error handling
-	}else {
-		std::cout<<"send "<<byteCount<<" byte"<<std::endl;
-		return byteCount;
-	}
-	return 0;
+
 }
 
 
+void Response::getMethod(Client *client)
+{
+	checkRequest(client);
+
+	// // buildHttpResponseHeader(client->request()->http_version(),client->response()->status_code(),
+	// // 	StatusString(client->response()->status_code()),getMimeType(getFileExtension()),
+	// // 	client->response()->header_size());
+	//
+	// // std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
+	// // // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+	// //
+	//
+	// std::stringstream toStrin;
+	// std::string msg="ZI PUO FAREEEEEEE!!!";
+	// toStrin << msg.size();
+	// this->_header = "HTTP/1.1 200 OK\n";
+	// std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
+	// this->_header += "Content-Type: text/plain\n";
+	// this->_header += "Content-Length: " + toStrin.str() + "\n\n" +msg;
+	// std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
+	// this->_headerSize = this->_header.size();
+	// std::cout<<YELLOW<<"header size: "<<this->_headerSize<<RESET_COLOR<<std::endl;
+	// size_t responseSize = this->header_size() + msg.size();
+	// char		*response = new char[responseSize];
+	// memset(response, 0, responseSize);
+	// for(size_t i=0; i < this->_headerSize;i++)
+	// {
+	// 	response[i]= this->_header.at(i);
+	// }
+	// std::cout<<YELLOW<<"response: "<<response<<RESET_COLOR<<std::endl;
+	// int byteCount = (int)send(client->getClientSock()->getFdSock(),this->header().c_str(), this->header().length(), 0);
+	// std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+	// if(byteCount==SOCKET_ERROR)
+	// {
+	// 	std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
+	// 	this->_error = true;
+	// }else if (byteCount==0)
+	// {
+	// 	std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+	// }else if(byteCount !=0){
+	// 	std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+	// 	this->_complete = true;
+	// }
+}
+
+std::string Response::buildHttpResponseHeader(std::string httpVersion, int statusCode,
+	std::string statusText, std::string& contentType, size_t contentLength) {
+
+	std::ostringstream header;
+	header << httpVersion << " " << statusCode << " " << statusText << "\r\n";
+	header << "Content-Type: " << contentType << "\r\n";
+	header << "Content-Length: " << contentLength << "\r\n";
+	header << "\r\n";  // End of header
+	return header.str();
+}
+
+void Response::sendData(Client *client)
+{
+	this->_header = buildHttpResponseHeader(client->request()->http_version(),
+		this->status_code(),StatusString(this->status_code()),
+		getMimeType(this->file_extension()), this->body_size());
+	size_t responseSize = this->header().length() + this->body_size() + 4;
+	char		*response = new char[responseSize];
+	memset(response, 0, responseSize);
+	for (size_t i=0; i < this->header().length(); i++)
+		response[i]= this->header().at(i);
+	for (size_t i=this->header().length(); i < responseSize; i++)
+		response[i]= this->_body.at(i);
+	int byteCount = (int)send(client->getClientSock()->getFdSock(),response, sizeof(response), 0);
+	//TODO think how to solve the status code 500 after sendig the response
+	if(byteCount==SOCKET_ERROR)
+	{
+		std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
+		this->_statusCode = 500;
+	}else if (byteCount==0)
+	{
+		std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+		// return error handling
+	}else {
+		std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+		this->_statusCode = 500;
+
+	}
+}
+
+void Response::readFromFile(std::string path) {
+	// int	body_fd = open(path.c_str(), O_RDONLY);
+	struct stat infoFile;
+	stat(path.c_str(),&infoFile);
+	if(infoFile.st_size<0) {
+	    this->_statusCode=404;
+		return;
+	}
+	std::ifstream file(path.c_str(), std::ios::binary);
+	// Check if the file was opened successfully
+	if (!file.is_open()) {
+		this->_statusCode=403;
+		return;
+	}
+	// Read the file into a string
+	std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	this->_body=body;
+	this->_bodySize=body.length();
+	this->_fileExtension=getFileExtension(path);
+	// Close the file
+	file.close();
+}
+
+void Response::isDirectory(const std::string& path) {
+	struct stat info;
+	if (stat(path.c_str(), &info) != 0) {
+		this->_statusCode=404;
+		return;
+	}
+	if(S_ISDIR(info.st_mode)){
+		this->_statusCode=200;
+		this->_body="is a directory";
+		this->_bodySize=this->_body.length();
+		return;
+	}
+	this->_statusCode=200;
+	this->_body="server is online";
+	this->_bodySize=this->_body.length();
+}
+
+
+// bool Response::checkLocation(Client *client) {
+// 	// Trova la miglior corrispondenza della posizione per la richiesta
+// 	client->response()->_location = checkIfExistLocation(client);
+// 	// std::cout << CYAN_TEXT << "Best Location Match: " << client.request->bestLocation->loc_path
+// 	// << "\nRoot: " << client.request->bestLocation->root << "\nIndex: " << client.request->bestLocation->index << RESET_COLOR << std::endl;
+// 	// Verifica se il metodo é permesso
+// 	if (allowMethod() == false)
+// 		return false;
+// 	// Ottieni il percorso completo considerando alias, root, e index
+// 	getFullPath(client);
+// 	return true;
+// }
+
+Location Response::checkIfExistLocation(Client *client) {
+	Location bestMatch;
+	size_t bestMatchLenght = 0;
+	// Itera attraverso le posizioni definite nel server
+	for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
+		if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+			bestMatch = *it.base();
+			bestMatchLenght = it->getPath().length();
+		}
+	}
+	return bestMatch;
+}
+
+bool Response::allowMethod(Client *client) {
+	std::vector<std::string> methods = client->response()->location().getMethods();
+	std::string method = client->request()->method();
+	for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+		if (it->compare(method) == 0)
+			return true;
+	}
+	this->_statusCode = 405;
+	return false;
+}
 
 /*
  *
- *
  *GETTER & SETTER
  *
- *
  */
+
 size_t Response::header_size() const {
 	return _headerSize;
+}
+
+int Response::status_code() const {
+	return _statusCode;
+}
+
+void Response::set_status_code(int status_code) {
+	_statusCode = status_code;
+}
+
+Location Response::location() const {
+	return _location;
+}
+
+void Response::set_location(const Location &location) {
+	_location = location;
+}
+
+size_t Response::body_size() const {
+	return _bodySize;
+}
+
+void Response::set_body_size(size_t body_size) {
+	_bodySize = body_size;
+}
+
+std::string Response::file_extension() {
+	return _fileExtension;
+}
+
+void Response::set_file_extension(const std::string &file_extension) {
+	_fileExtension = file_extension;
 }
 
 void Response::set_header_size(size_t header_size) {
@@ -236,68 +349,3 @@ void Response::set_header(const std::string &header) {
 const std::string &Response::getContent() const {
 	return _content;
 }
-//
-//
-//
-// // Server side C program to demonstrate HTTP Server programming
-// #include <stdio.h>
-// #include <sys/socket.h>
-// #include <unistd.h>
-// #include <stdlib.h>
-// #include <netinet/in.h>
-// #include <string.h>
-//
-// #define PORT 8080
-// int main(int argc, char const *argv[])
-// {
-// 	int server_fd, new_socket; long valread;
-// 	struct sockaddr_in address;
-// 	int addrlen = sizeof(address);
-//
-// 	// Only this line has been changed. Everything is same.
-// 	char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-//
-// 	// Creating socket file descriptor
-// 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-// 	{
-// 		perror("In socket");
-// 		exit(EXIT_FAILURE);
-// 	}
-//
-//
-// 	address.sin_family = AF_INET;
-// 	address.sin_addr.s_addr = INADDR_ANY;
-// 	address.sin_port = htons( PORT );
-//
-// 	memset(address.sin_zero, '\0', sizeof address.sin_zero);
-//
-//
-// 	if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0)
-// 	{
-// 		perror("In bind");
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	if (listen(server_fd, 10) < 0)
-// 	{
-// 		perror("In listen");
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	while(1)
-// 	{
-// 		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-// 		if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
-// 		{
-// 			perror("In accept");
-// 			exit(EXIT_FAILURE);
-// 		}
-//
-// 		char buffer[30000] = {0};
-// 		valread = read( new_socket , buffer, 30000);
-// 		printf("%s\n",buffer );
-// 		write(new_socket , hello , strlen(hello));
-// 		printf("------------------Hello message sent-------------------");
-// 		close(new_socket);
-// 	}
-// 	return 0;
-// }
-// view rawHTTPServer.c hosted with ❤ by GitHub

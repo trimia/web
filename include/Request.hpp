@@ -68,6 +68,30 @@ class	Request
 
 		void set_method(const std::string &method);
 
+		std::string http_version() const;
+
+		void set_http_version(const std::string &http_version);
+
+		bool is_body() const;
+
+		void set_is_body(bool is_body);
+
+		bool is_path_file_dir() const;
+
+		void set_is_path_file_dir(bool is_path_file_dir);
+
+		bool is_query() const;
+
+		void set_is_query(bool is_query);
+
+		std::string request_url() const;
+
+		void set_request_url(const std::string &request_url);
+
+		std::string path_file() const;
+
+		void set_path_file(const std::string &path_file);
+
 		size_t header_size();
 
 		void set_header_size(size_t header_size);
@@ -80,6 +104,7 @@ class	Request
 		bool									_complete; // finito di leggere o serve un altro giro
 		std::string								_keep_alive;
 		std::time_t								_timeStart;
+		bool									_isBody;
 		std::string								_body;
 		size_t									_body_size;
 		std::string								_httpMessage; // messaggio intero preso a pezzi
@@ -87,10 +112,11 @@ class	Request
 		std::map<std::string, std::string>		_requestHeaders;
 		std::string								_method; // GET, POST, DELETE //! GET
 		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		bool									_isRequestURL;
+		bool									_isPathFileDir;
 		std::string								_path_file; // la url senza query //! /www/html/index.html
 		std::string								_query;//?
 		bool									_isQuery;//?
+		std::string								_HTTPVersion; // HTTP/1.1 //! HTTP/1.1
 
 
 

@@ -3,6 +3,7 @@
 
 #include "include.h"
 #include "Client.hpp"
+#include "Location.hpp"
 //#include "Request.hpp"
 //#include "Server.hpp"
 
@@ -13,7 +14,6 @@ class Client;
 // class Request;
 //class Server;
 
-// ******************************************************** //
 class	Response
 {
 
@@ -24,11 +24,23 @@ public	:
 	~Response ();
 	Response &operator= (const Response &obj);
 
-	std::string buildHttpResponseHeader(std::string &httpVersion, int statusCode, std::string &statusText,
-	                                    std::string &contentType, size_t contentLength);
 
-	int sendData(Client *client, std::string body);
+	void sendData(Client *client);
+
+	std::string buildHttpResponseHeader(std::string httpVersion, int statusCode, std::string statusText,
+										std::string &contentType, size_t contentLength);
+
+	void readFromFile(std::string path);
+
+	void isDirectory(const std::string &path);
+
+	Location checkIfExistLocation(Client *client);
+
+	bool allowMethod(Client *client);
+
 	void setResponseForMethod(Client *client);
+
+	void checkRequest(Client *client);
 
 	void getMethod(Client *client);
 
@@ -45,6 +57,22 @@ public	:
 	void set_header(const std::string &header);
 
 	size_t header_size() const;
+
+	int status_code() const;
+
+	void set_status_code(int status_code);
+
+	Location location() const;
+
+	void set_location(const Location &location);
+
+	size_t body_size() const;
+
+	void set_body_size(size_t body_size);
+
+	std::string file_extension();
+
+	void set_file_extension(const std::string &file_extension);
 
 	void set_header_size(size_t header_size);
 
@@ -63,14 +91,17 @@ private	:
 	size_t			_bodySize;
 	std::string     _response;
 	size_t			_responseSize;
-	int				_errorCode;
+	int				_statusCode;
+	std::string     _path;
+	std::string     _root;
+	std::string     _fileExtension;
 
 
 	std::string     _target_file;
 	// std::vector<uint8_t> _body;
 	size_t          _body_length;
 	std::string     _response_body;
-	std::string     _location;
+	Location     _location;
 	short           _code;
 	char            *_res;
 	int				_cgi;
@@ -80,7 +111,6 @@ private	:
 	//second:
 	// Request					*_request;
 	bool					_isFinished;
-	int						_statusCode;
 	std::string				_resource;
 	enum e_resource_type	_resourceType;
 	std::string				_content;
@@ -89,6 +119,8 @@ private	:
 	std::string				_index;
 	//	DataType	attributes.
 };
+
+// ******************************************************** //
 
 //                        FUNCTIONS                        //
 // ****************************************************** //
