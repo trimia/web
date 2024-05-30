@@ -60,7 +60,7 @@ Request	&Request::operator= (const Request &obj)
 
 void Request::receiveData(Client *client)
 {
-	if(client->ended())
+	if(this->ended())
 		return;
 	// std::cout<<MAGENTA<<"receiving data"<<std::endl;
 	// std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
@@ -74,12 +74,16 @@ void Request::receiveData(Client *client)
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
 	if(byteCount==0)
 	{
-		std::cout<<"ready to close connection"<<std::endl;
-		this->_complete=true;
+		std::cout<<GREEN<<"ready to close connection"<<RESET_COLOR<<std::endl;
+		this->_ended=true;
+		client->response()->set_status_code(204);
+		return;
 	}else if(byteCount<0)
 	{
+		client->response()->set_status_code(400);
 		this->_error=true;
-		std::cout<<"client read error"<<std::endl;
+		std::cout<<RED<<"Error: client couldn't read"<<RESET_COLOR<<std::endl;
+		return;
 	}
 	else if(byteCount !=0)
 	{
@@ -96,18 +100,6 @@ void Request::receiveData(Client *client)
 		// this->checktype(rcv_buffer);
 		// return byteCount;
 	}
-	std::cout<<MAGENTA<<"receive data"<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
-	// std::cout<<MAGENTA<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<std::endl<<"http message :"<<std::endl<<client->request()->_httpMessage<<RESET_COLOR<<std::endl<<std::endl;
-	std::cout<<MAGENTA<<"request headers :"<<client->request()->_requestHeaders["Host"]<<RESET_COLOR<<std::endl;
-	std::cout<<MAGENTA<<"request headers :"<<client->request()->_requestHeaders["User-Agent"]<<RESET_COLOR<<std::endl;
-
 }
 
 
@@ -193,8 +185,10 @@ void Request::fillRequest(std::string &httpRequest) {
 	setUrlPathQuery(firstLine);
  	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
  	{
- 		if(it->first=="Connection")
+ 		if(it->first=="Connection") {
+ 			it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
  			this->_connection=it->second;
+ 		}
  		// if(it->first=="")
  		// 	this.=it->second;
  		// if(it->first=="")

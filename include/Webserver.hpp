@@ -35,9 +35,9 @@ class	Webserver
 
     void setListOfServer(const std::vector<Server> &listOfServer);
 
-    const std::vector<Client> &getListOfClient() const;
+    const std::list<Client> &getListOfClient() const;
 
-    void setListOfClient(const std::vector<Client> &listOfClient);
+    void setListOfClient(const std::list<Client> &listOfClient);
 
     int getEpollFd() const;
 
@@ -71,15 +71,17 @@ class	Webserver
 private	:
 
     std::vector<Server>     _listOfServer;
-    std::vector<Client>     _listOfClient;
+    std::list<Client>     _listOfClient;
     int                     _epollFd;
     std::string             conf;
     bool _initEpoll();
     bool _addServerToEpoll();
     bool _mainLoop();
-    bool _handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]);
+    bool _handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_EVENTS]);
     bool _handleConnection(epoll_event &event);
-    bool _closeConnection(Client * client);
+
+
+		bool _closeConnection(Client * client);
 
 		//	DataType	attributes.
     bool _acceptConnection(Server *server);

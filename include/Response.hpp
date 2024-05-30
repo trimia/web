@@ -27,7 +27,7 @@ public	:
 
 	void sendData(Client *client);
 
-	std::string buildHttpResponseHeader(std::string httpVersion, std::string statusText,
+	void buildHttpResponseHeader(std::string httpVersion, std::string statusText,
 										std::string &contentType, size_t contentLength);
 
 	void readFromFile(std::string path);
@@ -90,6 +90,10 @@ public	:
 
 	void set_error(bool error);
 
+	bool ready_to_send() const;
+
+	void set_ready_to_send(bool ready_to_send);
+
 	void set_header_size(size_t header_size);
 
 	const std::string &getContent() const;
@@ -100,6 +104,7 @@ private	:
 	//        Server          *_server;
 	std::string     _header;
 	size_t			_headerSize;
+	bool			_readyToSend;
 	std::string     _content_type;
 	bool			_complete;
 	bool			_error;

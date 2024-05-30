@@ -4,7 +4,7 @@
 #include "../include/include.h"
 #include "../include/Webserver.hpp"
 
-extern Webserver* ws_ptr;
+// extern Webserver* ws_ptr;
 
 
 std::string &getMimeType(std::string extension){
@@ -72,6 +72,7 @@ std::string StatusString(int statusCode)
         case 403: return "403 Forbidden";
         case 404: return "404 Not Found";
         case 405: return "405 Method Not Allowed";
+        case 408: return "408 Request Timeout";
         case 413: return "413 Request Entity Too Large";
         case 500: return "500 Internal Server Error";
         case 501: return "501 Not Implemented";
@@ -81,6 +82,18 @@ std::string StatusString(int statusCode)
         default: return "Unknown Status";
     }
 }
+// std::string buildHttpResponseHeader(std::string httpVersion,
+//     std::string statusText, std::string& contentType, size_t contentLength) {
+//
+//     std::ostringstream header;
+//     header << httpVersion << " " << statusText << "\r\n";
+//     header << "Content-Type: " << contentType << "\r\n";
+//     header << "Content-Length: " << contentLength << "\r\n";
+//     header << "\r\n";  // End of header
+//     // this->_headerSize = header.str().length();
+//     return header.str();
+// }
+
 bool allowMethod(std::vector<std::string> methods,std::string method)
 {
     std::vector<int>allowMethods;
@@ -145,17 +158,17 @@ int toInt(std::string str)
  * @return std::string
  */
 
-#include <iostream>
-#include <iomanip>
-#include <cctype>
-
-void printCharsAndSpecialChars(std::string str) {
-	for (char c : str) {
-		if (std::isprint(c)) {
-			std::cout << c << ' ';
-		} else {
-			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
-		}
-	}
-	std::cout << '\n';
-}
+// #include <iostream>
+// #include <iomanip>
+// #include <cctype>
+//
+// void printCharsAndSpecialChars(std::string str) {
+// 	for (char c : str) {
+// 		if (std::isprint(c)) {
+// 			std::cout << c << ' ';
+// 		} else {
+// 			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+// 		}
+// 	}
+// 	std::cout << '\n';
+// }

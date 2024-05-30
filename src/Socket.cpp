@@ -29,6 +29,10 @@ Socket::Socket(int fdSock) : _fd_sock(fdSock) {}
 
 Socket::~Socket()
 {
+    // if (_fd_sock != INVALID_SOCKET)
+    // {
+    //     close(_fd_sock);
+    // }
 //    std::cout << "Socket : Destructor Called" << std::endl;
 }
 

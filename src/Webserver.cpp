@@ -58,18 +58,13 @@ bool Webserver::_initEpoll() {
 }
 
 /*  runEpoll:
- *  - init epoll
  *  - add server to epoll
  *  - main loop
- *  - handle epoll events
  */
 
 bool Webserver::runEpoll()
 {
-    // if(this->_initEpoll()) {
-    //     std::cout<<"Error init epoll"<<std::endl;
-    //     return false;
-    // }
+
     if(!this->_addServerToEpoll()) {
         std::cout<<"Error adding server to epoll"<<std::endl;
         return false;
@@ -118,6 +113,7 @@ bool Webserver::_mainLoop() {
                 return true;
             }
         }
+        //TODO remove sleep
         sleep(3);
     } while (eventNumber>=0);
     if(eventNumber<0) {
@@ -129,7 +125,7 @@ bool Webserver::_mainLoop() {
 }
 
 
-bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EVENTS]) {
+bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_EVENTS]) {
     // std::cout<<"handling epoll events"<<std::endl;
     for (int i = 0; i < eventNumber; ++i)
     {
@@ -146,49 +142,27 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
                std::cout<<"Error accepting connection"<<std::endl;
                 return false;
            }
-        }else if((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT))
+        }else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) && _handleConnection(events[i]) )
         {
-            // Client *client = static_cast<Client *>(events[i].data.ptr);
-            // std::cout<<MAGENTA<<"handling epoll events"<<std::endl;
-            // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-            // std::cout<<"client socket fd: "<<client->_clientSock->getFdSock()<<std::endl;
-            // std::cout<<"client socket service: "<<ntohs(client->_clientSock->getService().sin_port)<<std::endl;
-            // std::cout<<"client socket service: "<<inet_ntoa(client->_clientSock->getService().sin_addr)<<std::endl;
-            // std::cout<<"client socket size: "<<*client->_clientSock->getSockSize()<<std::endl;
-            // std::cout << "Service sin family: " << client->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
-            //TODO negate this if to keep online server after one request
-            if(!_handleConnection(events[i])) {
+            // && !_prova(events[i])
+            // _prova(events[i]);
                 std::cout<<RED<<"Error handling connection"<<RESET_COLOR<<std::endl;
                 return false;
-
-            }
         }
     }
     return true;
 }
-/*
- * handleConnection:
- * check what to do with connection and
- * call read()? or receiveData() write() or sendData() -see the snippet code in the function-,request, response and parser
- * TODO study and complete _handleconnection understand how we want handle response request etc..
- *
- */
 
 bool Webserver::_acceptConnection(Server *server) {
-    // std::cout<<BLUE<<"accepting connection"<<std::endl;
-    // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-    // std::cout<<"server socket fd: "<<server->_server_socket->getFdSock()<<std::endl;
-    // std::cout<<"server socket service: "<<ntohs(server->_server_socket->getService().sin_port)<<std::endl;
-    // std::cout<<"server socket service: "<<inet_ntoa(server->_server_socket->getService().sin_addr)<<std::endl;
-    // std::cout<<"server socket size: "<<*server->_server_socket->getSockSize()<<std::endl;
-    // std::cout << "Service sin family: " << server->_server_socket->getService().sin_family<<RESET_COLOR<< std::endl;
+    // std::cout<<BLUE<<"accepting connection"<<RESET_COLOR<<std::endl;
 
     int clientFd = accept(server->getserver_socket()->getFdSock(),(sockaddr *)&server->getserver_socket()->getService(),server->getserver_socket()->getSockSize());
     std::cout<<CYAN<<"client fd from accept: "<<clientFd<<RESET_COLOR<<std::endl;
     if (clientFd == -1) {
         std::cout <<RED<< "Error accepting connection: " << RESET_COLOR<<std::endl;
         return false;
-    }
+    }else
+        std::cout<<GREEN<<"connection accepted"<<RESET_COLOR<<std::endl;
     Client client;
     client.initClient(server,clientFd);
 
@@ -212,11 +186,22 @@ bool Webserver::_acceptConnection(Server *server) {
     return true;
 }
 
-bool Webserver::_handleConnection(epoll_event &event) {
-    Client& client= *reinterpret_cast<Client*>(event.data.ptr);
-    // Client * client = static_cast<Client *>(event.data.ptr);
+/*
+ * handleConnection:
+ * check what to do with connection and
+ * call read()? or receiveData() write() or sendData() -see the snippet code in the function-,request, response and parser
+ * TODO study and complete _handleconnection understand how we want handle response request etc..
+ *
+ */
 
+bool Webserver::_handleConnection(epoll_event &event) {
+    std::cout<<MAGENTA<<"prova"<<RESET_COLOR<<std::endl;
+    //TODO choose wich is better
+    // Client * client = static_cast<Client *>(event.data.ptr);
+    // bool bull=true;
+    Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     client.initRequest();
+    client.initResponse();
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     // std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
@@ -225,114 +210,86 @@ bool Webserver::_handleConnection(epoll_event &event) {
     // std::cout<<"client socket size: "<<*client._clientSock->getSockSize()<<std::endl;
     // std::cout << "Service sin family: " << client._clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
 
-    if(client._request->time_start() == 0)
-            client._request->set_time_start(std::time(NULL));
     std::time_t currentTime = std::time(NULL);
-    double elapsedTime = std::difftime(currentTime, client._request->time_start());
-    //TODO remember to free request
-    client._request->receiveData(&client);
-
-    std::cout<<MAGENTA<<"handling connection"<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"body size :"<<client.request()->body_size()<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"header size :"<<client.request()->header_size()<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"time start :"<<client.request()->time_start()<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"error :"<<client.request()->error()<<RESET_COLOR<<std::endl;
-    // std::cout<<MAGENTA<<"cgi :"<<client.request()->cgi()<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"ended :"<<client.request()->ended()<<RESET_COLOR<<std::endl;
-    std::cout<<MAGENTA<<"method :"<<client.request()->method()<<RESET_COLOR<<std::endl;
-    // std::cout<<MAGENTA<<std::endl<<"http message :"<<std::endl<<client.request()->http_message()<<RESET_COLOR<<std::endl<<std::endl;
-    // std::cout<<MAGENTA<<"request headers :"<<client.request()->request_headers()["Host"]<<RESET_COLOR<<std::endl;
-    // std::cout<<MAGENTA<<"request headers :"<<client.request()->request_headers()["User-Agent"]<<RESET_COLOR<<std::endl;
-
-    std::cout<<GREEN<<"request received  method: "<<client._request->method()<<RESET_COLOR<<std::endl;
-    std::cout<<GREEN<<"request received  ended: "<<client._request->ended()<<RESET_COLOR<<std::endl;
-    //understand how to initialize request and what is necessary to read from fd and work on response
-
-    /*
-     * TODO working progress understandig if this workflow is good
-     *    <Request request(currentTime,elapsedTime);
-     *    request.receiveData();
-     *    request.parseRequest();
-     */
-
-    if (elapsedTime>=15)
+    double elapsedTime = std::difftime(currentTime, client.request()->time_start());
+    client.request()->receiveData(&client);
+    client.response()->setResponseForMethod(&client);
+    if (client.request()->error() && client.response()->complete())
     {
-        std::cout<<RED<<"Connection timeout"<<RESET_COLOR<<std::endl;
-        this->_closeConnection(&client);
-        return false;
-    }
-    else if(client._request->ended())
-    {
-        std::cout<<GREEN<<"Request ended"<<RESET_COLOR<<std::endl;
-        //TODO body? send response
-        //pathtofile probably come from client headher or location i've to understand
-        // std::string pathtofile="";
-        client.initResponse();
-        client.response()->setResponseForMethod(&client);
-        // client._response.sendData(client,readFromFile(pathtofile));
-        if(client.response()->complete()) {
-            this->_closeConnection(&client);
-            return true;
-        }
-    }
-    else if (client._request->cgi())
-    {
-        // client.request()
-        // client.response()
-        //TODO handle cgi
-    }
-    else if (client.request()->error() || client.response()->error())
-    {
-
         std::cout<<RED<<"Error in request"<<RESET_COLOR<<std::endl;
         this->_closeConnection(&client);
         return false;
+        // return false;
     }
-    else if (client.response()->error())
+    if (client.response()->error() && client.response()->complete())
     {
-
         std::cout<<RED<<"Error in response"<<RESET_COLOR<<std::endl;
         this->_closeConnection(&client);
         return false;
+        // return false;
     }
-
-
-//prototype
-//    int str_len;
-//    void *buf;
-//    buf=(void *)"";
-//    str_len = (int)read(event.data.fd, buf, BUFFER_SIZE);
-//    if (str_len == 0) // close request!
-//    {
-//        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, event.data.fd, &event);
-//        close(event.data.fd);
-//        //printf("closed client: %d \n", epoll_events[i].data.fd);
-//        return true;
-//    }
-//    else
-//    {
-//        write(event.data.fd, buf, str_len);   // echo!
-//    }
-
-//    client.peaksize = recv(client.connection_socket.sock_fd, buffer, MAX_HEADER_SIZE, MSG_PEEK);
-
+    //TODO handle keepalive
+    if(client.request()->connection()=="keep-alive" && elapsedTime>=30)
+    {
+        client.request()->set_connection("close");
+        client.request()->set_complete(true);
+    }
+    if (elapsedTime>=15 && client.request()->connection().compare("close"))
+    {
+        std::cout<<RED<<"Connection timeout"<<RESET_COLOR<<std::endl;
+        client.response()->set_status_code(408);
+        // this->_closeConnection(&client);
+        // return false;
+    }
+    if(client.request()->connection().compare("close")==0 && client.response()->complete())
+    {
+        std::cout<<GREEN<<"Request ended 111111"<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"complete: "<<client.response()->complete()<<RESET_COLOR<<std::endl;
+        _closeConnection(&client);
+        return false;
+        // return true;
+    }
+    if(client.response()->status_code()==0) {
+        client.response()->set_status_code(501);
+        client.response()->set_error(true);
+    }
+    if(client.response()->error()||client.request()->error()) {
+        client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),
+            getMimeType("txt"),0);
+        // bull=false;
+        return false;
+    }
+    client.response()->sendData(&client);
+    // if(client.response()->ready_to_send()) {
+    //     client.response()->sendData(&client);
+    //     // return false;
+    //     // return bull;
+    // }
+    // std::cout<<std::boolalpha<<"complete: "<<client.response()->complete()<<"connectio=====> "<<client.request()->connection()<<std::endl;
+    // printCharsAndSpecialChars(client.request()->connection());
+    if(client.request()->connection()=="close" && client.response()->complete())
+    {
+        std::cout<<GREEN<<"Request ended 2222"<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"complete: "<<client.response()->complete()<<RESET_COLOR<<std::endl;
+        _closeConnection(&client);
+        return false;
+        // return true;
+    }
+    //TODO understand if is necessary:
+    // _closeConnection(&client);
+    // return _prova( &event);
     return false;
 }
 
-
 bool Webserver::_closeConnection(Client *client) {
-     std::cout<<RED<<"closing connection"<<RESET_COLOR<<std::endl;
-    //TODO handle keepalive
-    if(client->request()->connection().compare("keep-alive"))
-    {
-        std::cout<<MAGENTA<<"keep-alive"<<RESET_COLOR<<std::endl;
-        if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event)==0)
-            return true;
-        if(close(client->getClientSock()->getFdSock())!=-1)
-            return true;
-        return false;
-    }
+//TODO check what is necessary free delete from list/vector etc...
+    std::cout<<MAGENTA<<"close connection"<<RESET_COLOR<<std::endl;
+    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event)==0)
+        return true;
+    if(close(client->getClientSock()->getFdSock())!=-1)
+        return true;
     return false;
+
 }
 
 
@@ -358,11 +315,11 @@ void Webserver::setListOfServer(const std::vector<Server> &listOfServer) {
     _listOfServer = listOfServer;
 }
 
-const std::vector<Client> &Webserver::getListOfClient() const {
+const std::list<Client> &Webserver::getListOfClient() const {
     return _listOfClient;
 }
 
-void Webserver::setListOfClient(const std::vector<Client> &listOfClient) {
+void Webserver::setListOfClient(const std::list<Client> &listOfClient) {
     _listOfClient = listOfClient;
 }
 

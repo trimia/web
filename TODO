@@ -59,27 +59,91 @@ mainly request response key:
     - https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields
 
 
-
-bool Server::_handleConnection(epoll_event (&events)[MAX_EVENTS],int i) {
-
-    int str_len;
-    void *buf;
-    str_len = read(events[i].data.fd, buf, BUFFER_SIZE);
-    if (str_len == 0) // close request!
-    {
-        epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
-        close(events[i].data.fd);
-        //printf("closed client: %d \n", epoll_events[i].data.fd);
-    }
-    else
-    {
-        write(events[i].data.fd, buf, str_len);   // echo!
-    }
-
-//    client.peaksize = recv(client.connection_socket.sock_fd, buffer, MAX_HEADER_SIZE, MSG_PEEK);
-
-    return false;
-}
-
-
- strerror(errno) <<
+// old code
+// bool Webserver::_handleConnection(epoll_event &event) {
+//     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
+//     // Client * client = static_cast<Client *>(event.data.ptr);
+//
+//     client.initRequest();
+//     client.initResponse();
+//     // std::cout<<BLUE<<"handling connection"<<std::endl;
+//     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
+//     // std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
+//     // std::cout<<"client socket service: "<<ntohs(client._clientSock->getService().sin_port)<<std::endl;
+//     // std::cout<<"client socket service: "<<inet_ntoa(client._clientSock->getService().sin_addr)<<std::endl;
+//     // std::cout<<"client socket size: "<<*client._clientSock->getSockSize()<<std::endl;
+//     // std::cout << "Service sin family: " << client._clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
+//
+//     if(client._request->time_start() == 0)
+//             client._request->set_time_start(std::time(NULL));
+//     std::time_t currentTime = std::time(NULL);
+//     double elapsedTime = std::difftime(currentTime, client._request->time_start());
+//     //TODO remember to free request
+//     client._request->receiveData(&client);
+//
+//     std::cout<<MAGENTA<<"handling connection"<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"body size :"<<client.request()->body_size()<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"header size :"<<client.request()->header_size()<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"time start :"<<client.request()->time_start()<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"error :"<<client.request()->error()<<RESET_COLOR<<std::endl;
+//     // std::cout<<MAGENTA<<"cgi :"<<client.request()->cgi()<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"ended :"<<client.request()->ended()<<RESET_COLOR<<std::endl;
+//     std::cout<<MAGENTA<<"method :"<<client.request()->method()<<RESET_COLOR<<std::endl;
+//     // std::cout<<MAGENTA<<std::endl<<"http message :"<<std::endl<<client.request()->http_message()<<RESET_COLOR<<std::endl<<std::endl;
+//     // std::cout<<MAGENTA<<"request headers :"<<client.request()->request_headers()["Host"]<<RESET_COLOR<<std::endl;
+//     // std::cout<<MAGENTA<<"request headers :"<<client.request()->request_headers()["User-Agent"]<<RESET_COLOR<<std::endl;
+//
+//     std::cout<<GREEN<<"request received  method: "<<client._request->method()<<RESET_COLOR<<std::endl;
+//     std::cout<<GREEN<<"request received  ended: "<<client._request->ended()<<RESET_COLOR<<std::endl;
+//     //understand how to initialize request and what is necessary to read from fd and work on response
+//
+//     /*
+//      * TODO working progress understandig if this workflow is good
+//      *    <Request request(currentTime,elapsedTime);
+//      *    request.receiveData();
+//      *    request.parseRequest();
+//      */
+//
+//     if (elapsedTime>=15)
+//     {
+//         std::cout<<RED<<"Connection timeout"<<RESET_COLOR<<std::endl;
+//         this->_closeConnection(&client);
+//         return false;
+//     }
+//     else if(client._request->ended())
+//     {
+//         std::cout<<GREEN<<"Request ended"<<RESET_COLOR<<std::endl;
+//         //TODO body? send response
+//         //pathtofile probably come from client headher or location i've to understand
+//         // std::string pathtofile="";
+//         // client.initResponse();
+//         client.response()->setResponseForMethod(&client);
+//         // client._response.sendData(client,readFromFile(pathtofile));
+//         if(client.response()->complete()) {
+//             this->_closeConnection(&client);
+//             return true;
+//         }
+//     }
+//     else if (client._request->cgi())
+//     {
+//         // client.request()
+//         // client.response()
+//         //TODO handle cgi
+//     }
+//     else if (client.request()->error())
+//     {
+//
+//         std::cout<<RED<<"Error in request"<<RESET_COLOR<<std::endl;
+//         std::cout<<RED<<"true= "<<true<<"false = "<<false<<RESET_COLOR<<std::endl;
+//         this->_closeConnection(&client);
+//         return true;
+//     }
+//     else if (client.response()->error())
+//     {
+//
+//         std::cout<<RED<<"Error in response"<<RESET_COLOR<<std::endl;
+//         this->_closeConnection(&client);
+//         return false;
+//     }
+//     return false;
+// }

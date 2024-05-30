@@ -113,7 +113,8 @@ std::string getFileExtension(const std::string &path);
 
 std::string &getMimeType(std::string extension);
 std::string StatusString(int statusCode);
-
+// std::string buildHttpResponseHeader(std::string httpVersion,
+// std::string statusText, std::string& contentType, size_t contentLength);
 
 // std::map<std::string, HttpMethod> methodMap;
 // class include

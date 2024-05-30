@@ -3,6 +3,11 @@
 #include <string>
 #include <typeinfo>
 
+#include "../include/Webserver.hpp"
+
+extern Webserver* ws_ptr;
+
+
 Response::Response()
 {
 	this->_header = "";
@@ -52,7 +57,15 @@ Response	&Response::operator= (const Response &obj)
 // 	client->setResponse(response);
 // }
 void Response::setResponseForMethod(Client *client) {
-	// std::cout<<BLUE<<"set response method"<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"set response method"<<RESET_COLOR<<std::endl;
+	// static int i = 1;
+	// if (i == 0) {
+	// 	i++;
+	// 	return;
+	// }
+	// i--;
+	if(client->request()->method().empty())
+		return;
 	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
@@ -61,6 +74,7 @@ void Response::setResponseForMethod(Client *client) {
 	// std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
 	std::string method = client->request()->method();
+	std::cout<<BLUE<<"method :"<<method<<RESET_COLOR<<std::endl;
 	std::map<std::string, FunctionType> methodMap;
 	methodMap["GET"] = &Response::getMethod;
 	methodMap["POST"] = &Response::postMethod;
@@ -70,60 +84,32 @@ void Response::setResponseForMethod(Client *client) {
 	(this->*methodMap[method])(client);
 
 }
-void Response::checkRequest(Client *client)
-{
-	std::cout<<BLUE<<"checkRequest"<<RESET_COLOR<<std::endl;
-	if (!client->is_location())
-	{
-		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
-		this->_root="./www";
-		// this->_path="/www/";
-	// std::cout<<YELLOW<<std::boolalpha<<"is path file dir: "<<client->request()->is_path_file_dir()<<RESET_COLOR<<std::endl;
-		if(client->request()->is_rooth())
-		{
-			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
-			this->_statusCode=200;
-			this->_body="server is online";
-			this->_bodySize=this->_body.length();
-			this->_fileExtension=getFileExtension("txt");
-			return sendData(client);
-		}
-		if(client->request()->path_file().find_last_of(".") == std::string::npos)
-			isDirectory(client->request()->path_file());
-		std::cout<<RED<<"no extension"<<RESET_COLOR<<std::endl;
-		// Get the file extension
-		// std::string extension = getFileExtension(client->request()->path_file());
-		// Get the MIME type for the file extension
-		// std::string mimeType = getMimeType(extension);
-		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
-		readFromFile(this->root()+client->request()->path_file());
-		this->_statusCode = 200;
-		return sendData(client);
-	}
-	// TODO handle location
-	// //check index autoindex
-	// this->_path += "index.html";
-
-
-}
 
 
 void Response::getMethod(Client *client)
 {
+
+	std::cout<<YELLOW<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
+	// // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
 	checkRequest(client);
+	std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
+	return;
+	// if(checkRequest(client)) {
+	// 	std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
+	// 	return;
+	// }
 
 	// // buildHttpResponseHeader(client->request()->http_version(),client->response()->status_code(),
 	// // 	StatusString(client->response()->status_code()),getMimeType(getFileExtension()),
 	// // 	client->response()->header_size());
 	//
-	std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+
 	// //
 	//
 	// std::stringstream toStrin;
@@ -158,8 +144,46 @@ void Response::getMethod(Client *client)
 	// 	this->_complete = true;
 	// }
 }
+void Response::checkRequest(Client *client)
+{
+	std::cout<<BLUE<<"checkRequest"<<RESET_COLOR<<std::endl;
+	if (!client->is_location())
+	{
+		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
+		this->_root="./www";
+		// this->_path="/www/";
+		// std::cout<<YELLOW<<std::boolalpha<<"is path file dir: "<<client->request()->is_path_file_dir()<<RESET_COLOR<<std::endl;
+		if(client->request()->is_rooth())
+		{
+			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
+			this->_statusCode=200;
+			this->_body="server is online";
+			this->_bodySize=this->_body.length();
+			this->_fileExtension=getFileExtension("txt");
+			this->_readyToSend=true;
+			return ;;
+			// return sendData(client);
+		}
+		if(client->request()->path_file().find_last_of(".") == std::string::npos)
+			isDirectory(client->request()->path_file());
+		else
+			readFromFile(this->root()+client->request()->path_file());
+		// Get the file extension
+		// std::string extension = getFileExtension(client->request()->path_file());
+		// Get the MIME type for the file extension
+		// std::string mimeType = getMimeType(extension);
+		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
+		return ;
+		// return sendData(client);
+	}
+	// TODO handle location
+	// //check index autoindex
+	// this->_path += "index.html";
 
-std::string Response::buildHttpResponseHeader(std::string httpVersion,
+	return ;
+}
+
+void Response::buildHttpResponseHeader(std::string httpVersion,
 	std::string statusText, std::string& contentType, size_t contentLength) {
 
 	std::ostringstream header;
@@ -168,25 +192,29 @@ std::string Response::buildHttpResponseHeader(std::string httpVersion,
 	header << "Content-Length: " << contentLength << "\r\n";
 	header << "\r\n";  // End of header
 	this->_headerSize = header.str().length();
-	return header.str();
+	this->_readyToSend=true;
+	this->_header= header.str();
 }
 
 void Response::sendData(Client *client)
 {
-	std::cout<<BLUE<<"send datha"<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"body size :"<<this->body_size()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"body :"<<this->body()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"status code :"<<this->status_code()<<RESET_COLOR<<std::endl;
-	// std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"status message"<<StatusString(this->status_code())<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+	if(this->complete())
+		return;
+	std::cout<<MAGENTA<<"send datha"<<RESET_COLOR<<std::endl;
 
-	this->_header = buildHttpResponseHeader(client->request()->http_version(),
-		StatusString(this->status_code()),getMimeType(this->file_extension()),
-		this->body_size());
-	std::cout<<BLUE<<"header size :"<<this->header_size()<<RESET_COLOR<<std::endl;
-	std::cout<<BLUE<<"header :"<<this->header()<<RESET_COLOR<<std::endl;
+	buildHttpResponseHeader(client->request()->http_version(),StatusString(this->status_code()),
+		getMimeType(this->file_extension()),this->body_size());
+
+	std::cout<<MAGENTA<<"body size :"<<this->body_size()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"body :"<<this->body()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"status code :"<<this->status_code()<<RESET_COLOR<<std::endl;
+	// std::cout<<MAGENTA<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"status message"<<StatusString(this->status_code())<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"header size :"<<this->header_size()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"header :"<<this->header()<<RESET_COLOR<<std::endl;
+
 	size_t responseSize = this->header().length() + this->body_size() + 4;
 	char		*response = new char[responseSize];
 	memset(response, 0, responseSize);
@@ -199,25 +227,38 @@ void Response::sendData(Client *client)
 	response[this->header_size() + this->body_size() + 2] = '\r';
 	response[this->header_size() + this->body_size() + 3] = '\n';
 	std::cout<<YELLOW<<"response: "<<response<<" response size:"<<responseSize<<RESET_COLOR<<std::endl;
-	size_t byteCount = send(client->getClientSock()->getFdSock(),response, responseSize, 0);
-	//TODO think how to solve the status code 500 after sendig the response
+	//TODO https://linux.die.net/man/2/send see which falgs to use or if 0 is ok
+	size_t byteCount = send(client->getClientSock()->getFdSock(),response, responseSize, MSG_DONTWAIT);
+	//TODO understand if necessary
+	// if(this->_statusCode==501)
+	// 	return;
+	//this status code is for internal server error log think if want to do it
 	if((int)byteCount==SOCKET_ERROR)
 	{
-		std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
+		std::cout<<RED<<"Error: not sended 500"<<RESET_COLOR<<std::endl;
 		this->_statusCode = 500;
-		this->_error = true;
-	}else if (byteCount==0)
+		if(epoll_ctl(ws_ptr->getEpollFd(),EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->event())==0)
+			return;
+		if(close(client->getClientSock()->getFdSock())!=-1)
+			return;
+
+		// this->_error = true;
+	}
+	else if (byteCount==0)
 	{
 		std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		this->_statusCode = 204;
-		this->_complete = true;
+		if(this->_statusCode==0)
+			this->_statusCode = 204;
+		// this->_complete = true;
 		// return error handling
-	}else if(byteCount==responseSize) {
+	}
+	else if(byteCount==responseSize)
+	{
 		std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
 		this->_statusCode = 200;
 		this->_complete = true;
 	}
-	this->_complete = false;
+	// this->_complete = false;
 }
 
 void Response::readFromFile(std::string path) {
@@ -236,7 +277,7 @@ void Response::readFromFile(std::string path) {
 	// Check if the file was opened successfully
 	if (!file.is_open()) {
 		std::cout<<RED<<"file open error"<<RESET_COLOR<<std::endl;
-		this->_statusCode=403;
+		this->_statusCode=404;
 		return;
 	}
 	// Read the file into a string
@@ -245,7 +286,10 @@ void Response::readFromFile(std::string path) {
 	std::cout<<CYAN<<"body: "<<this->_body<<RESET_COLOR<<std::endl;
 	this->_bodySize=body.length();
 	this->_fileExtension=getFileExtension(path);
-	// Close the file
+	if(!this->_body.empty()) {
+		this->_statusCode=200;// Close the file
+		this->_readyToSend=true;
+	}
 	file.close();
 }
 
@@ -262,6 +306,8 @@ void Response::isDirectory(const std::string& path) {
 		this->_statusCode=200;
 		this->_body="server is online";
 		this->_bodySize=this->_body.length();
+		this->_readyToSend=true;
+
 		return;
 	}
 	if(S_ISDIR(info.st_mode)){
@@ -269,6 +315,7 @@ void Response::isDirectory(const std::string& path) {
 		this->_statusCode=200;
 		this->_body="is a directory";
 		this->_bodySize=this->_body.length();
+		this->_readyToSend=true;
 		return;
 	}
 }
@@ -383,6 +430,14 @@ void Response::set_complete(bool complete) {
 
 void Response::set_error(bool error) {
 	_error = error;
+}
+
+bool Response::ready_to_send() const {
+	return _readyToSend;
+}
+
+void Response::set_ready_to_send(bool ready_to_send) {
+	_readyToSend = ready_to_send;
 }
 
 void Response::set_header_size(size_t header_size) {

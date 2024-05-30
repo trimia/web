@@ -84,6 +84,10 @@ class	Client : public sType
 
 		void set_location_number(int location_number);
 
+		epoll_event & event();
+
+		void set_event(epoll_event event);
+
 		std::vector<Location> locations() const;
 
 		void set_locations(const std::vector<Location> &locations);

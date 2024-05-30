@@ -10,13 +10,30 @@ Client::Client(int id) : _id(id){}
 Client::~Client()
 {
 	std::cout << "Client : Destructor Called" << std::endl;
+		delete _clientSock;
 }
 
 Client::Client(Client const &obj)
 {
 	std::cout << "Copy Constructor Called" << std::endl;
-	if (this != &obj)
-		*this = obj;
+	if (this != &obj) {
+		this->_id = obj._id;
+		this->_headerSize = obj._headerSize;
+		this->_bodySize = obj._bodySize;
+		this->_error = obj._error;
+		this->_cgi = obj._cgi;
+		this->_ended = obj._ended;
+		this->_timeStart = obj._timeStart;
+		this->_hasBeenClosed = obj._hasBeenClosed;
+		this->_isLocation = obj._isLocation;
+		this->_locationNumber = obj._locationNumber;
+		this->_event = obj._event;
+		this->_request = obj._request;
+		this->_response = obj._response;
+		this->set_locations(obj._locations);
+		this->_clientSock = new Socket(*obj._clientSock);
+	}
+
 }
 
 Client	&Client::operator= (const Client &obj)
@@ -25,19 +42,18 @@ Client	&Client::operator= (const Client &obj)
 	if (this != &obj)
 	{
         this->_id=obj._id;
-		// this->_clientSock=obj._clientSock;
-		this->set_client_sock(obj._clientSock);
+		// delete this->_clientSock;
+		// this->_clientSock= new Socket(*obj._clientSock);
+		this->set_client_sock(new Socket(*obj._clientSock));
 		this->set_request(obj.request());
 		this->_response=obj._response;
 		this->_event=obj._event;
 		this->_headerSize=obj._headerSize;
 		this->_bodySize=obj._bodySize;
-		// this->_allowmethods=obj._allowmethods;
 		this->_isLocation=obj._isLocation;
 		this->_locationNumber=obj._locationNumber;
 		this->set_locations(obj._locations);
-		// this->_server=obj._server;
-//        this->_server=obj;
+
 		//	this->attributes = obj.attributes;
 		//	...
 	}
@@ -71,6 +87,8 @@ void Client::_initSocket(char *ip, uint16_t port, char type, int fd) {
 
 void Client::initRequest() {
 	this->_request = new Request();
+	if(this->_request->time_start()==0)
+		this->_request->set_time_start(std::time(NULL));
 	// Request *request = new Request();
 	// this->_request = request;
 
@@ -226,6 +244,15 @@ int Client::location_number() const {
 void Client::set_location_number(int location_number) {
 	_locationNumber = location_number;
 }
+
+epoll_event & Client::event() {
+	return _event;
+}
+
+void Client::set_event(epoll_event event) {
+	_event = event;
+}
+
 
 std::vector<Location> Client::locations() const {
 	return _locations;

@@ -20,12 +20,10 @@
 class	Socket
 {
 	public	:
-		Socket (int optName, char *ip, uint16_t port);
 
         Socket();
-
+        Socket(int fdSock);
         Socket (Socket const &obj);
-        explicit Socket(int fdSock);
 
         ~Socket ();
 		Socket &operator= (const Socket &obj);
