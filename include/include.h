@@ -107,7 +107,7 @@ enum HttpMethod
     METHOD_COUNT
 };
 
-int toInt(char *str);
+int toInt(std::string str);
 std::string toStr(int n);
 std::string getFileExtension(const std::string &path);
 
@@ -150,5 +150,13 @@ std::string StatusString(int statusCode);
 //class Parser;
 // class Socket;
 extern int g_sigint; //????
+/**
+ *uncomment to debug is no cpp98
+ * @brief Convert an integer to a string
+ * @param n
+ * @return std::string
+ */
+//
+void printCharsAndSpecialChars(std::string str);
 
 #endif

@@ -72,24 +72,33 @@ void Response::setResponseForMethod(Client *client) {
 }
 void Response::checkRequest(Client *client)
 {
+	std::cout<<BLUE<<"checkRequest"<<RESET_COLOR<<std::endl;
 	if (!client->is_location())
 	{
+		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
 		this->_root="./www";
 		// this->_path="/www/";
-		if(client->request()->is_path_file_dir())
+	// std::cout<<YELLOW<<std::boolalpha<<"is path file dir: "<<client->request()->is_path_file_dir()<<RESET_COLOR<<std::endl;
+		if(client->request()->is_rooth())
 		{
-			if(client->request()->path_file().find_last_of(".") == std::string::npos)
-			{
-				// Get the file extension
-				std::string extension = getFileExtension(client->request()->path_file());
-				// Get the MIME type for the file extension
-				std::string mimeType = getMimeType(extension);
-				readFromFile(client->request()->path_file());
-				this->_statusCode = 200;
-				return sendData(client);
-			}
-			isDirectory(client->request()->path_file());
+			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
+			this->_statusCode=200;
+			this->_body="server is online";
+			this->_bodySize=this->_body.length();
+			this->_fileExtension=getFileExtension("txt");
+			return sendData(client);
 		}
+		if(client->request()->path_file().find_last_of(".") == std::string::npos)
+			isDirectory(client->request()->path_file());
+		std::cout<<RED<<"no extension"<<RESET_COLOR<<std::endl;
+		// Get the file extension
+		// std::string extension = getFileExtension(client->request()->path_file());
+		// Get the MIME type for the file extension
+		// std::string mimeType = getMimeType(extension);
+		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
+		readFromFile(this->root()+client->request()->path_file());
+		this->_statusCode = 200;
+		return sendData(client);
 	}
 	// TODO handle location
 	// //check index autoindex
@@ -107,14 +116,14 @@ void Response::getMethod(Client *client)
 	// // 	StatusString(client->response()->status_code()),getMimeType(getFileExtension()),
 	// // 	client->response()->header_size());
 	//
-	// // std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
-	// // // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
-	// // std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"error :"<<client->request()->error()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
 	// //
 	//
 	// std::stringstream toStrin;
@@ -150,63 +159,90 @@ void Response::getMethod(Client *client)
 	// }
 }
 
-std::string Response::buildHttpResponseHeader(std::string httpVersion, int statusCode,
+std::string Response::buildHttpResponseHeader(std::string httpVersion,
 	std::string statusText, std::string& contentType, size_t contentLength) {
 
 	std::ostringstream header;
-	header << httpVersion << " " << statusCode << " " << statusText << "\r\n";
+	header << httpVersion << " " << statusText << "\r\n";
 	header << "Content-Type: " << contentType << "\r\n";
 	header << "Content-Length: " << contentLength << "\r\n";
 	header << "\r\n";  // End of header
+	this->_headerSize = header.str().length();
 	return header.str();
 }
 
 void Response::sendData(Client *client)
 {
+	std::cout<<BLUE<<"send datha"<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"body size :"<<this->body_size()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"body :"<<this->body()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"time start :"<<client->request()->time_start()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"status code :"<<this->status_code()<<RESET_COLOR<<std::endl;
+	// std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"status message"<<StatusString(this->status_code())<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+
 	this->_header = buildHttpResponseHeader(client->request()->http_version(),
-		this->status_code(),StatusString(this->status_code()),
-		getMimeType(this->file_extension()), this->body_size());
+		StatusString(this->status_code()),getMimeType(this->file_extension()),
+		this->body_size());
+	std::cout<<BLUE<<"header size :"<<this->header_size()<<RESET_COLOR<<std::endl;
+	std::cout<<BLUE<<"header :"<<this->header()<<RESET_COLOR<<std::endl;
 	size_t responseSize = this->header().length() + this->body_size() + 4;
 	char		*response = new char[responseSize];
 	memset(response, 0, responseSize);
 	for (size_t i=0; i < this->header().length(); i++)
 		response[i]= this->header().at(i);
-	for (size_t i=this->header().length(); i < responseSize; i++)
-		response[i]= this->_body.at(i);
-	int byteCount = (int)send(client->getClientSock()->getFdSock(),response, sizeof(response), 0);
+	for (size_t i=0; i < this->body_size(); i++)
+		response[this->header_size()+i]= this->body().at(i);
+	response[this->header_size() + this->body_size()] = '\r';
+	response[this->header_size() + this->body_size() + 1] = '\n';
+	response[this->header_size() + this->body_size() + 2] = '\r';
+	response[this->header_size() + this->body_size() + 3] = '\n';
+	std::cout<<YELLOW<<"response: "<<response<<" response size:"<<responseSize<<RESET_COLOR<<std::endl;
+	size_t byteCount = send(client->getClientSock()->getFdSock(),response, responseSize, 0);
 	//TODO think how to solve the status code 500 after sendig the response
-	if(byteCount==SOCKET_ERROR)
+	if((int)byteCount==SOCKET_ERROR)
 	{
 		std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
 		this->_statusCode = 500;
+		this->_error = true;
 	}else if (byteCount==0)
 	{
 		std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+		this->_statusCode = 204;
+		this->_complete = true;
 		// return error handling
-	}else {
+	}else if(byteCount==responseSize) {
 		std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		this->_statusCode = 500;
-
+		this->_statusCode = 200;
+		this->_complete = true;
 	}
+	this->_complete = false;
 }
 
 void Response::readFromFile(std::string path) {
+	std::cout<<CYAN<<"readFromFile"<<RESET_COLOR<<std::endl;
 	// int	body_fd = open(path.c_str(), O_RDONLY);
+	std::cout<<CYAN<<"path: "<<path<<RESET_COLOR<<std::endl;
 	struct stat infoFile;
 	stat(path.c_str(),&infoFile);
 	if(infoFile.st_size<0) {
+		std::cout<<RED<<"stat() error"<<RESET_COLOR<<std::endl;
 	    this->_statusCode=404;
 		return;
 	}
+
 	std::ifstream file(path.c_str(), std::ios::binary);
 	// Check if the file was opened successfully
 	if (!file.is_open()) {
+		std::cout<<RED<<"file open error"<<RESET_COLOR<<std::endl;
 		this->_statusCode=403;
 		return;
 	}
 	// Read the file into a string
 	std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	this->_body=body;
+	std::cout<<CYAN<<"body: "<<this->_body<<RESET_COLOR<<std::endl;
 	this->_bodySize=body.length();
 	this->_fileExtension=getFileExtension(path);
 	// Close the file
@@ -214,20 +250,27 @@ void Response::readFromFile(std::string path) {
 }
 
 void Response::isDirectory(const std::string& path) {
+	std::cout<<CYAN<<"isDirectory"<<RESET_COLOR<<std::endl;
 	struct stat info;
 	if (stat(path.c_str(), &info) != 0) {
+		std::cout<<RED<<"stat() error"<<RESET_COLOR<<std::endl;
 		this->_statusCode=404;
 		return;
 	}
+	if(path.compare("/")==0) {
+		std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
+		this->_statusCode=200;
+		this->_body="server is online";
+		this->_bodySize=this->_body.length();
+		return;
+	}
 	if(S_ISDIR(info.st_mode)){
+		std::cout<<CYAN<<"is a directory"<<RESET_COLOR<<std::endl;
 		this->_statusCode=200;
 		this->_body="is a directory";
 		this->_bodySize=this->_body.length();
 		return;
 	}
-	this->_statusCode=200;
-	this->_body="server is online";
-	this->_bodySize=this->_body.length();
 }
 
 
@@ -302,12 +345,44 @@ void Response::set_body_size(size_t body_size) {
 	_bodySize = body_size;
 }
 
+std::string Response::body() const {
+	return _body;
+}
+
+void Response::set_body(std::string body) {
+	_body = body;
+}
+
 std::string Response::file_extension() {
 	return _fileExtension;
 }
 
 void Response::set_file_extension(const std::string &file_extension) {
 	_fileExtension = file_extension;
+}
+
+std::string Response::root() const {
+	return _root;
+}
+
+void Response::set_root(std::string root) {
+	_root = root;
+}
+
+bool Response::error() const {
+	return _error;
+}
+
+bool Response::complete() const {
+	return _complete;
+}
+
+void Response::set_complete(bool complete) {
+	_complete = complete;
+}
+
+void Response::set_error(bool error) {
+	_error = error;
 }
 
 void Response::set_header_size(size_t header_size) {

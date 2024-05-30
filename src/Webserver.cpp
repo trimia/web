@@ -156,7 +156,8 @@ bool Webserver::_handleEpollEvents(int eventNumber, epoll_event (&events)[MAX_EV
             // std::cout<<"client socket service: "<<inet_ntoa(client->_clientSock->getService().sin_addr)<<std::endl;
             // std::cout<<"client socket size: "<<*client->_clientSock->getSockSize()<<std::endl;
             // std::cout << "Service sin family: " << client->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
-            if(_handleConnection(events[i])) {
+            //TODO negate this if to keep online server after one request
+            if(!_handleConnection(events[i])) {
                 std::cout<<RED<<"Error handling connection"<<RESET_COLOR<<std::endl;
                 return false;
 
@@ -269,9 +270,10 @@ bool Webserver::_handleConnection(epoll_event &event) {
         client.initResponse();
         client.response()->setResponseForMethod(&client);
         // client._response.sendData(client,readFromFile(pathtofile));
-
-        this->_closeConnection(&client);
-        return true;
+        if(client.response()->complete()) {
+            this->_closeConnection(&client);
+            return true;
+        }
     }
     else if (client._request->cgi())
     {
@@ -279,9 +281,17 @@ bool Webserver::_handleConnection(epoll_event &event) {
         // client.response()
         //TODO handle cgi
     }
-    else if (client._request->error())
+    else if (client.request()->error() || client.response()->error())
     {
+
         std::cout<<RED<<"Error in request"<<RESET_COLOR<<std::endl;
+        this->_closeConnection(&client);
+        return false;
+    }
+    else if (client.response()->error())
+    {
+
+        std::cout<<RED<<"Error in response"<<RESET_COLOR<<std::endl;
         this->_closeConnection(&client);
         return false;
     }
@@ -311,13 +321,17 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
 
 bool Webserver::_closeConnection(Client *client) {
-
+     std::cout<<RED<<"closing connection"<<RESET_COLOR<<std::endl;
     //TODO handle keepalive
-
-    if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event))
-        return true;
-    if(close(client->getClientSock()->getFdSock()))
-        return true;
+    if(client->request()->connection().compare("keep-alive"))
+    {
+        std::cout<<MAGENTA<<"keep-alive"<<RESET_COLOR<<std::endl;
+        if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event)==0)
+            return true;
+        if(close(client->getClientSock()->getFdSock())!=-1)
+            return true;
+        return false;
+    }
     return false;
 }
 

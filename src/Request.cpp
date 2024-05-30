@@ -7,6 +7,7 @@ Request::Request()
 	this->_error=false;
 	this->_ended=false;
 	this->_complete=false;
+	// this->_isPathFileDir=true;
 	this->_body_size=0;
 	this->_headerSize=0;
 	this->_method="";
@@ -128,9 +129,14 @@ std::string Request::checktype(std::string httpRequest) {
 		this->_error = true;
 	}
 	int lastLineStart=httpRequest.find("Content-Length: ");
-	int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
-	// std::cout<<RED<<"numberEnd :"<<numberEnd<<RESET_COLOR<<std::endl;
-	this->_body_size=toInt((char *)httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+	if(lastLineStart>0) {
+		int numberEnd=httpRequest.find("\r",lastLineStart);
+		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+	}
+	// int numberEnd=httpRequest.find("\r",lastLineStart);
+	// int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
+	std::cout<<RED<<"****body size ****:"<<this->body_size()<<RESET_COLOR<<std::endl;
+	// this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
 	this->_headerSize=_headerSize-_body_size;
 	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
 	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
@@ -188,7 +194,7 @@ void Request::fillRequest(std::string &httpRequest) {
  	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
  	{
  		if(it->first=="Connection")
- 			this->_keep_alive=it->second;
+ 			this->_connection=it->second;
  		// if(it->first=="")
  		// 	this.=it->second;
  		// if(it->first=="")
@@ -197,28 +203,15 @@ void Request::fillRequest(std::string &httpRequest) {
  		// 	this.=it->second;
  	}
  }
-#include <iostream>
-#include <iomanip>
-#include <cctype>
 
-// void printCharsAndSpecialChars(const std::string& str) {
-// 	for (char c : str) {
-// 		if (std::isprint(c)) {
-// 			std::cout << c << ' ';
-// 		} else {
-// 			std::cout << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' ';
-// 		}
-// 	}
-// 	std::cout << '\n';
-// }
 void Request::setUrlPathQuery(std::string &url) {
 	size_t methodEndPos = url.find(" ");
 	if (methodEndPos == std::string::npos)
 		this->_error= true;
 	size_t urlStartPos = methodEndPos + 1;
 	size_t urlEndPos = url.find(" ", urlStartPos);
-	if (urlEndPos == std::string::npos)
-		this->_isPathFileDir=false;
+	// if (urlEndPos == std::string::npos)
+	// 	this->_isPathFileDir=false;
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
 	this->_query= getQueryFromHttpRequest(url);
 	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
@@ -231,8 +224,14 @@ void Request::setUrlPathQuery(std::string &url) {
 	// printCharsAndSpecialChars(this->_requestURL);
 	// printCharsAndSpecialChars(this->_HTTPVersion);
 	std::cout<<RED<<"HTTPVersion :"<<this->_HTTPVersion<<RESET_COLOR<<std::endl;
-	size_t patEndPos = url.find("?");
-	this->_path_file=url.substr(urlStartPos, patEndPos - urlStartPos);
+	int pathEndPos=0;
+	int n = url.find("?");
+	if (n >0)
+		pathEndPos = n;
+	else pathEndPos = urlEndPos;
+	this->_path_file=url.substr(urlStartPos, pathEndPos - urlStartPos);
+	if(this->path_file().compare("/")==0)
+		this->_isRooth=true;
 }
 
 std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
@@ -326,14 +325,6 @@ void Request::set_is_body(bool is_body) {
 	_isBody = is_body;
 }
 
-bool Request::is_path_file_dir() const {
-	return _isPathFileDir;
-}
-
-void Request::set_is_path_file_dir(bool is_path_file_dir) {
-	_isPathFileDir = is_path_file_dir;
-}
-
 bool Request::is_query() const {
 	return _isQuery;
 }
@@ -356,6 +347,22 @@ std::string Request::path_file() const {
 
 void Request::set_path_file(const std::string &path_file) {
 	_path_file = path_file;
+}
+
+bool Request::is_rooth() const {
+	return _isRooth;
+}
+
+void Request::set_is_rooth(bool is_rooth) {
+	_isRooth = is_rooth;
+}
+
+std::string Request::connection() const {
+	return _connection;
+}
+
+void Request::set_connection(std::string connection) {
+	_connection = connection;
 }
 
 size_t Request::header_size(){

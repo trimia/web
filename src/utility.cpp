@@ -49,9 +49,10 @@ std::string &getMimeType(std::string extension){
 std::string getFileExtension(const std::string& filename) {
     std::string extension;
     if(filename.find_last_of(".") == std::string::npos)
-        extension = filename.substr(filename.find_last_of('.'));
+          extension = "txt";
     else
-        extension = "txt";
+      extension = filename.substr(filename.find_last_of('.'));
+    // printCharsAndSpecialChars(extension);
     return extension;
 }
 
@@ -126,15 +127,35 @@ std::string toString(int number)
  * @return int
  */
 
-int toInt(char *str)
+int toInt(std::string str)
 {
+    // printCharsAndSpecialChars(str);
     int number=0;
     char *p=NULL;
-    number=(int)std::strtol(str, &p, 10);
+    number=(int)std::strtol(str.c_str(), &p, 10);
     if(*p!='\0')
         throw std::invalid_argument("toInt: invalid number");
     return number;
 }
 
+/**
+ *uncomment to debug is no cpp98
+ * @brief Convert an integer to a string
+ * @param n
+ * @return std::string
+ */
 
+#include <iostream>
+#include <iomanip>
+#include <cctype>
 
+void printCharsAndSpecialChars(std::string str) {
+	for (char c : str) {
+		if (std::isprint(c)) {
+			std::cout << c << ' ';
+		} else {
+			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+		}
+	}
+	std::cout << '\n';
+}

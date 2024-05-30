@@ -27,7 +27,7 @@ public	:
 
 	void sendData(Client *client);
 
-	std::string buildHttpResponseHeader(std::string httpVersion, int statusCode, std::string statusText,
+	std::string buildHttpResponseHeader(std::string httpVersion, std::string statusText,
 										std::string &contentType, size_t contentLength);
 
 	void readFromFile(std::string path);
@@ -70,9 +70,25 @@ public	:
 
 	void set_body_size(size_t body_size);
 
+	std::string body() const;
+
+	void set_body(std::string body);
+
 	std::string file_extension();
 
 	void set_file_extension(const std::string &file_extension);
+
+	std::string root() const;
+
+	void set_root(std::string root);
+
+	bool error() const;
+
+	bool complete() const;
+
+	void set_complete(bool complete);
+
+	void set_error(bool error);
 
 	void set_header_size(size_t header_size);
 
@@ -119,6 +135,9 @@ private	:
 	std::string				_index;
 	//	DataType	attributes.
 };
+
+
+
 
 // ******************************************************** //
 

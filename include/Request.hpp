@@ -76,10 +76,6 @@ class	Request
 
 		void set_is_body(bool is_body);
 
-		bool is_path_file_dir() const;
-
-		void set_is_path_file_dir(bool is_path_file_dir);
-
 		bool is_query() const;
 
 		void set_is_query(bool is_query);
@@ -92,6 +88,14 @@ class	Request
 
 		void set_path_file(const std::string &path_file);
 
+		bool is_rooth() const;
+
+		void set_is_rooth(bool is_rooth);
+
+		std::string connection() const;
+
+		void set_connection(std::string connection);
+
 		size_t header_size();
 
 		void set_header_size(size_t header_size);
@@ -102,7 +106,7 @@ class	Request
         bool									_cgi;
         bool									_ended;
 		bool									_complete; // finito di leggere o serve un altro giro
-		std::string								_keep_alive;
+		std::string								_connection;//keep-alive or close
 		std::time_t								_timeStart;
 		bool									_isBody;
 		std::string								_body;
@@ -112,12 +116,11 @@ class	Request
 		std::map<std::string, std::string>		_requestHeaders;
 		std::string								_method; // GET, POST, DELETE //! GET
 		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		bool									_isPathFileDir;
+		bool									_isRooth;
 		std::string								_path_file; // la url senza query //! /www/html/index.html
 		std::string								_query;//?
 		bool									_isQuery;//?
 		std::string								_HTTPVersion; // HTTP/1.1 //! HTTP/1.1
-
 
 
 
