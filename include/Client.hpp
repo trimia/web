@@ -20,10 +20,14 @@ class	Client : public sType
 		Client ();
 		Client (Client const &obj);
 
-    Client(int id);
+    // Client(int id);
 
     ~Client ();
 		Client &operator= (const Client &obj);
+
+		bool operator==(const Client &obj) const;
+
+		// bool &operator==(const Client &obj);
 	void initClient(Server *server, int clientFd);
 	void initRequest();
 	void initResponse();
@@ -88,6 +92,10 @@ class	Client : public sType
 
 		void set_event(epoll_event event);
 
+		std::string & connection();
+
+		void set_connection(std::string connection);
+
 		std::vector<Location> locations() const;
 
 		void set_locations(const std::vector<Location> &locations);
@@ -109,6 +117,7 @@ class	Client : public sType
 		bool						_isLocation;
 		int							_locationNumber;
 		std::vector<Location>		_locations;
+		std::string					_connection;
 		void _initSocket(char*ip, uint16_t port, char type, int fd);
 
 

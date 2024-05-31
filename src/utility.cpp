@@ -7,7 +7,7 @@
 // extern Webserver* ws_ptr;
 
 
-std::string &getMimeType(std::string extension){
+std::string getMimeType(std::string extension){
     std::map<std::string, std::string> extensionMap;
     extensionMap["txt"]="text/plain";
     extensionMap["html"]="text/html";
@@ -47,11 +47,13 @@ std::string &getMimeType(std::string extension){
 }
 
 std::string getFileExtension(const std::string& filename) {
-    std::string extension;
-    if(filename.find_last_of(".") == std::string::npos)
-          extension = "txt";
-    else
-      extension = filename.substr(filename.find_last_of('.'));
+    // std::string extension;
+    // if(filename.find_last_of(".") == std::string::npos)
+    //       extension = "txt";
+    // else
+    printCharsAndSpecialChars(filename);
+    std::string extension = filename.substr(filename.find_last_of('.')+1);
+    printCharsAndSpecialChars(extension);
     // printCharsAndSpecialChars(extension);
     return extension;
 }
@@ -158,17 +160,17 @@ int toInt(std::string str)
  * @return std::string
  */
 
-// #include <iostream>
-// #include <iomanip>
-// #include <cctype>
-//
-// void printCharsAndSpecialChars(std::string str) {
-// 	for (char c : str) {
-// 		if (std::isprint(c)) {
-// 			std::cout << c << ' ';
-// 		} else {
-// 			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
-// 		}
-// 	}
-// 	std::cout << '\n';
-// }
+#include <iostream>
+#include <iomanip>
+#include <cctype>
+
+void printCharsAndSpecialChars(std::string str) {
+	for (char c : str) {
+		if (std::isprint(c)) {
+			std::cout << c << ' ';
+		} else {
+			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+		}
+	}
+	std::cout << '\n';
+}

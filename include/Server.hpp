@@ -90,6 +90,10 @@ class	Server : public sType
 
         void setIsLocation(bool is_location);
 
+        bool & serv_sock_created_with_new();
+
+        void set_serv_sock_created_with_new(bool serv_sock_created_with_new);
+
         int location_number();
 
         void set_location_number(int location_number);
@@ -113,6 +117,7 @@ private	:
 		int								_locationNumber;
         std::vector<Location> 			_locations;
         Socket                          *_server_socket;
+		bool							_servSockCreatedWithNew;
         epoll_event                     _event;
 		// std::vector<int>				_allowmethods;
 //        in_addr_t						_host;

@@ -28,7 +28,7 @@ public	:
 	void sendData(Client *client);
 
 	void buildHttpResponseHeader(std::string httpVersion, std::string statusText,
-										std::string &contentType, size_t contentLength);
+										std::string contentType, size_t contentLength);
 
 	void readFromFile(std::string path);
 

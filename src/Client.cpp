@@ -5,19 +5,21 @@ Client::Client()
 	std::cout << "Client : Default Constructor Called" << std::endl;
 }
 
-Client::Client(int id) : _id(id){}
+// Client::Client(int id) : _id(id){}
 
 Client::~Client()
 {
 	std::cout << "Client : Destructor Called" << std::endl;
-		delete _clientSock;
+	// if(_clientSock)
+	delete this->_clientSock;
 }
 
 Client::Client(Client const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+	std::cout << "Client : Copy Constructor Called" << std::endl;
 	if (this != &obj) {
 		this->_id = obj._id;
+		this->socketType = obj.socketType;
 		this->_headerSize = obj._headerSize;
 		this->_bodySize = obj._bodySize;
 		this->_error = obj._error;
@@ -42,6 +44,8 @@ Client	&Client::operator= (const Client &obj)
 	if (this != &obj)
 	{
         this->_id=obj._id;
+		this->socketType = obj.socketType;
+
 		// delete this->_clientSock;
 		// this->_clientSock= new Socket(*obj._clientSock);
 		this->set_client_sock(new Socket(*obj._clientSock));
@@ -60,8 +64,13 @@ Client	&Client::operator= (const Client &obj)
 	return (*this);
 }
 
+bool Client::operator==(const Client &obj)const {
+	return (this->_id == obj._id);
+}
+
 void Client::initClient(Server *server, int clientFd) {
-	(void)clientFd;
+	// (void)clientFd;
+	this->_id = clock();
 	_initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
 	set_is_location(server->is_location());
 	set_location_number(server->location_number());
@@ -251,6 +260,14 @@ epoll_event & Client::event() {
 
 void Client::set_event(epoll_event event) {
 	_event = event;
+}
+
+std::string & Client::connection() {
+	return _connection;
+}
+
+void Client::set_connection(std::string connection) {
+	_connection = connection;
 }
 
 

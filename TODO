@@ -58,6 +58,28 @@ response:
 mainly request response key:
     - https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields
 
+main status code:
+    - `100 Continue`: The server has received the request headers, and the client should proceed to send the request body.
+    - `101 Switching Protocols`: The requester has asked the server to switch protocols.
+    - `200 OK`: The request was successful.
+    - `201 Created`: The request was successful, and a resource was created as a result.
+    - `204 No Content`: The server successfully processed the request and is not returning any content.
+    - `301 Moved Permanently`: The URL of the requested resource has been changed permanently.
+    - `302 Found`: The URL of the requested resource has been changed temporarily.
+    - `304 Not Modified`: The resource has not been modified since the version specified by the request headers.
+    - `400 Bad Request`: The server could not understand the request due to invalid syntax.
+    - `401 Unauthorized`: The request requires user authentication.
+    - `403 Forbidden`: The server understood the request, but it refuses to authorize it.
+    - `404 Not Found`: The server can't find the requested resource.
+    - `405 Method Not Allowed`: The method specified in the request is not allowed for the resource identified by the request URI.
+    - `413 Request Entity Too Large`: The request is larger than the server is willing or able to process.
+    - `500 Internal Server Error`: An unexpected condition was encountered and no more specific message is suitable.
+    - `501 Not Implemented`: The server either does not recognize the request method, or it lacks the ability to fulfill the request.
+    - `503 Service Unavailable`: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+    - `504 Gateway Timeout`: The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server it accessed in attempting to complete the request.
+    - `505 HTTP Version Not Supported`: The server does not support the HTTP protocol version used in the request.
+
+    These status codes are part of the HTTP/1.1 standard. For a more detailed explanation, you can refer to the [HTTP/1.1 Status Code Definitions](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
 
 // old code
 // bool Webserver::_handleConnection(epoll_event &event) {
@@ -147,3 +169,48 @@ mainly request response key:
 //     }
 //     return false;
 // }
+
+
+Process 20886 stopped
+* thread #1, name = 'webserver', stop reason = signal SIGABRT
+    frame #0: 0x00007ffff7aa8e44 libc.so.6`___lldb_unnamed_symbol3665 + 276
+libc.so.6`___lldb_unnamed_symbol3665:
+->  0x7ffff7aa8e44 <+276>: movl   %eax, %ebx
+    0x7ffff7aa8e46 <+278>: negl   %ebx
+    0x7ffff7aa8e48 <+280>: cmpl   $0xfffff000, %eax         ; imm = 0xFFFFF000
+    0x7ffff7aa8e4d <+285>: movl   $0x0, %eax
+(lldb) up
+frame #1: 0x00007ffff7a50a30 libc.so.6`raise + 32
+libc.so.6`raise:
+->  0x7ffff7a50a30 <+32>: testl  %eax, %eax
+    0x7ffff7a50a32 <+34>: jne    0x7ffff7a50a40            ; <+48>
+    0x7ffff7a50a34 <+36>: movq   -0x8(%rbp), %rbx
+    0x7ffff7a50a38 <+40>: leave
+(lldb)
+frame #2: 0x00007ffff7a384c3 libc.so.6`abort + 223
+libc.so.6`abort:
+->  0x7ffff7a384c3 <+223>: movq   %fs:0x10, %r12
+    0x7ffff7a384cc <+232>: cmpq   %r12, 0x1bf685(%rip)
+    0x7ffff7a384d3 <+239>: je     0x7ffff7a384f5            ; <+273>
+    0x7ffff7a384d5 <+241>: xorl   %eax, %eax
+(lldb)
+frame #3: 0x00007ffff7c97b0c libstdc++.so.6`__gnu_cxx::__verbose_terminate_handler() (.cold) at vterminate.cc:95:10
+(lldb)
+frame #4: 0x00007ffff7cadf1a libstdc++.so.6`__cxxabiv1::__terminate(void (*)()) at eh_terminate.cc:48:15
+(lldb)
+frame #5: 0x00007ffff7c9750a libstdc++.so.6`std::terminate() at eh_terminate.cc:58:27
+(lldb)
+frame #6: 0x00007ffff7cae1d6 libstdc++.so.6`__cxxabiv1::__cxa_throw(obj=0x00005555555973c0, tinfo=0x00007ffff7e75dc0, dest=(libstdc++.so.6`std::out_of_range::~out_of_range() at stdexcept.cc:65:3)) at eh_throw.cc:98:18
+(lldb)
+frame #7: 0x00007ffff7c9b403 libstdc++.so.6`std::__throw_out_of_range_fmt(__fmt="basic_string::at: __n (which is %zu) >= this->size() (which is %zu)") at functexcept.cc:101:27
+(lldb)
+frame #8: 0x00007ffff7d61e07 libstdc++.so.6`std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>::at(this=<unavailable>, __n=<unavailable>) at basic_string.h:1312:28
+(lldb)
+frame #9: 0x000055555556a845 webserver`Response::getMethod(this=0x00007fffffffb210, client=0x0000555555596bd0) at Response.cpp:63:32
+   60  		memset(response, 0, responseSize);
+   61  		for(size_t i=0; i < client->header_size();i++)
+   62  		{
+-> 63  			response[i]= this->_header.at(i);
+   64  		}
+   65  		for(size_t i=0; i < this->header_size();i++)
+   66  		{

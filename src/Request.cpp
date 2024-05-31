@@ -12,6 +12,7 @@ Request::Request()
 	this->_headerSize=0;
 	this->_method="";
 	this->_httpMessage="";
+	this->_body="";
 
 	std::cout << "Request : Default Constructor Called" << std::endl;
 }
@@ -28,7 +29,7 @@ Request::~Request()
 
 Request::Request(Request const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+	std::cout << "Request :Copy Constructor Called" << std::endl;
 	if (this != &obj)
 		*this = obj;
 }
@@ -58,8 +59,7 @@ Request	&Request::operator= (const Request &obj)
  *receiveData: old prototype must be upgrated read the fd and put it on buffer
  */
 
-void Request::receiveData(Client *client)
-{
+void Request::receiveData(Client *client) {
 	if(this->ended())
 		return;
 	// std::cout<<MAGENTA<<"receiving data"<<std::endl;
@@ -68,7 +68,6 @@ void Request::receiveData(Client *client)
 	// std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
 	// std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
 	// std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
-
 	char rcv_buffer[RCV_BUF_SIZE];
 	memset(rcv_buffer,0,RCV_BUF_SIZE);
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
@@ -80,13 +79,12 @@ void Request::receiveData(Client *client)
 		return;
 	}else if(byteCount<0)
 	{
-		client->response()->set_status_code(400);
-		this->_error=true;
+		client->response()->set_status_code(1);
+		// this->_error=true;
 		std::cout<<RED<<"Error: client couldn't read"<<RESET_COLOR<<std::endl;
 		return;
 	}
-	else if(byteCount !=0)
-	{
+	else if(byteCount !=0) {
 		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
 		this->_headerSize=byteCount;
@@ -94,6 +92,16 @@ void Request::receiveData(Client *client)
 		this->_httpMessage=checktype(rcv_buffer);
 		parseRequest();
 		fillRequest(this->_httpMessage);
+		client->set_connection(this->connection());
+		printCharsAndSpecialChars(this->http_version());
+		// std::cout<<YELLOW<<"httpversion :"<<this->http_version()<<RESET_COLOR<<std::endl;
+		if(this->http_version()!="HTTP/1.1")client->response()->set_status_code(505);
+		if(this->error())
+		{
+			std::cout<<RED<<"Error: bad request"<<RESET_COLOR<<std::endl;
+			client->response()->set_status_code(400);
+			return;
+		}
 		return;
 		//understand if we want to register the parsed request in the client
 		// client->request()->setRequestHeaders(client->request()->parseRequest(rcv_buffer));
@@ -114,12 +122,12 @@ std::string Request::checktype(std::string httpRequest) {
 	std::istringstream input(httpRequest);
 	std::string method;
 	input>> method;
-	std::cout<<YELLOW<<"checktype method :"<<method<<RESET_COLOR<<std::endl;
+	// std::cout<<YELLOW<<"checktype method :"<<method<<RESET_COLOR<<std::endl;
 	if (method.find("GET") == 0 || method.find("POST") == 0 || method.find("DELETE") == 0 || method.find("HEAD") == 0) {
 		set_method(method);
-	} else { // Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
-		this->_error = true;
-	}
+	} else
+		this->_error = true;// Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
+	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
 	int lastLineStart=httpRequest.find("Content-Length: ");
 	if(lastLineStart>0) {
 		int numberEnd=httpRequest.find("\r",lastLineStart);
@@ -181,7 +189,7 @@ void Request::fillRequest(std::string &httpRequest) {
 	std::istringstream input(httpRequest);
 	std::string firstLine;
 	std::getline(input, firstLine);
-	std::cout<<YELLOW<<"fillRequest firstLine :"<<firstLine<<RESET_COLOR<<std::endl;
+	// std::cout<<YELLOW<<"fillRequest firstLine :"<<firstLine<<RESET_COLOR<<std::endl;
 	setUrlPathQuery(firstLine);
  	for(std::map<std::string, std::string>::iterator it = this->_requestHeaders.begin();it != this->_requestHeaders.end(); it++)
  	{

@@ -12,6 +12,8 @@ Response::Response()
 {
 	this->_header = "";
 	this->_headerSize = 0;
+	this->_body = "";
+	this->_bodySize = 0;
 	this->_content_type = "";
 	this->_statusCode = 0;
 	this->_complete = false;
@@ -28,7 +30,7 @@ Response::~Response()
 
 Response::Response(Response const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+	std::cout << "Response : Copy Constructor Called" << std::endl;
 	if (this != &obj)
 		*this = obj;
 }
@@ -64,7 +66,8 @@ void Response::setResponseForMethod(Client *client) {
 	// 	return;
 	// }
 	// i--;
-	if(client->request()->method().empty())
+	// if(client->request()->method().empty())
+	if(client->request()->error())
 		return;
 	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
@@ -98,6 +101,8 @@ void Response::getMethod(Client *client)
 	// std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
 	// std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
 	checkRequest(client);
+	buildHttpResponseHeader(client->request()->http_version(),StatusString(this->status_code()),
+							getMimeType(this->file_extension()),this->body_size());
 	std::cout<<BLUE<<"GETHMETHOD"<<RESET_COLOR<<std::endl;
 	return;
 	// if(checkRequest(client)) {
@@ -151,8 +156,6 @@ void Response::checkRequest(Client *client)
 	{
 		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
 		this->_root="./www";
-		// this->_path="/www/";
-		// std::cout<<YELLOW<<std::boolalpha<<"is path file dir: "<<client->request()->is_path_file_dir()<<RESET_COLOR<<std::endl;
 		if(client->request()->is_rooth())
 		{
 			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
@@ -161,17 +164,14 @@ void Response::checkRequest(Client *client)
 			this->_bodySize=this->_body.length();
 			this->_fileExtension=getFileExtension("txt");
 			this->_readyToSend=true;
-			return ;;
-			// return sendData(client);
+			return ;
 		}
-		if(client->request()->path_file().find_last_of(".") == std::string::npos)
-			isDirectory(client->request()->path_file());
+		if(client->request()->path_file().find_last_of(".") == std::string::npos) {
+			std::cout<<CYAN<<"no extension"<<RESET_COLOR<<std::endl;
+			isDirectory(this->root()+client->request()->path_file());
+		}
 		else
 			readFromFile(this->root()+client->request()->path_file());
-		// Get the file extension
-		// std::string extension = getFileExtension(client->request()->path_file());
-		// Get the MIME type for the file extension
-		// std::string mimeType = getMimeType(extension);
 		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
 		return ;
 		// return sendData(client);
@@ -184,7 +184,7 @@ void Response::checkRequest(Client *client)
 }
 
 void Response::buildHttpResponseHeader(std::string httpVersion,
-	std::string statusText, std::string& contentType, size_t contentLength) {
+	std::string statusText, std::string contentType, size_t contentLength) {
 
 	std::ostringstream header;
 	header << httpVersion << " " << statusText << "\r\n";
@@ -198,12 +198,13 @@ void Response::buildHttpResponseHeader(std::string httpVersion,
 
 void Response::sendData(Client *client)
 {
+	std::cout<<MAGENTA<<"send data complete: "<<this->complete()<<RESET_COLOR<<std::endl;
+	std::cout<<MAGENTA<<"send data complete: "<<client->request()->complete()<<RESET_COLOR<<std::endl;
 	if(this->complete())
 		return;
-	std::cout<<MAGENTA<<"send datha"<<RESET_COLOR<<std::endl;
 
-	buildHttpResponseHeader(client->request()->http_version(),StatusString(this->status_code()),
-		getMimeType(this->file_extension()),this->body_size());
+	// buildHttpResponseHeader(client->request()->http_version(),StatusString(this->status_code()),
+	//                         getMimeType(this->file_extension()),this->body_size());
 
 	std::cout<<MAGENTA<<"body size :"<<this->body_size()<<RESET_COLOR<<std::endl;
 	std::cout<<MAGENTA<<"body :"<<this->body()<<RESET_COLOR<<std::endl;
@@ -286,6 +287,9 @@ void Response::readFromFile(std::string path) {
 	std::cout<<CYAN<<"body: "<<this->_body<<RESET_COLOR<<std::endl;
 	this->_bodySize=body.length();
 	this->_fileExtension=getFileExtension(path);
+	std::cout<<RED<<std::endl;
+	printCharsAndSpecialChars(this->file_extension());
+	std::cout<<RESET_COLOR<<std::endl;
 	if(!this->_body.empty()) {
 		this->_statusCode=200;// Close the file
 		this->_readyToSend=true;
@@ -301,7 +305,7 @@ void Response::isDirectory(const std::string& path) {
 		this->_statusCode=404;
 		return;
 	}
-	if(path.compare("/")==0) {
+	if(path=="/") {
 		std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
 		this->_statusCode=200;
 		this->_body="server is online";

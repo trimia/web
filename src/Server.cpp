@@ -6,35 +6,62 @@ Server::Server()
     this->_autoindex=false;
     // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
     this->_isLocation=false;
+    // this->_servSockCreatedWithNew=false;
+    this->_server_socket=new Socket();
     // this->_locationNumber=0;
     // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
 {
-    // delete this->_server_socket;
-//	std::cout << "Server : Destructor Called" << std::endl;
+    // if(serv_sock_created_with_new())
+    delete this->_server_socket;
+    if(this->_server_socket->getFdSock() != INVALID_SOCKET) {
+        close(this->_server_socket->getFdSock());
+    }
+	std::cout << "Server : Destructor Called" << std::endl;
 }
 
 Server::Server(Server const &obj)
 {
-//	std::cout << "Copy Constructor Called" << std::endl;
-	if (this != &obj)
-		*this = obj;
+	std::cout << "Server : Copy Constructor Called" << std::endl;
+	if (this != &obj) {
+	    this->_server_name=obj._server_name;
+	    this->socketType = obj.socketType;
+	    this->_ip=obj._ip;
+	    this->_port=obj._port;
+	    this->_root=obj._root;
+	    this->_server_socket = new Socket(*obj._server_socket);
+
+	    this->_index=obj._index;
+	    this->_client_max_body_size=obj._client_max_body_size;
+	    this->_autoindex=obj._autoindex;
+	    // this->_server_socket=obj._server_socket;
+	    this->_event=obj._event;
+	    this->setLocations(obj._locations);
+	    this->setErrorPages(obj._error_pages);
+	    this->_isLocation = obj._isLocation;
+	    this->_locationNumber=obj._locationNumber;
+	}
+
 }
 
 Server	&Server::operator= (const Server &obj)
 {
-    //	std::cout << "Copy Assignment Operator Called" << std::endl;
+    	std::cout << "Server : Copy Assignment Operator Called" << std::endl;
     if (this != &obj)
     {
         this->_server_name=obj._server_name;
+        this->socketType = obj.socketType;
         this->_ip=obj._ip;
         this->_port=obj._port;
         this->_root=obj._root;
         this->_index=obj._index;
         this->_client_max_body_size=obj._client_max_body_size;
         this->_autoindex=obj._autoindex;
-        this->_server_socket=obj._server_socket;
+        // this->set_server_socket(new Socket(*obj._server_socket));
+
+	    // this->_server_socket = new Socket(*obj._server_socket);
+        // this->_server_socket=obj._server_socket;
         this->_event=obj._event;
         this->setLocations(obj._locations);
         this->setErrorPages(obj._error_pages);
@@ -69,6 +96,7 @@ void Server::initSock() {
     // this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
     // this->set_server_socket(new Socket());
     this->_server_socket=new Socket();
+    this->_servSockCreatedWithNew=true;
     this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port,SERVER_SOCK);
     // this->socketType=SERVER_SOCK;
 
@@ -177,6 +205,14 @@ bool Server::is_location(){
 
 void Server::setIsLocation(bool is_location) {
     _isLocation = is_location;
+}
+
+bool & Server::serv_sock_created_with_new() {
+    return _servSockCreatedWithNew;
+}
+
+void Server::set_serv_sock_created_with_new(bool serv_sock_created_with_new) {
+    _servSockCreatedWithNew = serv_sock_created_with_new;
 }
 
 int Server::location_number(){
