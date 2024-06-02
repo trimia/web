@@ -32,6 +32,8 @@ class	Client : public sType
 	void initRequest();
 	void initResponse();
 
+		// void initLocation();
+
 		Socket *getClientSock();
 
 		Socket * client_sock() const;

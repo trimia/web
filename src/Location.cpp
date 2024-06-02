@@ -32,15 +32,91 @@ Location	&Location::operator= (const Location &obj)
     if (this != &obj)
     {
         this->_path=obj._path;
-        this->_cgiPath=obj._cgiPath;
         this->_root=obj._root;
-        this->_index=obj._index;
-        this->_clientMaxBodySize=obj._clientMaxBodySize;
         this->_autoindex=obj._autoindex;
+        this->_index=obj._index;
         this->setMethods(obj._methods);
-//        this->_error_pages=obj._error_pages;
+        this->_cgiPath=obj._cgiPath;
+        this->_alias=obj._alias;
+        this->_clientMaxBodySize=obj._clientMaxBodySize;
+        //        this->_error_pages=obj._error_pages;
     }
     return (*this);
+}
+
+
+
+// Location Location::fitBestLocation(Client *client) {
+//     Location bestMatch;
+//     size_t bestMatchLenght = 0;
+//     // Itera attraverso le posizioni definite nel server
+//     for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
+//         if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+//             bestMatch = *it.base();
+//             bestMatchLenght = it->getPath().length();
+//         }
+//     }
+//     return bestMatch;
+// }
+
+bool Location::allowMethod(Client *client) {
+    std::vector<std::string> methods = client->response()->location().getMethods();
+    std::string method = client->request()->method();
+    for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+        if (it->compare(method) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+/*
+ *			getter & setter
+ */
+
+std::string & Location::root() {
+    return _root;
+}
+
+bool & Location::autoindex() {
+    return _autoindex;
+}
+
+std::string & Location::index() {
+    return _index;
+}
+
+std::vector<std::string> & Location::cgiPath() {
+    return _cgiPath;
+}
+
+std::string & Location::alias() {
+    return _alias;
+}
+
+void Location::set_alias(std::string alias) {
+    _alias = alias;
+}
+
+std::basic_string<char> & Location::clientMaxBodySize() {
+    return _clientMaxBodySize;
+}
+
+std::vector<std::string> & Location::getReturn() {
+    return _return;
+}
+
+void Location::set_return(std::vector<std::string> return_) {
+    _return = return_;
+}
+
+std::vector<std::string> & Location::cgi_ext() {
+    return _cgiExt;
+}
+
+void Location::set_cgi_ext(std::vector<std::string> cgi_ext) {
+    _cgiExt = cgi_ext;
 }
 
 void Location::setPath(std::string path) {

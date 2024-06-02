@@ -109,6 +109,8 @@ void Client::initResponse() {
 	// this->_response = response;
 }
 
+
+
 /*
  *
  * getter and setter

@@ -2,6 +2,7 @@
 #define _Location_HPP_
 
 #include "include.h"
+#include "Client.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
@@ -23,7 +24,38 @@ class	Location
         ~Location ();
         Location &operator= (const Location &obj);
 
-        void                        setPath(std::string path);
+		// Location fitBestLocation(Client *client);
+
+		// void initLocation(Client *client);
+
+		bool allowMethod(Client *client);
+
+
+
+
+		std::string & root();
+
+		bool & autoindex();
+
+		std::string & index();
+
+		std::vector<std::string> & cgiPath();
+
+		std::string & alias();
+
+		void set_alias(std::string alias);
+
+		std::basic_string<char> & clientMaxBodySize();
+
+		std::vector<std::string> & getReturn();
+
+		void set_return(std::vector<std::string> return_);
+
+		std::vector<std::string> & cgi_ext();
+
+		void set_cgi_ext(std::vector<std::string> cgi_ext);
+
+		void                        setPath(std::string path);
         std::string                 getPath(void);
         void                        setRoot(std::string &root);
         void                        setIndex(std::string &index);
@@ -41,13 +73,13 @@ private	:
         bool						_autoindex;
         std::string					_index;
         std::vector<std::string>    _methods; // GET+ POST- DELETE- PUT- HEAD-
-        std::vector<std::string>	_return;
-        std::string					_alias;
-        //is necessary?
         std::vector<std::string>	_cgiPath;
-        std::vector<std::string>	_cgiExt;
-        std::basic_string<char>     _clientMaxBodySize;
-    //	DataType	attributes.
+        std::string					_alias;
+		std::basic_string<char>     _clientMaxBodySize;
+		std::vector<std::string>	_return;
+		//is necessary?
+		std::vector<std::string>	_cgiExt;
+        //	DataType	attributes.
 };
 
 // ******************************************************** //

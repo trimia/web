@@ -3,7 +3,7 @@
 
 #include "include.h"
 #include "Client.hpp"
-#include "Location.hpp"
+// #include "Location.hpp"
 //#include "Request.hpp"
 //#include "Server.hpp"
 
@@ -34,9 +34,11 @@ public	:
 
 	void isDirectory(const std::string &path);
 
-	Location checkIfExistLocation(Client *client);
+	void initLocation(Client *client);
 
-	bool allowMethod(Client *client);
+	void fitBestLocation(Client *client);
+
+	// bool allowMethod(Client *client);
 
 	void setResponseForMethod(Client *client);
 

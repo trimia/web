@@ -152,10 +152,19 @@ void Response::getMethod(Client *client)
 void Response::checkRequest(Client *client)
 {
 	std::cout<<BLUE<<"checkRequest"<<RESET_COLOR<<std::endl;
-	if (!client->is_location())
+	// if (client->is_location())
+	// {
+	// 	this->_location=fitBestLocation(client);
+	//
+	// }
+	if(!client->is_location())
 	{
 		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
-		this->_root="./www";
+		if(this->root().empty()|| this->root()=="/")
+			this->_root="./www";
+		else if(this->_root.find(".")==std::string::npos)
+			this->_root="."+this->root();
+
 		if(client->request()->is_rooth())
 		{
 			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
@@ -337,8 +346,19 @@ void Response::isDirectory(const std::string& path) {
 // 	getFullPath(client);
 // 	return true;
 // }
+void Response::initLocation(Client *client) {
+	fitBestLocation(client);
+	if (!_location.allowMethod(client)) {
+		this->_statusCode=405;
+		return;
+	}
+	if(_location.autoindex()) {
 
-Location Response::checkIfExistLocation(Client *client) {
+	}
+
+}
+
+void Response::fitBestLocation(Client *client) {
 	Location bestMatch;
 	size_t bestMatchLenght = 0;
 	// Itera attraverso le posizioni definite nel server
@@ -348,19 +368,19 @@ Location Response::checkIfExistLocation(Client *client) {
 			bestMatchLenght = it->getPath().length();
 		}
 	}
-	return bestMatch;
+	this->_location=bestMatch;
 }
-
-bool Response::allowMethod(Client *client) {
-	std::vector<std::string> methods = client->response()->location().getMethods();
-	std::string method = client->request()->method();
-	for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
-		if (it->compare(method) == 0)
-			return true;
-	}
-	this->_statusCode = 405;
-	return false;
-}
+//
+// bool Response::allowMethod(Client *client) {
+// 	std::vector<std::string> methods = client->response()->location().getMethods();
+// 	std::string method = client->request()->method();
+// 	for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+// 		if (it->compare(method) == 0)
+// 			return true;
+// 	}
+// 	this->_statusCode = 405;
+// 	return false;
+// }
 
 /*
  *
