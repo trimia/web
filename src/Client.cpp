@@ -102,12 +102,18 @@ void Client::initRequest() {
 	// this->_request = request;
 
 }
+void Client::initLocation(){
+    this->response()->fitBestLocation(this);
+
+}
 
 void Client::initResponse() {
 	this->_response = new Response();
 	// Response *response = new Response();
 	// this->_response = response;
 }
+
+
 
 /*
  *

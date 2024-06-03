@@ -11,6 +11,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 class Client;
+//class Location;
 // class Request;
 //class Server;
 
@@ -34,9 +35,11 @@ public	:
 
 	void isDirectory(const std::string &path);
 
-	Location checkIfExistLocation(Client *client);
+	void initLocation(Client *client);
 
-	bool allowMethod(Client *client);
+	void fitBestLocation(Client *client);
+
+	// bool allowMethod(Client *client);
 
 	void setResponseForMethod(Client *client);
 
@@ -116,13 +119,13 @@ private	:
 	std::string     _path;
 	std::string     _root;
 	std::string     _fileExtension;
+    Location        _location;
 
 
 	std::string     _target_file;
 	// std::vector<uint8_t> _body;
 	size_t          _body_length;
 	std::string     _response_body;
-	Location     _location;
 	short           _code;
 	char            *_res;
 	int				_cgi;

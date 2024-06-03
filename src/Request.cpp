@@ -7,6 +7,7 @@ Request::Request()
 	this->_error=false;
 	this->_ended=false;
 	this->_complete=false;
+    this->_isRoot=false;
 	// this->_isPathFileDir=true;
 	this->_body_size=0;
 	this->_headerSize=0;
@@ -132,6 +133,11 @@ std::string Request::checktype(std::string httpRequest) {
 	if(lastLineStart>0) {
 		int numberEnd=httpRequest.find("\r",lastLineStart);
 		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+        if(this->_body_size > this->_clientMaxBodySize)
+        {
+            this->_error=true;
+            return "";
+        }
 	}
 	// int numberEnd=httpRequest.find("\r",lastLineStart);
 	// int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
@@ -232,8 +238,8 @@ void Request::setUrlPathQuery(std::string &url) {
 		pathEndPos = n;
 	else pathEndPos = urlEndPos;
 	this->_path_file=url.substr(urlStartPos, pathEndPos - urlStartPos);
-	if(this->path_file().compare("/")==0)
-		this->_isRooth=true;
+	if(this->path_file()=="/")
+		this->_isRoot=true;
 }
 
 std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
@@ -351,12 +357,12 @@ void Request::set_path_file(const std::string &path_file) {
 	_path_file = path_file;
 }
 
-bool Request::is_rooth() const {
-	return _isRooth;
+bool Request::is_root() const {
+	return _isRoot;
 }
 
-void Request::set_is_rooth(bool is_rooth) {
-	_isRooth = is_rooth;
+void Request::set_is_root(bool is_rooth) {
+	_isRoot = is_rooth;
 }
 
 std::string Request::connection() const {

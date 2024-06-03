@@ -19,6 +19,7 @@ Response::Response()
 	this->_complete = false;
 	this->_error = false;
 
+
 	std::cout << "Response : Default Constructor Called" << std::endl;
 }
 
@@ -152,11 +153,21 @@ void Response::getMethod(Client *client)
 void Response::checkRequest(Client *client)
 {
 	std::cout<<BLUE<<"checkRequest"<<RESET_COLOR<<std::endl;
-	if (!client->is_location())
-	{
+	// if (client->is_location())
+	// {
+	// 	this->_location=fitBestLocation(client);
+	//
+	// }
+//    std::cout<<YELLOW<<std::boolalpha<<"is location"<<client->is_location()<<RESET_COLOR<<std::endl;
+//	if(!client->is_location())
+//	{
 		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
-		this->_root="./www";
-		if(client->request()->is_rooth())
+		if(this->root().empty()|| this->root()=="/")
+			this->_root="./www";
+		else if(this->_root.find(".")==std::string::npos)
+			this->_root="."+this->root();
+        std::cout<<YELLOW<<"path file: "<<client->request()->path_file()<<RESET_COLOR<<std::endl;
+		if(location().index().empty() && client->request()->path_file()=="/")
 		{
 			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
 			this->_statusCode=200;
@@ -175,7 +186,7 @@ void Response::checkRequest(Client *client)
 		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
 		return ;
 		// return sendData(client);
-	}
+//	}
 	// TODO handle location
 	// //check index autoindex
 	// this->_path += "index.html";
@@ -337,8 +348,35 @@ void Response::isDirectory(const std::string& path) {
 // 	getFullPath(client);
 // 	return true;
 // }
+void Response::initLocation(Client *client)
+{
 
-Location Response::checkIfExistLocation(Client *client) {
+	fitBestLocation(client);
+	if (!_location.allowMethod(client->request()->method()))
+    {
+        this->_error=true;
+		this->_statusCode=405;
+		return;
+	}
+	if(this->_location.getAutoIndex() && _location.autoIndex(client->request()->path_file()))
+    {
+        std::cout<<CYAN<<"autoindex"<<RESET_COLOR<<std::endl;
+        this->_statusCode=200;
+        this->_body=_location.generateDirectoryListing(client->request()->path_file());
+        this->_bodySize=this->_body.length();
+        this->_content_type="html";
+//        this->_readyToSend=true;
+        return;
+	}
+    if(!this->location().index().empty())
+        return readFromFile(this->location().index());
+    if(!this->location().clientMaxBodySize().empty())
+        this->_clientMaxBodySize= toInt(this->location().clientMaxBodySize());
+    //TODO client max body size set value for request and add a check in response building
+
+}
+
+void Response::fitBestLocation(Client *client) {
 	Location bestMatch;
 	size_t bestMatchLenght = 0;
 	// Itera attraverso le posizioni definite nel server
@@ -348,19 +386,19 @@ Location Response::checkIfExistLocation(Client *client) {
 			bestMatchLenght = it->getPath().length();
 		}
 	}
-	return bestMatch;
+	this->_location=bestMatch;
 }
-
-bool Response::allowMethod(Client *client) {
-	std::vector<std::string> methods = client->response()->location().getMethods();
-	std::string method = client->request()->method();
-	for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
-		if (it->compare(method) == 0)
-			return true;
-	}
-	this->_statusCode = 405;
-	return false;
-}
+//
+// bool Response::allowMethod(Client *client) {
+// 	std::vector<std::string> methods = client->response()->location().getMethods();
+// 	std::string method = client->request()->method();
+// 	for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+// 		if (it->compare(method) == 0)
+// 			return true;
+// 	}
+// 	this->_statusCode = 405;
+// 	return false;
+// }
 
 /*
  *

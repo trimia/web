@@ -88,9 +88,11 @@ class	Request
 
 		void set_path_file(const std::string &path_file);
 
-		bool is_rooth() const;
+		bool is_root() const;
 
-		void set_is_rooth(bool is_rooth);
+		void set_is_root(bool is_rooth);
+
+
 
 		std::string connection() const;
 
@@ -111,12 +113,13 @@ class	Request
 		bool									_isBody;
 		std::string								_body;
 		size_t									_body_size;
+        size_t                                  _clientMaxBodySize;
 		std::string								_httpMessage; // messaggio intero preso a pezzi
 		size_t									_headerSize;
 		std::map<std::string, std::string>		_requestHeaders;
 		std::string								_method; // GET, POST, DELETE //! GET
 		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		bool									_isRooth;
+		bool									_isRoot;
 		std::string								_path_file; // la url senza query //! /www/html/index.html
 		std::string								_query;//?
 		bool									_isQuery;//?

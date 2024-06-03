@@ -63,7 +63,6 @@ static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::st
                 std::cout << "Error: wrong error page in server block from config file, found: " << it->first << std::endl;
                 exit(2);
             }
-
     }
 
     return server;
@@ -124,8 +123,8 @@ std::vector<Server> ConfigBlock::handleBlock() {
             listOfLocation.push_back(location);
         }
         server.setLocations(listOfLocation);
-        server.initSock();
         server = handleServerBlock(it->locationBlock, it->keyValue, it->errorPages);
+        server.initSock();
 
         listOfServers.push_back(server);
     }

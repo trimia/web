@@ -6,6 +6,7 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
+#include "Location.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
@@ -14,6 +15,7 @@ class Server;
 class Response;
 class Request;
 class Socket;
+class Location;
 class	Client : public sType
 {
 	public	:
@@ -31,6 +33,8 @@ class	Client : public sType
 	void initClient(Server *server, int clientFd);
 	void initRequest();
 	void initResponse();
+
+		// void initLocation();
 
 		Socket *getClientSock();
 
@@ -140,6 +144,7 @@ class	Client : public sType
 		size_t			_readBlock;
 		size_t			_blockSize;
 		//	DataType	attributes.
+    void initLocation();
 };
 
 // ******************************************************** //

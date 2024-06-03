@@ -215,6 +215,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
     client.initRequest();
     client.initResponse();
+    client.initLocation();
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     // std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
@@ -269,7 +270,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         client.response()->set_status_code(501);
         client.response()->set_error(true);
     }
-    std::cout<<std::boolalpha<<"error: "<<client.response()->error()<<"error: "<<client.request()->error()<<std::endl;
+//    std::cout<<std::boolalpha<<"error: "<<client.response()->error()<<"error: "<<client.request()->error()<<std::endl;
     if(client.response()->error()||client.request()->error()) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
         client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),
@@ -277,12 +278,12 @@ bool Webserver::_handleConnection(epoll_event &event) {
         // bull=false;
         // return false;
     }
-    std::cout<<std::boolalpha<<"request ended: "<<client.request()->ended()<<"request error: "<<client.request()->error()<<std::endl;
-    if(!client.request()->ended() && !client.request()->error()) {
-        std::cout<<RED<<"Error in request or response"<<RESET_COLOR<<std::endl;
-        return true;
-
-    }
+    std::cout<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" request error: "<<client.request()->error()<<std::endl;
+//    if(!client.request()->ended() && !client.request()->error()) {
+////        std::cout<<RED<<"Error in request or response"<<RESET_COLOR<<std::endl;
+//        return true;
+//
+//    }
     client.response()->sendData(&client);
     // if(client.response()->ready_to_send()) {
     //     client.response()->sendData(client);
@@ -337,7 +338,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
 }
 
 bool Webserver::_closeConnection(epoll_event &event) {
-    // Client& client= *reinterpret_cast<Client*>(event.data.ptr);
+//     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     Client* client = static_cast<Client*>(event.data.ptr);
 //TODO check what is necessary free delete from list/vector etc...
     if(client->request())
@@ -351,7 +352,7 @@ bool Webserver::_closeConnection(epoll_event &event) {
     }
     if(close(client->getClientSock()->getFdSock())==-1)
         return false;
-    // _listOfClient.remove_if([&client](const Client& c) { return &c == client; });
+//     _listOfClient.remove_if([&client](const Client& c) { return &c == client; });
     _listOfClient.remove_if([client](const Client* c) { return c == client; });
     // delete client;
     event.data.ptr=NULL;
