@@ -370,8 +370,8 @@ void Response::initLocation(Client *client)
 	}
     if(!this->location().index().empty())
         return readFromFile(this->location().index());
-    if(!this->location().clientMaxBodySize().empty())
-        this->_clientMaxBodySize= toInt(this->location().clientMaxBodySize());
+    // if(!this->location().clientMaxBodySize().empty())
+    //     this->_clientMaxBodySize= toInt(this->location().clientMaxBodySize());
     //TODO client max body size set value for request and add a check in response building
 
 }
