@@ -7,8 +7,8 @@ SRCS = main.cpp \
 		src/Socket.cpp \
 		src/Server.cpp \
 		src/Cgi.cpp \
-		src/Client.cpp \
 		src/Location.cpp \
+		src/Client.cpp \
 		src/Request.cpp \
 		src/Response.cpp \
 		src/Webserver.cpp \

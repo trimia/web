@@ -3,7 +3,7 @@
 
 #include "include.h"
 #include "Client.hpp"
-// #include "Location.hpp"
+#include "Location.hpp"
 //#include "Request.hpp"
 //#include "Server.hpp"
 
@@ -11,6 +11,7 @@
 //                         CLASSES                         //
 // ****************************************************** //
 class Client;
+//class Location;
 // class Request;
 //class Server;
 
@@ -118,13 +119,13 @@ private	:
 	std::string     _path;
 	std::string     _root;
 	std::string     _fileExtension;
+    Location        _location;
 
 
 	std::string     _target_file;
 	// std::vector<uint8_t> _body;
 	size_t          _body_length;
 	std::string     _response_body;
-	Location     _location;
 	short           _code;
 	char            *_res;
 	int				_cgi;

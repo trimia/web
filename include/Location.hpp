@@ -2,7 +2,7 @@
 #define _Location_HPP_
 
 #include "include.h"
-#include "Client.hpp"
+//#include "Client.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //
@@ -16,10 +16,16 @@ class	Location
 		Location (Location const &obj);
 
 
-
-        Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
-                 std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
-                 std::vector<std::string> cgiExt, unsigned long clientMaxBodySize);
+//    Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
+//                       std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
+//                       std::vector<std::string> cgiExt, unsigned long clientMaxBodySize)
+//            : _path(path), _root(root), _autoindex(autoindex), _index(index), _methods(methods), _cgiPath(cgiPath), _alias(alias), _clientMaxBodySize(clientMaxBodySize), _return(ret), _cgiExt(cgiExt)
+//    {
+//        // constructor body
+//    }
+//        Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
+//                 std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
+//                 std::vector<std::string> cgiExt, unsigned long clientMaxBodySize);
 
         ~Location ();
         Location &operator= (const Location &obj);
@@ -28,14 +34,16 @@ class	Location
 
 		// void initLocation(Client *client);
 
-		bool allowMethod(Client *client);
+		bool allowMethod(std::string method);
 
+        bool autoIndex(std::string path);
 
+        std::string generateDirectoryListing(const std::string &path);
 
 
 		std::string & root();
 
-		bool & autoindex();
+		bool & getAutoIndex();
 
 		std::string & index();
 
@@ -80,6 +88,7 @@ private	:
 		//is necessary?
 		std::vector<std::string>	_cgiExt;
         //	DataType	attributes.
+
 };
 
 // ******************************************************** //

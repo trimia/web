@@ -2,16 +2,17 @@
 
 Location::Location()
 {
+    this->_autoindex = false;
 //	std::cout << "Location : Default Constructor Called" << std::endl;
 }
 
 
-Location::Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
-                   std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
-                   std::vector<std::string> cgiExt, unsigned long  clientMaxBodySize):
-                   _path(path), _root(root), _autoindex(autoindex), _index(index),
-                   _methods(methods), _return(ret), _alias(alias), _cgiPath(cgiPath),
-                   _cgiExt(cgiExt), _clientMaxBodySize(reinterpret_cast<const char *>(clientMaxBodySize)) {}
+//Location::Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
+//                   std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
+//                   std::vector<std::string> cgiExt, unsigned long  clientMaxBodySize):
+//                   _path(path), _root(root), _autoindex(autoindex), _index(index),
+//                   _methods(methods), _return(ret), _alias(alias), _cgiPath(cgiPath),
+//                   _cgiExt(cgiExt), _clientMaxBodySize(reinterpret_cast<const char *>(clientMaxBodySize)) {}
 
 
 Location::~Location()
@@ -59,16 +60,48 @@ Location	&Location::operator= (const Location &obj)
 //     return bestMatch;
 // }
 
-bool Location::allowMethod(Client *client) {
-    std::vector<std::string> methods = client->response()->location().getMethods();
-    std::string method = client->request()->method();
+bool Location::allowMethod(std::string method) {
+    std::vector<std::string> methods = this->getMethods();
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
         if (it->compare(method) == 0)
             return true;
     }
     return false;
 }
+//
+bool Location::autoIndex(std::string path){
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0) {
+        std::cout << RED << "stat() error" << RESET_COLOR << std::endl;
+        return false;
+    }
+    if(S_ISDIR(info.st_mode)){
+        return true;
+    }
+    return false;
+}
+//
+std::string Location::generateDirectoryListing(const std::string& path) {
+    DIR* dir;
+    struct dirent* ent;
+    std::ostringstream html;
 
+    html << "<html><body><ul>";
+
+    if ((dir = opendir(path.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
+        }
+        closedir(dir);
+    } else {
+        // Could not open directory
+        return "";
+    }
+
+    html << "</ul></body></html>";
+
+    return html.str();
+}
 
 
 /*
@@ -79,7 +112,7 @@ std::string & Location::root() {
     return _root;
 }
 
-bool & Location::autoindex() {
+bool & Location::getAutoIndex() {
     return _autoindex;
 }
 
