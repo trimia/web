@@ -198,6 +198,8 @@ bool Webserver::_acceptConnection(Server *server) {
  * REMEMBER false keep in handleConnection true return to main loop
  */
 
+
+
 bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<MAGENTA<<"handling connection"<<RESET_COLOR<<std::endl;
     //TODO choose wich is better
@@ -216,6 +218,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     client.initRequest();
     client.initResponse();
     client.initLocation();
+
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
     // std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
@@ -227,6 +230,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     client.request()->receiveData(&client);
+    Cgi Cgi(client.request());
     if(client.response()->status_code()!=1)
         client.response()->setResponseForMethod(&client);
     if (client.request()->error() && client.response()->complete())

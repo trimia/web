@@ -4,6 +4,7 @@
 #include "include.h"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Cgi.hpp"
 #include "ConfigParser.hpp"
 #include "ConfigBlock.hpp"
 
@@ -69,7 +70,6 @@ class	Webserver
 	// }
 
 private	:
-
     std::vector<Server>     _listOfServer;
     std::list<Client*>		_listOfClient;
     int                     _epollFd;

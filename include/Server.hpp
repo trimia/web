@@ -42,6 +42,8 @@ class	Server : public sType
     //     this->_port = 0;
     // };
 
+    bool getIsCgiEnabled(void);
+
     uint16_t getPort() const;
 
     void setPort(uint16_t port);
@@ -86,17 +88,21 @@ class	Server : public sType
 
 	void set_server_socket( Socket *server_socket);
 
-        bool is_location();
+    bool is_location();
 
-        void setIsLocation(bool is_location);
+    void setIsLocation(bool is_location);
 
-        bool & serv_sock_created_with_new();
+    bool & serv_sock_created_with_new();
 
-        void set_serv_sock_created_with_new(bool serv_sock_created_with_new);
+    void set_serv_sock_created_with_new(bool serv_sock_created_with_new);
 
-        int location_number();
+    int location_number();
 
-        void set_location_number(int location_number);
+    void set_location_number(int location_number);
+
+    void setIsCgiEnabled(bool cgiEnabled);
+
+
 
         // std::vector<int> allowmethods() const;
         //
@@ -105,6 +111,7 @@ class	Server : public sType
 private	:
 //        friend class Socket;
         friend class Webserver;
+        bool                            _isCgiEnabled;
         uint16_t						_port;
         std::string                     _ip;
         std::string						_server_name;

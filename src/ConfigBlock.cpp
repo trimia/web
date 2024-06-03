@@ -31,7 +31,7 @@ void    ConfigBlock::handleHTTPBlock() {
     ;
 }
 
-static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::string, std::string> keyValue, std::vector<std::string> vecString) {
+static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::string, std::string> keyValue, std::vector<std::string> vecString, std::vector<std::string> cgiPath) {
     Server  server;
 
     server.set_location_number(it.size());
@@ -42,6 +42,11 @@ static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::st
     if (!vecString.empty() && vecString[0] == "error_page")
         server.setErrorPages(vecString);
 
+    if (!cgiPath.empty() && cgiPath[0] == "cgi_enable")
+        server.setIsCgiEnabled(true);
+        // server.setCgiPath();
+        // printf("\n\ntokens\n\n|%s| |%s| |%s|\n\n", cgiPath[0].c_str(), cgiPath[1].c_str(), cgiPath[2].c_str());
+        
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
             it != keyValue.end(); it++) {
             if (it->first == "server_name") {
@@ -123,7 +128,7 @@ std::vector<Server> ConfigBlock::handleBlock() {
             listOfLocation.push_back(location);
         }
         server.setLocations(listOfLocation);
-        server = handleServerBlock(it->locationBlock, it->keyValue, it->errorPages);
+        server = handleServerBlock(it->locationBlock, it->keyValue, it->errorPages, it->cgiPath);
         server.initSock();
 
         listOfServers.push_back(server);

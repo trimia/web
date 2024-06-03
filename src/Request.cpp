@@ -221,6 +221,12 @@ void Request::setUrlPathQuery(std::string &url) {
 	// if (urlEndPos == std::string::npos)
 	// 	this->_isPathFileDir=false;
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
+
+	if (this->_requestURL.find("/")) {
+
+	}
+	// printf("n\n\n===========================================> U R I : %s\n\n\n", this->_requestURL.c_str());
+
 	this->_query= getQueryFromHttpRequest(url);
 	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
 	size_t endLinePos = url.find("\r", urlEndPos);

@@ -7,8 +7,9 @@ Server::Server()
     // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
     this->_isLocation=false;
     // this->_servSockCreatedWithNew=false;
-    this->_server_socket=new Socket();
+    this->_isCgiEnabled = false;
     // this->_locationNumber=0;
+    this->_server_socket=new Socket();
     // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
@@ -31,7 +32,7 @@ Server::Server(Server const &obj)
 	    this->_port=obj._port;
 	    this->_root=obj._root;
 	    this->_server_socket = new Socket(*obj._server_socket);
-
+        this->_isCgiEnabled = obj._isCgiEnabled;
 	    this->_index=obj._index;
 	    this->_client_max_body_size=obj._client_max_body_size;
 	    this->_autoindex=obj._autoindex;
@@ -58,6 +59,7 @@ Server	&Server::operator= (const Server &obj)
         this->_index=obj._index;
         this->_client_max_body_size=obj._client_max_body_size;
         this->_autoindex=obj._autoindex;
+        this->_isCgiEnabled = obj._isCgiEnabled;
         // this->set_server_socket(new Socket(*obj._server_socket));
 
 	    // this->_server_socket = new Socket(*obj._server_socket);
@@ -112,6 +114,13 @@ void Server::initSock() {
  *
  */
 
+bool    Server::getIsCgiEnabled() {
+    return this->_isCgiEnabled;
+}
+
+void    Server::setIsCgiEnabled(bool cgiEnabled) {
+    this->_isCgiEnabled = cgiEnabled;
+}
 
 uint16_t Server::getPort() const {
     return _port;

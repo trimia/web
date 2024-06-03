@@ -64,7 +64,8 @@ class	Cgi {
         char*                               _scriptPath;
 
     public	:
-        Cgi(Request request);
+        Cgi() {;};
+        Cgi(Request *request);
         Cgi(Cgi const &obj);
         ~Cgi() {} ;
         Cgi     &operator=(const Cgi &obj);
