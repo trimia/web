@@ -74,7 +74,7 @@ void Request::receiveData(Client *client) {
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
 	if(byteCount==0)
 	{
-		std::cout<<GREEN<<"ready to close connection"<<RESET_COLOR<<std::endl;
+//		std::cout<<GREEN<<"ready to close connection"<<RESET_COLOR<<std::endl;
 		this->_ended=true;
 		client->response()->set_status_code(204);
 		return;
@@ -94,9 +94,32 @@ void Request::receiveData(Client *client) {
 		parseRequest();
 		fillRequest(this->_httpMessage);
 		client->set_connection(this->connection());
-		printCharsAndSpecialChars(this->http_version());
+        if(client->is_location())
+        {
+            Location temp;
+            temp=temp.fitBestLocation(client->locations(),this->request_url());
+            if( !temp.clientMaxBodySize().empty() && this->_body_size>toInt(temp.clientMaxBodySize()))
+            {
+                client->response()->set_status_code(413);
+                return;
+            }
+        }
+
+        if((client->getClientMaxBodySize()!=0 && this->_body_size > client->getClientMaxBodySize()))
+        {
+            client->response()->set_status_code(413);
+            return;
+        }
+        if(this->_headerSize!=0&& this->_headerSize>MAX_HEADER_SIZE)
+        {
+            client->response()->set_status_code(431);
+            return;
+        }
+
+        printCharsAndSpecialChars(this->http_version());
 		// std::cout<<YELLOW<<"httpversion :"<<this->http_version()<<RESET_COLOR<<std::endl;
-		if(this->http_version()!="HTTP/1.1")client->response()->set_status_code(505);
+		if(this->http_version()!="HTTP/1.1")
+            client->response()->set_status_code(505);
 		if(this->error())
 		{
 			std::cout<<RED<<"Error: bad request"<<RESET_COLOR<<std::endl;
@@ -115,7 +138,8 @@ void Request::receiveData(Client *client) {
 
 std::string Request::checktype(std::string httpRequest) {
 	size_t methodEndPos = httpRequest.find(" ");
-	if (methodEndPos == std::string::npos) {
+	if (methodEndPos == std::string::npos)
+    {
 		this->_error= true;
 		// Handle error: Invalid HTTP request
 		return "";
@@ -124,25 +148,27 @@ std::string Request::checktype(std::string httpRequest) {
 	std::string method;
 	input>> method;
 	// std::cout<<YELLOW<<"checktype method :"<<method<<RESET_COLOR<<std::endl;
-	if (method.find("GET") == 0 || method.find("POST") == 0 || method.find("DELETE") == 0 || method.find("HEAD") == 0) {
+	if (method.find("GET") == 0 || method.find("POST") == 0 || method.find("DELETE") == 0 || method.find("HEAD") == 0)
+    {
 		set_method(method);
 	} else
 		this->_error = true;// Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
 	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
 	int lastLineStart=httpRequest.find("Content-Length: ");
-	if(lastLineStart>0) {
+	if(lastLineStart>0)
+    {
 		int numberEnd=httpRequest.find("\r",lastLineStart);
 		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
-        if(this->_body_size > this->_clientMaxBodySize)
-        {
-            this->_error=true;
-            return "";
-        }
 	}
+    if(httpRequest.find("Connection")==std::string::npos)
+        this->_connection="close";
+    int headerEnd=httpRequest.find("\r\n\r\n");
+    if(headerEnd>0 && this->_body_size>0)
+        this->_body=httpRequest.substr(headerEnd+4);
+//    printCharsAndSpecialChars(this->_body);
 	// int numberEnd=httpRequest.find("\r",lastLineStart);
 	// int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
-	std::cout<<RED<<"****body size ****:"<<this->body_size()<<RESET_COLOR<<std::endl;
-	// this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+//	std::cout<<RED<<"****body size ****:"<<this->body_size()<<RESET_COLOR<<std::endl;
 	this->_headerSize=_headerSize-_body_size;
 	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
 	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
@@ -400,4 +426,12 @@ std::string Request::http_message(){
 
 inline void Request::set_http_message(const std::string &http_message) {
 	_httpMessage = http_message;
+}
+
+size_t Request::getClientMaxBodySize() const {
+    return _clientMaxBodySize;
+}
+
+void Request::setClientMaxBodySize(size_t clientMaxBodySize) {
+    _clientMaxBodySize = clientMaxBodySize;
 }

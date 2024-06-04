@@ -80,6 +80,7 @@ bool Socket::_initializeService(char *ip, uint16_t port,int type)
     this->_service.sin_family=AF_INET;
     this->_service.sin_port= htons(port);
     // inet_pton(AF_INET, ip, &this->_service.sin_addr.s_addr);
+    if (ip)
     this->_service.sin_addr.s_addr= inet_addr(ip);
     this->_sockSize= (socklen_t)sizeof(this->_service);
     if(type==SERVER_SOCK)

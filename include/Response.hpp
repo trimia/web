@@ -35,9 +35,9 @@ public	:
 
 	void isDirectory(const std::string &path);
 
-	void initLocation(Client *client);
+	void handleLocation(Client *client);
 
-	void fitBestLocation(Client *client);
+//	void fitBestLocation(Client *client);
 
 	// bool allowMethod(Client *client);
 

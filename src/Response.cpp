@@ -61,13 +61,14 @@ Response	&Response::operator= (const Response &obj)
 // }
 void Response::setResponseForMethod(Client *client) {
 	std::cout<<BLUE<<"set response method"<<RESET_COLOR<<std::endl;
-	// static int i = 1;
-	// if (i == 0) {
-	// 	i++;
-	// 	return;
-	// }
-	// i--;
-	// if(client->request()->method().empty())
+//	 static int i = 1;
+//	 if (i == 0) {
+//	 	i++;
+//	 	return;
+//	 }
+//	 i--;
+//	 if(client->request()->method().empty())
+//         return;
 	if(client->request()->error())
 		return;
 	// std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
@@ -161,30 +162,33 @@ void Response::checkRequest(Client *client)
 //    std::cout<<YELLOW<<std::boolalpha<<"is location"<<client->is_location()<<RESET_COLOR<<std::endl;
 //	if(!client->is_location())
 //	{
-		std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
-		if(this->root().empty()|| this->root()=="/")
-			this->_root="./www";
-		else if(this->_root.find(".")==std::string::npos)
-			this->_root="."+this->root();
-        std::cout<<YELLOW<<"path file: "<<client->request()->path_file()<<RESET_COLOR<<std::endl;
-		if(location().index().empty() && client->request()->path_file()=="/")
-		{
-			std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
-			this->_statusCode=200;
-			this->_body="server is online";
-			this->_bodySize=this->_body.length();
-			this->_fileExtension=getFileExtension("txt");
-			this->_readyToSend=true;
-			return ;
-		}
-		if(client->request()->path_file().find_last_of(".") == std::string::npos) {
-			std::cout<<CYAN<<"no extension"<<RESET_COLOR<<std::endl;
-			isDirectory(this->root()+client->request()->path_file());
-		}
-		else
-			readFromFile(this->root()+client->request()->path_file());
-		std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
-		return ;
+
+    if(client->is_location())
+        handleLocation(client);
+        std::cout<<RED<<"no location"<<RESET_COLOR<<std::endl;
+        if(this->root().empty()|| this->root()=="/")
+            this->_root="./www";
+    if(this->_root.find(".")==std::string::npos)
+        this->_root="."+this->root();
+    std::cout<<YELLOW<<"path file: "<<client->request()->path_file()<<RESET_COLOR<<std::endl;
+    if(location().index().empty()&& client->request()->path_file()=="/")
+    {
+        std::cout<<CYAN<<"root path"<<RESET_COLOR<<std::endl;
+        this->_statusCode=200;
+        this->_body="server is online";
+        this->_bodySize=this->_body.length();
+        this->_fileExtension=getFileExtension("txt");
+        this->_readyToSend=true;
+        return ;
+    }
+    if(client->request()->path_file().find_last_of(".") == std::string::npos) {
+        std::cout<<CYAN<<"no extension"<<RESET_COLOR<<std::endl;
+        isDirectory(this->root()+client->request()->path_file());
+    }
+    else
+        readFromFile(this->root()+client->request()->path_file());
+    std::cout<<YELLOW<<"path file: "<<this->root()+client->request()->path_file()<<RESET_COLOR<<std::endl;
+    return ;
 		// return sendData(client);
 //	}
 	// TODO handle location
@@ -335,23 +339,8 @@ void Response::isDirectory(const std::string& path) {
 	}
 }
 
-
-// bool Response::checkLocation(Client *client) {
-// 	// Trova la miglior corrispondenza della posizione per la richiesta
-// 	client->response()->_location = checkIfExistLocation(client);
-// 	// std::cout << CYAN_TEXT << "Best Location Match: " << client.request->bestLocation->loc_path
-// 	// << "\nRoot: " << client.request->bestLocation->root << "\nIndex: " << client.request->bestLocation->index << RESET_COLOR << std::endl;
-// 	// Verifica se il metodo é permesso
-// 	if (allowMethod() == false)
-// 		return false;
-// 	// Ottieni il percorso completo considerando alias, root, e index
-// 	getFullPath(client);
-// 	return true;
-// }
-void Response::initLocation(Client *client)
+void Response::handleLocation(Client *client)
 {
-
-	fitBestLocation(client);
 	if (!_location.allowMethod(client->request()->method()))
     {
         this->_error=true;
@@ -365,29 +354,35 @@ void Response::initLocation(Client *client)
         this->_body=_location.generateDirectoryListing(client->request()->path_file());
         this->_bodySize=this->_body.length();
         this->_content_type="html";
-//        this->_readyToSend=true;
         return;
 	}
-    if(!this->location().index().empty())
+    if(!this->_location.index().empty())
         return readFromFile(this->location().index());
-    // if(!this->location().clientMaxBodySize().empty())
-    //     this->_clientMaxBodySize= toInt(this->location().clientMaxBodySize());
+    if(this->_location.alias().empty())
+        if(int locationPathPos=client->request()->path_file().find_last_of(location().getPath()) != std::string::npos)
+            client->request()->path_file().replace(locationPathPos,location().getPath().length(),location().alias());
+
+    std::cout<<YELLOW<<"location return: "<<this->location().getReturn().at(0)<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"location return: "<<this->location().getReturn().at(1)<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"location return: "<<this->location().getReturn().at(2)<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"location return: "<<this->location().getReturn().at(3)<<RESET_COLOR<<std::endl;
+//        return readFromFile(this->location().root()+client->request()->path_file());
     //TODO client max body size set value for request and add a check in response building
 
 }
 
-void Response::fitBestLocation(Client *client) {
-	Location bestMatch;
-	size_t bestMatchLenght = 0;
-	// Itera attraverso le posizioni definite nel server
-	for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
-		if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-			bestMatch = *it.base();
-			bestMatchLenght = it->getPath().length();
-		}
-	}
-	this->_location=bestMatch;
-}
+//void Response::fitBestLocation(Client *client) {
+//	Location bestMatch;
+//	size_t bestMatchLenght = 0;
+//	// Itera attraverso le posizioni definite nel server
+//	for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
+//		if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+//			bestMatch = *it.base();
+//			bestMatchLenght = it->getPath().length();
+//		}
+//	}
+//	this->_location=bestMatch;
+//}
 //
 // bool Response::allowMethod(Client *client) {
 // 	std::vector<std::string> methods = client->response()->location().getMethods();

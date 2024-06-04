@@ -47,18 +47,18 @@ Location	&Location::operator= (const Location &obj)
 
 
 
-// Location Location::fitBestLocation(Client *client) {
-//     Location bestMatch;
-//     size_t bestMatchLenght = 0;
-//     // Itera attraverso le posizioni definite nel server
-//     for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
-//         if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-//             bestMatch = *it.base();
-//             bestMatchLenght = it->getPath().length();
-//         }
-//     }
-//     return bestMatch;
-// }
+ Location Location::fitBestLocation(std::vector<Location> locations,std::string path_file) {
+     Location bestMatch;
+     size_t bestMatchLenght = 0;
+     // Itera attraverso le posizioni definite nel server
+     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+         if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+             bestMatch = *it.base();
+             bestMatchLenght = it->getPath().length();
+         }
+     }
+     return bestMatch;
+ }
 
 bool Location::allowMethod(std::string method) {
     std::vector<std::string> methods = this->getMethods();

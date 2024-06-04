@@ -15,25 +15,9 @@ class	Location
 
 		Location (Location const &obj);
 
-
-//    Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
-//                       std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
-//                       std::vector<std::string> cgiExt, unsigned long clientMaxBodySize)
-//            : _path(path), _root(root), _autoindex(autoindex), _index(index), _methods(methods), _cgiPath(cgiPath), _alias(alias), _clientMaxBodySize(clientMaxBodySize), _return(ret), _cgiExt(cgiExt)
-//    {
-//        // constructor body
-//    }
-//        Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
-//                 std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
-//                 std::vector<std::string> cgiExt, unsigned long clientMaxBodySize);
-
         ~Location ();
         Location &operator= (const Location &obj);
-
-		// Location fitBestLocation(Client *client);
-
-		// void initLocation(Client *client);
-
+        Location fitBestLocation(std::vector<Location> locations, std::string path_file);
 		bool allowMethod(std::string method);
 
         bool autoIndex(std::string path);

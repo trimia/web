@@ -71,6 +71,11 @@ bool Client::operator==(const Client &obj)const {
 void Client::initClient(Server *server, int clientFd) {
 	// (void)clientFd;
 	this->_id = clock();
+    if(!server->getClientMaxBodySize().empty())
+        this->_clientMaxBodySize=toInt(server->getClientMaxBodySize());
+    else
+        this->_clientMaxBodySize=0;
+//    std::cout<<GREEN<<"client max body size: "<<this->_clientMaxBodySize<<RESET_COLOR<<std::endl;
 	_initSocket((char *)server->getIp().c_str(),server->getPort(),CLIENT_SOCK,clientFd);
 	set_is_location(server->is_location());
 	set_location_number(server->location_number());
@@ -98,12 +103,16 @@ void Client::initRequest() {
 	this->_request = new Request();
 	if(this->_request->time_start()==0)
 		this->_request->set_time_start(std::time(NULL));
-	// Request *request = new Request();
+    // Request *request = new Request();
 	// this->_request = request;
 
 }
 void Client::initLocation(){
-    this->response()->fitBestLocation(this);
+    Location temp;
+    this->response()->set_location(temp.fitBestLocation(this->_locations,this->request()->path_file()));
+//    if(!this->response()->location().clientMaxBodySize().empty())
+//        this->request()->setClientMaxBodySize(toInt(this->response()->location().clientMaxBodySize()));
+
 
 }
 
@@ -286,4 +295,12 @@ void Client::set_locations(const std::vector<Location> &locations) {
 		 it != locations.end(); ++it) {
 		this->_locations.push_back(*it);
 		 }
+}
+
+size_t Client::getClientMaxBodySize() const {
+    return _clientMaxBodySize;
+}
+
+void Client::setClientMaxBodySize(size_t clientMaxBodySize) {
+    _clientMaxBodySize = clientMaxBodySize;
 }

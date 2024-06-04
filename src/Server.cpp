@@ -10,6 +10,7 @@ Server::Server()
     this->_isCgiEnabled = false;
     // this->_locationNumber=0;
     this->_server_socket=new Socket();
+    this->_client_max_body_size="";
     // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
@@ -99,6 +100,9 @@ void Server::initSock() {
     // this->set_server_socket(new Socket());
     this->_server_socket=new Socket();
     this->_servSockCreatedWithNew=true;
+    if(this->_ip=="localhost")
+        this->_ip="127.0.0.1";
+    //TODO if to check internal server error
     this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port,SERVER_SOCK);
     // this->socketType=SERVER_SOCK;
 
