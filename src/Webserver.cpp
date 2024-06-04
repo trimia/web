@@ -230,6 +230,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     client.request()->receiveData(&client);
+    //TODO check su url per cgi
     Cgi Cgi(client.request());
     if(client.response()->status_code()!=1)
         client.response()->setResponseForMethod(&client);

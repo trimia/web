@@ -1,8 +1,11 @@
 #ifndef _Cgi_HPP_
 # define _Cgi_HPP_
 
-# include <iostream>
-# include <map>
+//# include <iostream>
+//# include <map>
+//#include <string>
+# include "include.h"
+# include "Webserver.hpp"
 # include "Request.hpp"
 
 /*

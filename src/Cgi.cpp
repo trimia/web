@@ -1,6 +1,5 @@
-#include "Cgi.hpp"
-#include "Webserver.hpp"
-#include <string>
+# include "../include/Cgi.hpp"
+
 
 /*
  * From std::string to char*
