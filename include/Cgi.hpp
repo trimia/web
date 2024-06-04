@@ -73,10 +73,12 @@ class	Cgi {
         ~Cgi() {} ;
         Cgi     &operator=(const Cgi &obj);
 
-        bool    checkCgiUrl();
-        void    executeCgi();
-        void    setEnv();
-        void    sanitize();
+        bool            checkCgiUrl();
+        std::string     executeCgi();
+        void            sanitize();
+        void            setEnv();
+        char**          getEnv();
+        void            freeEnv(char** environment);
 };
 
 #endif
