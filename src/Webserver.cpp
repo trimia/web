@@ -345,7 +345,13 @@ bool Webserver::_handleConnection(epoll_event &event) {
     // return _prova( &event);
     return false;
 }
-
+struct MatchClient {
+    Client* target;
+    MatchClient(Client* target) : target(target) {}
+    bool operator()(const Client* c) const {
+        return c == target;
+    }
+};
 bool Webserver::_closeConnection(epoll_event &event) {
 //     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     Client* client = static_cast<Client*>(event.data.ptr);
@@ -362,7 +368,8 @@ bool Webserver::_closeConnection(epoll_event &event) {
     if(close(client->getClientSock()->getFdSock())==-1)
         return false;
 //     _listOfClient.remove_if([&client](const Client& c) { return &c == client; });
-    _listOfClient.remove_if([client](const Client* c) { return c == client; });
+//    _listOfClient.remove_if([client](const Client* c) { return c == client; });
+    _listOfClient.remove_if(MatchClient(client));
     // delete client;
     event.data.ptr=NULL;
     client = NULL;

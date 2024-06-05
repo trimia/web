@@ -158,6 +158,7 @@ extern int g_sigint; //????
  * @return std::string
  */
 //
-void printCharsAndSpecialChars(std::string str);
+//void printCharsAndSpecialChars(std::string str);
+void printCharsAndSpecialChars(const std::string& str);
 
 #endif

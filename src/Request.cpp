@@ -98,7 +98,7 @@ void Request::receiveData(Client *client) {
         {
             Location temp;
             temp=temp.fitBestLocation(client->locations(),this->request_url());
-            if( !temp.clientMaxBodySize().empty() && this->_body_size>toInt(temp.clientMaxBodySize()))
+            if( !temp.clientMaxBodySize().empty() && this->_body_size>(size_t)toInt(temp.clientMaxBodySize()))
             {
                 client->response()->set_status_code(413);
                 return;

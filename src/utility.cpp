@@ -160,17 +160,34 @@ int toInt(std::string str)
  * @return std::string
  */
 
+//#include <iostream>
+//#include <iomanip>
+//#include <cctype>
+//
+//void printCharsAndSpecialChars(std::string str) {
+//	for (char c : str) {
+//		if (std::isprint(c)) {
+//			std::cout << c << ' ';
+//		} else {
+//			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+//		}
+//	}
+//	std::cout << '\n';
+//}
+
 #include <iostream>
 #include <iomanip>
 #include <cctype>
+#include <string>
 
-void printCharsAndSpecialChars(std::string str) {
-	for (char c : str) {
-		if (std::isprint(c)) {
-			std::cout << c << ' ';
-		} else {
-			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
-		}
-	}
-	std::cout << '\n';
+void printCharsAndSpecialChars(const std::string& str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        char c = *it;
+        if (std::isprint(c)) {
+            std::cout << c << ' ';
+        } else {
+            std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+        }
+    }
+    std::cout << '\n';
 }
