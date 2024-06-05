@@ -17,7 +17,7 @@ class	Location
 
         ~Location ();
         Location &operator= (const Location &obj);
-        Location fitBestLocation(std::vector<Location> locations, std::string path_file);
+//        Location fitBestLocation(std::vector<Location> locations, std::string path_file);
 		bool allowMethod(std::string method);
 
         bool autoIndex(std::string path);
@@ -60,6 +60,7 @@ class	Location
 
 private	:
     //check if is all necessary and to do what?
+        int                         _id;
         std::string					_path;
         std::string					_root;
         bool						_autoindex;

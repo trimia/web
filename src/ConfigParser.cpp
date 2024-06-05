@@ -229,7 +229,7 @@ void    ConfigParser::handleLocationState(std::string line) {
 
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = ServerState;
-        this->countLocBlocks += 1;
+//        this->countLocBlocks += 1;
     } else if (lineToks.size() == 2 && lineToks[0] != "method" && lineToks[0] != "return") {
         if (lineToks[1][lineToks[1].length() - 1] == ';') {
             lineToks[1] = trimLastChar(lineToks[1]);

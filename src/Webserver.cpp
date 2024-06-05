@@ -217,7 +217,32 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
     client.initRequest();
     client.initResponse();
-    client.initLocation();
+//    client.initLocation();
+    std::cout << GREEN << "location path: " << this->_listOfServer[1]._locations[0].getPath() << RESET_COLOR
+              << std::endl;
+    std::cout << GREEN << "location method: " << this->_listOfServer[1]._locations[0].getMethods()[0] << RESET_COLOR
+              << std::endl;
+//    if(client._isLocation)
+//    {
+//        std::cout<<CYAN<<"here we are"<<RESET_COLOR<<std::endl;
+//        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
+//        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+//        client.response()->set_location(client.fitBestLocation(client._locations,client.request()->request_url()) );
+//        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+//        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR << std::endl;
+//
+//    }
+//    std::cout<<GREEN<<"init location"<<RESET_COLOR<<std::endl;
+//    if(client._isLocation)
+//    {
+//
+//        std::cout<<GREEN<<"location path: "<<client._locations[0].getPath()<<RESET_COLOR<<std::endl;
+//        std::cout<<GREEN<<"location method: "<<client._locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location root: "<<client._locations[0].getRoot()<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location index: "<<client._locations[0].getIndex()<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location autoindex: "<<client._locations[0].getAutoindex()<<RESET_COLOR<<std::endl;
+//
+//    }
 
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
@@ -230,6 +255,21 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     client.request()->receiveData(&client);
+
+
+    if (client._isLocation) {
+        std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+        client.response()->set_location(client.fitBestLocation(client._locations, client.request()->request_url()));
+        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
+                  << std::endl;
+
+    }
+
+
+
     //TODO check su url per cgi
 //    Cgi Cgi(client.request());
     if(client.response()->status_code()!=1){
@@ -345,6 +385,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     // return _prova( &event);
     return false;
 }
+
 struct MatchClient {
     Client* target;
     MatchClient(Client* target) : target(target) {}
@@ -352,6 +393,7 @@ struct MatchClient {
         return c == target;
     }
 };
+
 bool Webserver::_closeConnection(epoll_event &event) {
 //     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     Client* client = static_cast<Client*>(event.data.ptr);
@@ -375,8 +417,6 @@ bool Webserver::_closeConnection(epoll_event &event) {
     client = NULL;
     return true;
 }
-
-
 
 
 void Webserver::addClientToList(Client *client) {

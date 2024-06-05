@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
     //             if (!it1->getMethods().empty()) {
     //                 std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
     //             }
+//                    std::cout<<std::boolalpha << BLUE << "LOC AUTOINDEX : " << (*it1)->getAutoIndex()<<RESET_COLOR << std::endl;
     //         }
     //     }
     // }

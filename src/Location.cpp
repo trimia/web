@@ -3,7 +3,8 @@
 Location::Location()
 {
     this->_autoindex = false;
-//	std::cout << "Location : Default Constructor Called" << std::endl;
+    this->_path = "";
+	std::cout << "Location : Default Constructor Called" << std::endl;
 }
 
 
@@ -22,9 +23,19 @@ Location::~Location()
 
 Location::Location(Location const &obj)
 {
-//	std::cout << "Copy Constructor Called" << std::endl;
-	if (this != &obj)
-		*this = obj;
+	std::cout << "Location : Copy Constructor Called" << std::endl;
+    if (this != &obj)
+    {
+        this->_path=obj._path;
+        this->_root=obj._root;
+        this->_autoindex=obj._autoindex;
+        this->_index=obj._index;
+        this->setMethods(obj._methods);
+        this->_cgiPath=obj._cgiPath;
+        this->_alias=obj._alias;
+        this->_clientMaxBodySize=obj._clientMaxBodySize;
+        //        this->_error_pages=obj._error_pages;
+    }
 }
 
 Location	&Location::operator= (const Location &obj)
@@ -47,22 +58,24 @@ Location	&Location::operator= (const Location &obj)
 
 
 
- Location Location::fitBestLocation(std::vector<Location> locations,std::string path_file) {
-     Location bestMatch;
-     size_t bestMatchLenght = 0;
-     // Itera attraverso le posizioni definite nel server
-     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
-         if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-             bestMatch = *it.base();
-             bestMatchLenght = it->getPath().length();
-         }
-     }
-     return bestMatch;
- }
+// Location Location::fitBestLocation(std::vector<Location> locations,std::string path_file) {
+//     Location bestMatch;
+//     size_t bestMatchLenght = 0;
+//     // Itera attraverso le posizioni definite nel server
+//     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+//         if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+//             bestMatch = *it.base();
+//             bestMatchLenght = it->getPath().length();
+//         }
+//     }
+//     return bestMatch;
+// }
 
 bool Location::allowMethod(std::string method) {
+    std::cout<<YELLOW << "allowmethod" <<RESET_COLOR<< std::endl;
     std::vector<std::string> methods = this->getMethods();
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+//        std::cout << "Method: " << *it << std::endl;
         if (it->compare(method) == 0)
             return true;
     }
@@ -70,6 +83,7 @@ bool Location::allowMethod(std::string method) {
 }
 //
 bool Location::autoIndex(std::string path){
+    std::cout<<YELLOW << "true false autoindex" <<RESET_COLOR<< std::endl;
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
         std::cout << RED << "stat() error" << RESET_COLOR << std::endl;

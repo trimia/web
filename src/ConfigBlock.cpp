@@ -35,7 +35,7 @@ static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::st
     Server  server;
 
     server.set_location_number(it.size());
-    
+
     if (!it.empty())
         server.setIsLocation(true);
 
@@ -46,7 +46,7 @@ static Server  handleServerBlock(std::vector<LocationBlock> it, std::map<std::st
         server.setIsCgiEnabled(true);
         // server.setCgiPath();
         // printf("\n\ntokens\n\n|%s| |%s| |%s|\n\n", cgiPath[0].c_str(), cgiPath[1].c_str(), cgiPath[2].c_str());
-        
+
     for (std::map<std::string, std::string>::iterator it = keyValue.begin();
             it != keyValue.end(); it++) {
             if (it->first == "server_name") {

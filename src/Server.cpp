@@ -2,7 +2,7 @@
 
 Server::Server()
 {
-	std::cout << "Server : Default Constructor Called" << std::endl;
+//	std::cout << "Server : Default Constructor Called" << std::endl;
     this->_autoindex=false;
     // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
     this->_isLocation=false;
@@ -25,7 +25,7 @@ Server::~Server()
 
 Server::Server(Server const &obj)
 {
-	std::cout << "Server : Copy Constructor Called" << std::endl;
+//	std::cout << "Server : Copy Constructor Called" << std::endl;
 	if (this != &obj) {
 	    this->_server_name=obj._server_name;
 	    this->socketType = obj.socketType;
@@ -39,6 +39,8 @@ Server::Server(Server const &obj)
 	    this->_autoindex=obj._autoindex;
 	    // this->_server_socket=obj._server_socket;
 	    this->_event=obj._event;
+//        this->_locations=obj._locations;
+
 	    this->setLocations(obj._locations);
 	    this->setErrorPages(obj._error_pages);
 	    this->_isLocation = obj._isLocation;
@@ -49,7 +51,7 @@ Server::Server(Server const &obj)
 
 Server	&Server::operator= (const Server &obj)
 {
-    	std::cout << "Server : Copy Assignment Operator Called" << std::endl;
+//    	std::cout << "Server : Copy Assignment Operator Called" << std::endl;
     if (this != &obj)
     {
         this->_server_name=obj._server_name;
@@ -203,6 +205,19 @@ void Server::setLocations(const std::vector<Location> &locations) {
         this->_locations.push_back(*it);
     }
 }
+
+//void Server::setLocations(std::vector<Location*> locations) {
+//    // Delete old Location objects
+//    for (std::vector<Location*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+//        delete *it;
+//    }
+//    // Clear the vector
+//    _locations.clear();
+//    // Create new Location objects and copy data
+//    for (std::vector<Location*>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+//        _locations.push_back(new Location(**it));
+//    }
+//}
 
 Socket *Server::getserver_socket() {
     return _server_socket;

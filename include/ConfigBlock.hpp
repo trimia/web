@@ -7,9 +7,10 @@
 
 
 class ConfigBlock : virtual public StateMachine {
-    protected:
-        HttpBlock                   _httpBlock;
-        std::vector<ServerBlock>    _serverBlocks;
+protected:
+    HttpBlock                   _httpBlock;
+    std::vector<ServerBlock>    _serverBlocks;
+//    std::vector<Location *>     _listOfLocation; // Add this line
 
     public:
         ConfigBlock() {}
@@ -19,6 +20,8 @@ class ConfigBlock : virtual public StateMachine {
         std::vector<ServerBlock>&   getServerBlocks() { return this->_serverBlocks; }
         std::vector<Server>         handleBlock();
         void                        handleHTTPBlock();
+//    std::vector<Location *> getListOfLocation() const { return _listOfLocation; } // Add a getter for listOfLocation
+
 };
 
 #endif

@@ -1,24 +1,4 @@
 #include "../include/Socket.hpp"
-// Socket::Socket(int optName, char *ip, uint16_t port) {
-//     //TODO maybe try catch block
-//     this->_fd_sock=INVALID_SOCKET;
-//     this->_fd_sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-//     if(this->_fd_sock==INVALID_SOCKET)
-//     {
-//         std::cout<<"Error in creating socket"<<std::endl;
-//         return;
-//     }
-//     _initializeService(ip,port);
-//     if (_setSocketOption(optName))
-//         return;
-//     if (_bindSocket(ip,port))
-//         return;
-//     if (_listenOnSocket())
-//         return;
-//     fcntl(this->_fd_sock,F_SETFL,O_NONBLOCK);
-//     std::cout<<"socket successfully created"<<std::endl;
-//     //    return true;
-// }    // this->_fd_sock=INVALID_SOCKET;
 
 Socket::Socket() : _fd_sock(INVALID_SOCKET), _sockSize(0) {
     // Initialize _service to zero
@@ -38,7 +18,7 @@ Socket::~Socket()
 
 Socket::Socket(Socket const &obj)
 {
-    std::cout << "Socket : Copy Constructor Called" << std::endl;
+//    std::cout << "Socket : Copy Constructor Called" << std::endl;
     if (this != &obj)
         *this = obj;
 }
@@ -93,12 +73,12 @@ bool Socket::_initializeService(char *ip, uint16_t port,int type)
         }
     }
     std::cout<<GREEN<<"socket successfully created"<<RESET_COLOR<<std::endl;
-    std::cout<<CYAN<<"initialize service"<<std::endl;
-    std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
-    std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
-    std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
-    std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
-    std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
+//    std::cout<<CYAN<<"initialize service"<<std::endl;
+//    std::cout<<"server socket fd: "<<this->_fd_sock<<std::endl;
+//    std::cout<<"server socket service: "<<ntohs(this->_service.sin_port)<<std::endl;
+//    std::cout<<"server socket service: "<<inet_ntoa(this->_service.sin_addr)<<std::endl;
+//    std::cout<<"server socket size: "<<this->_sockSize<<std::endl;
+//    std::cout << "Service sin family: " << this->_service.sin_family<<RESET_COLOR<< std::endl;
     return true;
 
     // std::cout<<"port: "<<this->_service.sin_port<<std::endl;

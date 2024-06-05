@@ -97,9 +97,11 @@ void Request::receiveData(Client *client) {
         if(client->is_location())
         {
             Location temp;
-            temp=temp.fitBestLocation(client->locations(),this->request_url());
+
+            temp=client->fitBestLocation(client->locations(),this->request_url());
             if( !temp.clientMaxBodySize().empty() && this->_body_size>(size_t)toInt(temp.clientMaxBodySize()))
             {
+                this->_ended=true;
                 client->response()->set_status_code(413);
                 return;
             }
@@ -107,11 +109,13 @@ void Request::receiveData(Client *client) {
 
         if((client->getClientMaxBodySize()!=0 && this->_body_size > client->getClientMaxBodySize()))
         {
+            this->_ended=true;
             client->response()->set_status_code(413);
             return;
         }
         if(this->_headerSize!=0&& this->_headerSize>MAX_HEADER_SIZE)
         {
+            this->_ended=true;
             client->response()->set_status_code(431);
             return;
         }
@@ -119,10 +123,14 @@ void Request::receiveData(Client *client) {
         printCharsAndSpecialChars(this->http_version());
 		// std::cout<<YELLOW<<"httpversion :"<<this->http_version()<<RESET_COLOR<<std::endl;
 		if(this->http_version()!="HTTP/1.1")
+        {
             client->response()->set_status_code(505);
+            this->_ended=true;
+        }
 		if(this->error())
 		{
 			std::cout<<RED<<"Error: bad request"<<RESET_COLOR<<std::endl;
+            this->_ended=true;
 			client->response()->set_status_code(400);
 			return;
 		}
@@ -239,7 +247,8 @@ void Request::fillRequest(std::string &httpRequest) {
  }
 
 void Request::setUrlPathQuery(std::string &url) {
-	size_t methodEndPos = url.find(" ");
+    std::cout<<YELLOW<<"setUrlPathQuery url :"<<url<<RESET_COLOR<<std::endl;
+    size_t methodEndPos = url.find(" ");
 	if (methodEndPos == std::string::npos)
 		this->_error= true;
 	size_t urlStartPos = methodEndPos + 1;
@@ -247,6 +256,7 @@ void Request::setUrlPathQuery(std::string &url) {
 	// if (urlEndPos == std::string::npos)
 	// 	this->_isPathFileDir=false;
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
+    std::cout<<YELLOW<<"setUrlPathQuery requestURL :"<<this->_requestURL<<RESET_COLOR<<std::endl;
 
 	if (this->_requestURL.find("/")) {
 
