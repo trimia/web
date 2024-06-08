@@ -22,16 +22,14 @@ class ConfigParser : virtual public StateMachine {
         ConfigBlock                         _configBlock;
     
     public:
+        //////// DEBUG PURPOSE
+        void                                printConfig();
         std::vector<Server>                 parseConfigFile();
-        // void                                extractKeyword();
         void                                stateCheck(std::string line);
         void                                handleLine(std::string line);
         void                                handleHttpState(std::string line);
         void                                handleServerState(std::string line);
         void                                handleLocationState(std::string line);
-
-        //////// DEBUG PURPOSE
-        void                                printConfig();
 
         ConfigBlock&                        getConfigBlock() { return this->_configBlock ; }
         ConfigParser(std::string config_file, ConfigBlock& configBlock) {

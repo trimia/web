@@ -229,7 +229,7 @@ void    ConfigParser::handleLocationState(std::string line) {
 
     if (lineToks.size() == 1 && lineToks[0] == "}") {
         this->currentState = ServerState;
-        this->countLocBlocks += 1;
+//        this->countLocBlocks += 1;
     } else if (lineToks.size() == 2 && lineToks[0] != "method" && lineToks[0] != "return") {
         if (lineToks[1][lineToks[1].length() - 1] == ';') {
             lineToks[1] = trimLastChar(lineToks[1]);
@@ -257,51 +257,54 @@ void    ConfigParser::handleLocationState(std::string line) {
  * */
 void ConfigParser::printConfig() {
     // Print HTTP block information
-    std::cout << "\n*** HTTP Block ***\n";
+    std::cout << YELLOW << "\n*** HTTP Block ***\n" << RESET_COLOR;
     std::map<std::string, std::string> httpBlock = _configBlock.getHttpBlock().keyValue;
     for (std::map<std::string, std::string>::iterator it = httpBlock.begin();
          it != httpBlock.end(); ++it) {
-        std::cout << "    Key: " << it->first << ", Value: " << it->second << std::endl;
+        std::cout << YELLOW << "    Key: " << it->first << ", Value: " << it->second << RESET_COLOR << std::endl;
     }
 
     // Print server block information
-    std::cout << "\n*** Server Blocks ***\n";
-    for (std::vector<ServerBlock>::iterator it = _configBlock.getServerBlocks().begin();
-         it != _configBlock.getServerBlocks().end(); ++it) {
-        std::cout << "\n  *** Server Block ***\n";
+    std::cout << GREEN << "\n*** Server Blocks ***\n" << RESET_COLOR;
+    for (std::vector<ServerBlock>::iterator it = _configBlock.getServerBlocks().begin(); it != _configBlock.getServerBlocks().end(); ++it) {
+        std::cout << GREEN <<  "\n  *** Server Block ***\n" << RESET_COLOR;
         std::map<std::string, std::string> serverBlockKV = it->keyValue;
-        for (std::map<std::string, std::string>::iterator it2 = serverBlockKV.begin();
-             it2 != serverBlockKV.end(); ++it2) {
-            std::cout << "      Key: " << it2->first << ", Value: " << it2->second << std::endl;
+        for (std::map<std::string, std::string>::iterator it2 = serverBlockKV.begin(); it2 != serverBlockKV.end(); ++it2) {
+            std::cout << GREEN <<  "      Key: " << it2->first << ", Value: " << it2->second << RESET_COLOR << std::endl;
         }
         // Print error pages for this server block
         if (!it->errorPages.empty()) {
-            std::cout << "      Default error pages: ";
-            for (std::vector<std::string>::iterator it22 = it->errorPages.begin();
-                 it22 != it->errorPages.end(); ++it22) {
-                std::cout << *it22 << " ";
+            std::cout << GREEN << "      Default error pages: " << RESET_COLOR;
+            for (std::vector<std::string>::iterator it22 = it->errorPages.begin(); it22 != it->errorPages.end(); ++it22) {
+                std::cout << GREEN << *it22 << " " << RESET_COLOR;
             }
             std::cout << std::endl;
         }
 
 
         // Print location blocks information within this server block
-        for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin();
-             it3 != it->locationBlock.end(); ++it3) {
-            std::cout << "\n    *** Location Block ***\n";
-            std::map<std::string, std::string> locationBlockKV = it3->keyValue;
-            for (std::map<std::string, std::string>::iterator it4 = locationBlockKV.begin();
-                 it4 != locationBlockKV.end(); ++it4) {
-                std::cout << "        Key: " << it4->first << ", Value: " << it4->second << std::endl;
-            }
-            // Print error pages for this location block
-            if (!it3->retErrorPages.empty()) {
-                std::cout << "        Error Pages: ";
-                for (std::vector<std::string>::iterator it5 = it3->retErrorPages.begin();
-                     it5 != it3->retErrorPages.end(); ++it5) {
-                    std::cout << *it5 << " ";
+        if (!it->locationBlock.empty()) {
+            for (std::vector<LocationBlock>::iterator it3 = it->locationBlock.begin(); it3 != it->locationBlock.end(); ++it3) {
+                std::cout << BLUE << "\n    *** Location Block ***\n" << RESET_COLOR;
+                std::map<std::string, std::string> locationBlockKV = it3->keyValue;
+                for (std::map<std::string, std::string>::iterator it4 = locationBlockKV.begin(); it4 != locationBlockKV.end(); ++it4) {
+                    std::cout << BLUE << "        Key: " << it4->first << ", Value: " << it4->second << RESET_COLOR << std::endl;
                 }
-                std::cout << std::endl;
+                // Print error pages for this location block
+                if (!it3->retErrorPages.empty()) {
+                    std::cout << BLUE << "        Error Pages: " << RESET_COLOR;
+                    for (std::vector<std::string>::iterator it5 = it3->retErrorPages.begin(); it5 != it3->retErrorPages.end(); ++it5) {
+                        std::cout << BLUE << *it5 << " " << RESET_COLOR;
+                    }
+                    std::cout << std::endl;
+                }
+                if (!it3->methods.empty()) {
+                    std::cout << BLUE << "        Methods: " << RESET_COLOR;
+                    for (std::vector<std::string>::iterator it6 = it3->methods.begin(); it6 != it3->methods.end(); ++it6) {
+                        std::cout << BLUE << *it6 << " " << RESET_COLOR;
+                    }
+                    std::cout << std::endl;
+                }
             }
         }
     }
@@ -317,7 +320,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     std::string         out;
 
     this->_parsed_config = preProcessConfig(this->_config_file);
-//    printf("%s\n", this->_parsed_config.c_str()); /////////// debug
+    printf("%s\n", this->_parsed_config.c_str()); /////////// debug
     if (this->_parsed_config == "CONF ERROR") {
         std::cerr << "Found error in conf file.\n" << this->_parsed_config << std::endl;
         exit(2);
