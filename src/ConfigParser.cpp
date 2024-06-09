@@ -312,15 +312,11 @@ void    ConfigParser::handleLocationState(std::string line) {
 void ConfigParser::printConfig() {
     // Print HTTP block information
     std::cout << MAGENTA << "\n*** HTTP Block ***\n" << RESET_COLOR;
-    // std::map<std::string, std::string> httpBlock = _configBlock.getHttpBlock().keyValue;
-    // for (std::map<std::string, std::string>::iterator it = httpBlock.begin();
-    //      it != httpBlock.end(); ++it) {
-    //     std::cout << YELLOW << "    Key: " << it->first << ", Value: " << it->second << RESET_COLOR << std::endl;
-    // }
 
     // Print server block information
     std::cout << GREEN << "\n*** Server Blocks ***\n" << RESET_COLOR;
-    for (std::vector<Server>::iterator it = this->_vectorOfServers.begin(); it != this->_vectorOfServers.end(); ++it) {
+    std::vector<Server> vectorOfServers = this->_vectorOfServers;
+    for (std::vector<Server>::iterator it = vectorOfServers.begin(); it != vectorOfServers.end(); ++it) {
         std::cout << GREEN <<  "\n  *** Server Block ***\n" << RESET_COLOR;
         std::cout << GREEN <<  "      SERVER_NAME: " << it->getServerName() << RESET_COLOR << std::endl;
         std::cout << GREEN <<  "      PORT: " << it->getPort() << RESET_COLOR << std::endl;
@@ -342,21 +338,24 @@ void ConfigParser::printConfig() {
         if (!it->getLocations().empty()) {
             std::vector<Location> locationVec = it->getLocations();
             for (std::vector<Location>::iterator it3 = locationVec.begin(); it3 != locationVec.end(); ++it3) {
+                std::cout << BLUE <<  "\n      *** Location Block ***\n" << RESET_COLOR;
                 std::cout << BLUE << "        PATH: " << it3->getPath() << RESET_COLOR << std::endl;
                 std::cout << BLUE << "        ROOT: " << it3->root() << RESET_COLOR << std::endl;
-                std::cout << BLUE << "        AUTOINDEX: " << it3->getAutoIndex() << RESET_COLOR << std::endl;
+                std::cout << BLUE << std::boolalpha << "        AUTOINDEX: " << it3->getAutoIndex() << RESET_COLOR << std::endl;
                 std::cout << BLUE << "        ALIAS: " << it3->alias() << RESET_COLOR << std::endl;
                 // Print error pages for this location block
                 if (!it3->getReturn().empty()) {
+                    std::vector<std::string> returnVec = it3->getReturn();
                     std::cout << BLUE << "        Error Pages: " << RESET_COLOR;
-                    for (std::vector<std::string>::iterator it5 = it3->getReturn().begin(); it5 != it3->getReturn().end(); ++it5) {
+                    for (std::vector<std::string>::iterator it5 = returnVec.begin(); it5 != returnVec.end(); ++it5) {
                         std::cout << BLUE << *it5 << " " << RESET_COLOR;
                     }
                     std::cout << std::endl;
                 }
                 if (!it3->getMethods().empty()) {
+                    std::vector<std::string> methods = it3->getMethods();
                     std::cout << BLUE << "        Methods: " << RESET_COLOR;
-                    for (std::vector<std::string>::iterator it6 = it3->getMethods().begin(); it6 != it3->getMethods().end(); ++it6) {
+                    for (std::vector<std::string>::iterator it6 = methods.begin(); it6 != methods.end(); ++it6) {
                         std::cout << BLUE << *it6 << " " << RESET_COLOR;
                     }
                     std::cout << std::endl;
@@ -393,7 +392,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     }
 
     //////////
-    // this->printConfig();
+    this->printConfig();
     //////////
 
     // for (std::vector<Server>::iterator vecSer = _vectorOfServers.begin(); vecSer != _vectorOfServers.end(); ++vecSer) {
