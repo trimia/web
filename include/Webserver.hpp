@@ -6,7 +6,6 @@
 #include "Client.hpp"
 #include "Cgi.hpp"
 #include "ConfigParser.hpp"
-#include "ConfigBlock.hpp"
 
 // ******************************************************** //
 //                         CLASSES                         //

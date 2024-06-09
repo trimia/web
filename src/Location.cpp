@@ -2,8 +2,17 @@
 
 Location::Location()
 {
-    this->_autoindex = false;
 //	std::cout << "Location : Default Constructor Called" << std::endl;
+    this->_path = "";
+    this->_root = "";
+    this->_autoindex = false;
+    this->_index = "";
+    this->_methods.reserve(0);
+    this->_cgiPath.reserve(0);
+    this->_alias = "";
+    this->_clientMaxBodySize = "";
+    this->_return.reserve(0);
+    this->_cgiExt.reserve(0);
 }
 
 

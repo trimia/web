@@ -8,8 +8,7 @@ Webserver::Webserver()
 Webserver::Webserver(char * conf)
 {
     _initEpoll();
-    ConfigBlock     confBlock;
-    ConfigParser    confParser(conf, confBlock);
+    ConfigParser    confParser(conf);
     this->_listOfServer=confParser.parseConfigFile();
     std::cout<<std::boolalpha<<YELLOW<<"islocation: "<<this->_listOfServer[1].is_location()<<RESET_COLOR<<std::endl;
     std::cout<<std::boolalpha<<YELLOW<<"location number: "<<this->_listOfServer[1].location_number()<<RESET_COLOR<<std::endl;
