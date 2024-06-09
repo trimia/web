@@ -182,9 +182,13 @@ void Location::setAutoIndex(bool autoindex) {
 }
 
 void Location::setMethods(std::vector<std::string> methods) {
+    std::vector<std::string> newMethods;
+
+    this->_methods.clear();
     for (std::vector<std::string>::iterator it = methods.begin(); it != methods.end(); it++) {
-        this->_methods.push_back(*it);
+        newMethods.push_back(*it);
     }
+    this->_methods = newMethods;
 }
 
 std::vector<std::string> Location::getMethods() {
