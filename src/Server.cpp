@@ -206,6 +206,7 @@ std::vector<Location>& Server::getLocations() {
 void Server::setLocations(const std::vector<Location> &locations) {
     std::vector<Location> newLocations;
 
+    this->_locations.clear();
     for (std::vector<Location>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
         newLocations.push_back(*it);
     }
