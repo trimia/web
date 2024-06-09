@@ -3,7 +3,6 @@ NAME = webserver
 
 SRCS = main.cpp \
 		src/ConfigParser.cpp \
-		src/ConfigBlock.cpp \
 		src/Socket.cpp \
 		src/Server.cpp \
 		src/Cgi.cpp \
@@ -13,6 +12,7 @@ SRCS = main.cpp \
 		src/Response.cpp \
 		src/Webserver.cpp \
 		src/utility.cpp \
+		# src/ConfigBlock.cpp \
 
 
 OBJS = $(SRCS:.cpp=.o)

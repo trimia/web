@@ -108,7 +108,7 @@ void    Cgi::freeEnv(char** environment) {
   * */
  void    Cgi::setEnv() {
      this->_envVars.insert(std::make_pair("CONTENT_TYPE", "application/x-www-form-urlencoded"));
-     this->_envVars.insert(std::make_pair("CONTENT_LENGTH", toStr(this->_body.size()))); /// ok toStr ? is it c++98 friendly ?
+    //  this->_envVars.insert(std::make_pair("CONTENT_LENGTH", toStr(this->_body.size()))); /// ok toStr ? is it c++98 friendly ?
      this->_envVars.insert(std::make_pair("PATH_INFO", std::string(this->_scriptPath))); /// ?
      this->_envVars.insert(std::make_pair("SERVER_PORT", this->_port));
      this->_envVars.insert(std::make_pair("SERVER_SOFTWARE", "Webserve/1.0"));

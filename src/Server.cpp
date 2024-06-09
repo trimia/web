@@ -3,13 +3,23 @@
 Server::Server()
 {
 	std::cout << "Server : Default Constructor Called" << std::endl;
-    this->_autoindex=false;
-    // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
-    this->_isLocation=false;
-    // this->_servSockCreatedWithNew=false;
     this->_isCgiEnabled = false;
-    // this->_locationNumber=0;
+    this->_port = 0;
+    this->_ip = "";
+    this->_server_name = "";
+    this->_root = "";
+    this->_index = "";
+    this->_client_max_body_size = "";
+    this->_autoindex=false;
+    this->_error_pages.reserve(0);
+    this->_isLocation=false;
+    this->_locationNumber = 0;
+    this->_locations.reserve(0);
+    this->_servSockCreatedWithNew = false;
     this->_server_socket=new Socket();
+    // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
+    // this->_servSockCreatedWithNew=false;
+    // this->_locationNumber=0;
     // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
@@ -43,7 +53,7 @@ Server::Server(Server const &obj)
 	    this->_isLocation = obj._isLocation;
 	    this->_locationNumber=obj._locationNumber;
 	}
-
+    *this = obj;
 }
 
 Server	&Server::operator= (const Server &obj)
@@ -189,15 +199,17 @@ void Server::setErrorPages(std::vector<std::string> errorPages) {
     }
 }
 
-std::vector<Location> Server::getLocations() {
+std::vector<Location>& Server::getLocations() {
     return _locations;
 }
 
 void Server::setLocations(const std::vector<Location> &locations) {
-    for (std::vector<Location>::const_iterator it = locations.begin();
-         it != locations.end(); ++it) {
-        this->_locations.push_back(*it);
+    std::vector<Location> newLocations;
+
+    for (std::vector<Location>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+        newLocations.push_back(*it);
     }
+    this->_locations = newLocations;
 }
 
 Socket *Server::getserver_socket() {
