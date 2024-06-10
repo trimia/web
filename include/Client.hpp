@@ -35,7 +35,7 @@ class	Client : public sType
 	void initResponse();
     void initLocation();
 
-    Location *fitBestLocation(std::vector<Location>& locations, std::string path_file);
+    Location *fitBestLocation(std::vector<Location*>& locations, std::string path_file);
 
 		Location getTempLocation(std::vector<Location> &locations, std::string path_file);
 
@@ -106,9 +106,9 @@ class	Client : public sType
 
 		void set_connection(std::string connection);
 
-		std::vector<Location>& locations();
+		std::vector<Location*>& locations();
 
-		void set_locations(const std::vector<Location> &locations);
+		void set_locations(const std::vector<Location*> &locations);
 
     size_t getClientMaxBodySize() const;
 
@@ -130,7 +130,7 @@ private	:
 		// std::vector<int>			_allowmethods;
 		bool						_isLocation;
 		int							_locationNumber;
-		std::vector<Location>		_locations;
+		std::vector<Location*>		_locations;
 		std::string					_connection;
         size_t                      _clientMaxBodySize;
 		void _initSocket(char*ip, uint16_t port, char type, int fd);

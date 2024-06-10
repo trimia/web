@@ -82,10 +82,10 @@ void Client::initClient(Server *server, int clientFd) {
     if (server->is_location()) {
     	this->_locations=server->getLocations();
         // this->set_locations(server->getLocations());
-        std::cout<<GREEN<<"location path: "<<server->getLocations()[0].getPath()<<RESET_COLOR<<std::endl;
-        std::cout<<GREEN<<"location method: "<<server->getLocations()[0].getMethods()[0]<<RESET_COLOR<<std::endl;
-        std::cout<<CYAN<<"location path: "<< this->_locations[0].getPath()<<RESET_COLOR<<std::endl;
-        std::cout<<CYAN<<"location method: "<< this->_locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"location path: "<<server->getLocations()[0]->getPath()<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"location method: "<<server->getLocations()[0]->getMethods()[0]<<RESET_COLOR<<std::endl;
+        std::cout<<CYAN<<"location path: "<< this->_locations[0]->getPath()<<RESET_COLOR<<std::endl;
+        std::cout<<CYAN<<"location method: "<< this->_locations[0]->getMethods()[0]<<RESET_COLOR<<std::endl;
 
         this->set_is_location(server->is_location());
         this->set_location_number(server->location_number());
@@ -139,27 +139,27 @@ void Client::initRequest() {
 //
 // }
 
-Location *Client::fitBestLocation(std::vector<Location>& locations, std::string path_file) {
-    std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-    std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
+Location *Client::fitBestLocation(std::vector<Location*>& locations, std::string path_file) {
+    // std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+    // std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
     Location bestMatch;
-    if (!locations.empty())
-        for (std::vector<Location>::iterator it1 = locations.begin(); it1 != locations.end(); ++it1) {
-            std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-            if (!it1->getMethods().empty()) {
-                std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-                          << RESET_COLOR << std::endl;
-            }
-        }
-    else
-        std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+    // if (!locations.empty())
+    //     for (std::vector<Location*>::iterator it1 = locations.begin(); it1 != locations.end(); ++it1) {
+    //         std::cout << BLUE << "LOC PATH : " << (*it1)->getPath() << RESET_COLOR << std::endl;
+    //         if (!(*it1)->getMethods().empty()) {
+    //             std::cout << BLUE << "LOC METHODS -> " << (*it1)->getMethods()[0] << " : " << (*it1)->getMethods()[1]
+    //                       << RESET_COLOR << std::endl;
+    //         }
+    //     }
+    // else
+    //     std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
     size_t bestMatchLenght = 0;
-    // Itera attraverso le posizioni definite nel server
+    // // Itera attraverso le posizioni definite nel server
     if (!locations.empty())
-        for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
-            if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-                bestMatch = *it;
-                bestMatchLenght = it->getPath().length();
+        for (std::vector<Location*>::iterator it = locations.begin(); it != locations.end(); it++) {
+            if (path_file.find((*it)->getPath()) == 0 && (*it)->getPath().length() > bestMatchLenght) {
+                bestMatch = *(*it);
+                bestMatchLenght = (*it)->getPath().length();
                 // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
                 // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
 
@@ -376,18 +376,17 @@ void Client::set_connection(std::string connection) {
 }
 
 
-std::vector<Location>& Client::locations(){
+std::vector<Location*>& Client::locations(){
 	return _locations;
 }
 
-void Client::set_locations(const std::vector<Location> &locations) {
-	std::vector<Location> newLocations;
+void Client::set_locations(const std::vector<Location*> &locations) {
+	std::vector<Location *> newLocations;
 
 	this->_locations.clear();
-	for (std::vector<Location>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
-		newLocations.push_back(*it);
+	for (std::vector<Location*>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+		newLocations.push_back(new Location(**it));
 	}
-
 	this->_locations = newLocations;
 }
 

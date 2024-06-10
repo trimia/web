@@ -15,14 +15,14 @@ Response::Response() {
     this->_complete = false;
     this->_error = false;
     this->_readyToSend = false;
-    this->_location = new Location();
+    // this->_location = new Location();
 
     std::cout << "Response : Default Constructor Called" << std::endl;
 }
 
 Response::~Response() {
     std::cout << "Response : Destructor Called" << std::endl;
-    delete this->_location;
+    // delete this->_location;
 }
 
 
@@ -192,9 +192,20 @@ void Response::handleLocation(Client *client) {
 
     }
     if (this->_location->alias().empty())
-        if (int locationPathPos =
-                client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
+        if (int locationPathPos = client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
             client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+    if (!this->_location->getReturn().empty()) {
+        int code=0;
+        for (std::vector<std::string>::iterator it = this->_location->getReturn().begin(); it != this->_location->getReturn().end(); ++it) {
+            if(isDigits(it->c_str()))
+                code=toInt(*it);
+        }
+            std::cout << CYAN << "return" << RESET_COLOR << std::endl;
+        //TODO understand if we want to put a link in the location return
+        buildRedirectResponseHeader(client->request()->http_version(),StatusString(code),)
+
+        return;
+    }
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(0) << RESET_COLOR << std::endl;
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(1) << RESET_COLOR << std::endl;
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(2) << RESET_COLOR << std::endl;
@@ -370,16 +381,29 @@ void Response::set_status_code(int status_code) {
     _statusCode = status_code;
 }
 
-Location *Response::location() const {
+Location *& Response::location() {
     return _location;
 }
 
 void Response::set_location(Location *location) {
+    Location  *thelocation(location);
     std::cout << "Response : set_location" << std::endl;
     std::cout << "location path" << location->getPath() << std::endl;
     std::cout << "location method" << location->getMethods()[0]<<location->getMethods()[1] << std::endl;
-    _location = location;
+    _location= thelocation;
 }
+
+
+// Location *Response::location() const {
+//     return _location;
+// }
+
+// void Response::set_location(Location *location) {
+//     std::cout << "Response : set_location" << std::endl;
+//     std::cout << "location path" << location->getPath() << std::endl;
+//     std::cout << "location method" << location->getMethods()[0]<<location->getMethods()[1] << std::endl;
+//     _location = location;
+// }
 
 
 size_t Response::body_size() const {

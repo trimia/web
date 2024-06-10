@@ -173,7 +173,7 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfServers[countServerBlocks].set_location_number(0);
         // printf("server - countserverblocks|countlocationblocks|&server|&_vecOfServers =====> |%d|%d|\n", countServerBlocks, countLocationBlocks, &server, &this->_vectorOfServers);
     } else if (line.find("location") != std::string::npos && this->insideServerBlock) {
-        Location location;
+        Location *location =new Location();
         this->currentState = LocationState;
         this->countLocationBlocks = this->_vectorOfLocations.size();
         this->_vectorOfServers[countServerBlocks].setIsLocation(true);
@@ -284,25 +284,25 @@ void    ConfigParser::handleLocationState(std::string line) {
     } else if (tokens.size() == 2 && tokens[0] != "method" && tokens[0] != "return" && tokens[1].back() == ';') {
         tokens.pop_back();
         if (tokens[0] == "autoindex") {
-            this->_vectorOfLocations[countLocationBlocks].setAutoIndex(true);
+            this->_vectorOfLocations[countLocationBlocks]->setAutoIndex(true);
         } else if (tokens[0] == "index") {
-            this->_vectorOfLocations[countLocationBlocks].setIndex(tokens[1]);
+            this->_vectorOfLocations[countLocationBlocks]->setIndex(tokens[1]);
         } else if (tokens[0] == "root") {
-            this->_vectorOfLocations[countLocationBlocks].setRoot(tokens[1]);
+            this->_vectorOfLocations[countLocationBlocks]->setRoot(tokens[1]);
         } else if (tokens[0] == "body_size") {
-            this->_vectorOfLocations[countLocationBlocks].setClientMaxBodySize(tokens[1]);
+            this->_vectorOfLocations[countLocationBlocks]->setClientMaxBodySize(tokens[1]);
         } else if (!tokenAdmitted(tokens[0])) {
             std::cout << "Error: wrong configuration in location block from config file, found: " << tokens[0] << std::endl;
             exit(2);
         }
     } else if (tokens.size() == 3 && tokens[0] == "location" && tokens[2] == "{") {
-        this->_vectorOfLocations[countLocationBlocks].setPath(tokens[1]);
+        this->_vectorOfLocations[countLocationBlocks]->setPath(tokens[1]);
     } else if (tokens[0] == "method" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
-        this->_vectorOfLocations[countLocationBlocks].setMethods(tokens);
+        this->_vectorOfLocations[countLocationBlocks]->setMethods(tokens);
     } else if (tokens[0] == "return" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
-        this->_vectorOfLocations[countLocationBlocks].setReturn(tokens);
+        this->_vectorOfLocations[countLocationBlocks]->setReturn(tokens);
     }
 }
 
@@ -336,24 +336,24 @@ void ConfigParser::printConfig() {
 
         // Print location blocks information within this server block
         if (!it->getLocations().empty()) {
-            std::vector<Location> locationVec = it->getLocations();
-            for (std::vector<Location>::iterator it3 = locationVec.begin(); it3 != locationVec.end(); ++it3) {
+            std::vector<Location*> locationVec = it->getLocations();
+            for (std::vector<Location*>::iterator it3 = locationVec.begin(); it3 != locationVec.end(); ++it3) {
                 std::cout << BLUE <<  "\n      *** Location Block ***\n" << RESET_COLOR;
-                std::cout << BLUE << "        PATH: " << it3->getPath() << RESET_COLOR << std::endl;
-                std::cout << BLUE << "        ROOT: " << it3->root() << RESET_COLOR << std::endl;
-                std::cout << BLUE << std::boolalpha << "        AUTOINDEX: " << it3->getAutoIndex() << RESET_COLOR << std::endl;
-                std::cout << BLUE << "        ALIAS: " << it3->alias() << RESET_COLOR << std::endl;
+                std::cout << BLUE << "        PATH: " << (*it3)->getPath() << RESET_COLOR << std::endl;
+                std::cout << BLUE << "        ROOT: " << (*it3)->root() << RESET_COLOR << std::endl;
+                std::cout << BLUE << std::boolalpha << "        AUTOINDEX: " << (*it3)->getAutoIndex() << RESET_COLOR << std::endl;
+                std::cout << BLUE << "        ALIAS: " << (*it3)->alias() << RESET_COLOR << std::endl;
                 // Print error pages for this location block
-                if (!it3->getReturn().empty()) {
-                    std::vector<std::string> returnVec = it3->getReturn();
+                if (!(*it3)->getReturn().empty()) {
+                    std::vector<std::string> returnVec = (*it3)->getReturn();
                     std::cout << BLUE << "        Error Pages: " << RESET_COLOR;
                     for (std::vector<std::string>::iterator it5 = returnVec.begin(); it5 != returnVec.end(); ++it5) {
                         std::cout << BLUE << *it5 << " " << RESET_COLOR;
                     }
                     std::cout << std::endl;
                 }
-                if (!it3->getMethods().empty()) {
-                    std::vector<std::string> methods = it3->getMethods();
+                if (!(*it3)->getMethods().empty()) {
+                    std::vector<std::string> methods = (*it3)->getMethods();
                     std::cout << BLUE << "        Methods: " << RESET_COLOR;
                     for (std::vector<std::string>::iterator it6 = methods.begin(); it6 != methods.end(); ++it6) {
                         std::cout << BLUE << *it6 << " " << RESET_COLOR;

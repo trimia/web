@@ -54,15 +54,15 @@ int main(int argc, char* argv[]) {
         std::cout << std::boolalpha <<"islocation: " << it->is_location() << std::endl;
         std::cout << "location number: " << it->location_number() << std::noboolalpha << std::endl;
         std::cout << "IP: " << it->getIp().c_str() <<RESET_COLOR << std::endl;
-        std::vector<Location> listOfLocation = it->getLocations();
+        std::vector<Location*> listOfLocation = it->getLocations();
         if (!listOfLocation.empty())
         {
-            for (std::vector<Location>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
+            for (std::vector<Location*>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
             {
-                std::cout<<BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-                std::cout<<BLUE << std::boolalpha << "AUTOINDEX : " << it1->getAutoIndex() << RESET_COLOR << std::endl;
-                if (!it1->getMethods().empty()) {
-                    std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
+                std::cout<<BLUE << "LOC PATH : " << (*it1)->getPath() << RESET_COLOR << std::endl;
+                std::cout<<BLUE << std::boolalpha << "AUTOINDEX : " << (*it1)->getAutoIndex() << RESET_COLOR << std::endl;
+                if (!(*it1)->getMethods().empty()) {
+                    std::cout << BLUE << "LOC METHODS -> " << (*it1)->getMethods()[0] << " : " << (*it1)->getMethods()[1] <<RESET_COLOR <<std::endl;
                 }
             }
         }

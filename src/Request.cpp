@@ -96,10 +96,10 @@ void Request::receiveData(Client *client) {
 		client->set_connection(this->connection());
         if(client->is_location())
         {
-            Location temp;
+            Location *temp;
 
-            temp=client->getTempLocation(client->locations(),this->request_url());
-            if( !temp.clientMaxBodySize().empty() && this->_body_size>(size_t)toInt(temp.clientMaxBodySize()))
+            temp=client->fitBestLocation(client->locations(),this->request_url());
+            if( !temp->clientMaxBodySize().empty() && this->_body_size>(size_t)toInt(temp->clientMaxBodySize()))
             {
                 this->_ended=true;
                 client->response()->set_status_code(413);

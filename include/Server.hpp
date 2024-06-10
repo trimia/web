@@ -76,9 +76,11 @@ class	Server : public sType
 
     void setErrorPages(std::vector<std::string> errorPages);
 
-    std::vector<Location>& getLocations();
+        std::vector<Location *> & getLocations();
 
-    void setLocations(const std::vector<Location> &locations);
+        // std::vector<Location*>& getLocations();
+
+    void setLocations(const std::vector<Location*> &locations);
 
     const epoll_event &getEvent() const;
 
@@ -122,7 +124,7 @@ private	:
         std::vector<std::string>        _error_pages;
 		bool							_isLocation;
 		int								_locationNumber;
-        std::vector<Location> 			_locations;
+        std::vector<Location*> 			_locations;
         Socket                          *_server_socket;
 		bool							_servSockCreatedWithNew;
         epoll_event                     _event;

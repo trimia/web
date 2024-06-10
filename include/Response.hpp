@@ -66,9 +66,14 @@ public	:
 
 	void set_status_code(int status_code);
 
-	Location *location() const;
+	Location *& location();
 
 	void set_location(Location *location);
+
+
+	// Location *location() const;
+	//
+	// void set_location(Location *location);
 
 	size_t body_size() const;
 

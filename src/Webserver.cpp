@@ -246,8 +246,8 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
     if (client._isLocation) {
         std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location path: " << client._locations[0]->getPath() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location method: " << client._locations[0]->getMethods()[0] << RESET_COLOR << std::endl;
         std::cout << CYAN << "request path: " << client.request()->path_file() << RESET_COLOR << std::endl;
         std::cout << CYAN << "request url: " << client.request()->request_url() << RESET_COLOR << std::endl;
 

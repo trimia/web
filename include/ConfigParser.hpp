@@ -27,7 +27,7 @@ private:
     std::string                         _parsedConfig;
     std::string                         _configFile;
     std::vector<Server>                 _vectorOfServers;
-    std::vector<Location>               _vectorOfLocations;
+    std::vector<Location*>               _vectorOfLocations;
 
 public:
     bool            insideServerBlock;
