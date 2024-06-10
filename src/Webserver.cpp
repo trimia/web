@@ -1,5 +1,5 @@
 #include "../include/Webserver.hpp"
-
+//today
 Webserver::Webserver()
 {
 //	std::cout << "Webserver : Default Constructor Called" << std::endl;
@@ -214,34 +214,11 @@ bool Webserver::_handleConnection(epoll_event &event) {
     }
     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
-    client.initRequest();
-    client.initResponse();
+    if(event.events & EPOLLIN)
+        client.initRequest();
+    if(event.events & EPOLLOUT)
+        client.initResponse();
 //    client.initLocation();
-    std::cout << GREEN << "location path: " << this->_listOfServer[1]._locations[0].getPath() << RESET_COLOR
-              << std::endl;
-    std::cout << GREEN << "location method: " << this->_listOfServer[1]._locations[0].getMethods()[0] << RESET_COLOR
-              << std::endl;
-//    if(client._isLocation)
-//    {
-//        std::cout<<CYAN<<"here we are"<<RESET_COLOR<<std::endl;
-//        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
-//        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
-//        client.response()->set_location(client.fitBestLocation(client._locations,client.request()->request_url()) );
-//        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
-//        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR << std::endl;
-//
-//    }
-//    std::cout<<GREEN<<"init location"<<RESET_COLOR<<std::endl;
-//    if(client._isLocation)
-//    {
-//
-//        std::cout<<GREEN<<"location path: "<<client._locations[0].getPath()<<RESET_COLOR<<std::endl;
-//        std::cout<<GREEN<<"location method: "<<client._locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
-////        std::cout<<GREEN<<"location root: "<<client._locations[0].getRoot()<<RESET_COLOR<<std::endl;
-////        std::cout<<GREEN<<"location index: "<<client._locations[0].getIndex()<<RESET_COLOR<<std::endl;
-////        std::cout<<GREEN<<"location autoindex: "<<client._locations[0].getAutoindex()<<RESET_COLOR<<std::endl;
-//
-//    }
 
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
@@ -254,16 +231,33 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     client.request()->receiveData(&client);
+    if (client.request()->ended() && event.events & EPOLLIN) {
+        client._event.data.ptr=NULL;
+        client._event.events = EPOLLOUT;
+        client.socketType=CLIENT_SOCK;
+        client._event.data.ptr = &client;
+        if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
+            // Handle error
+            client.response()->set_status_code(501);
+            client.response()->set_error(true);
+        }
 
+    }
 
     if (client._isLocation) {
         std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
         std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
         std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+        std::cout << CYAN << "request path: " << client.request()->path_file() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "request url: " << client.request()->request_url() << RESET_COLOR << std::endl;
+
+        // client.fitBestLocation(client._locations, client.request()->request_url(),&client);
+        // client.response()->set_location(new Location(client.fitBestLocation(client._locations, client.request()->request_url())));
         client.response()->set_location(client.fitBestLocation(client._locations, client.request()->request_url()));
-        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
-                  << std::endl;
+        // client._response.
+        // std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+        // std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
+        //           << std::endl;
 
     }
 
@@ -271,7 +265,10 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
     //TODO check su url per cgi
 //    Cgi Cgi(client.request());
-    if(client.response()->status_code()!=1){
+    if(client.response()->status_code()==1) {
+        this->_closeConnection(event);
+    }
+    if(event.events & EPOLLOUT && client.request()->ended() && !client.request()->error()) {
         std::cout<<RED<<"status code !=1"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);
 
@@ -298,7 +295,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         // client.request()->set_complete(true);
         _closeConnection(event);
     }
-    if (elapsedTime>=15 && client.request()->connection().compare("close"))
+    if (elapsedTime>=15 && client.request()->connection()=="close")
     {
         std::cout<<RED<<"Connection timeout"<<RESET_COLOR<<std::endl;
         client.response()->set_status_code(408);
@@ -313,7 +310,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         return true;
         // return true;
     }
-    if(client.response()->status_code()==0) {
+    if(client.request()->ended() && client.response()->status_code()==0) {
         client.response()->set_status_code(501);
         client.response()->set_error(true);
     }
@@ -332,7 +329,8 @@ bool Webserver::_handleConnection(epoll_event &event) {
         return true;
 
     }
-    client.response()->sendData(&client);
+    if(event.events & EPOLLOUT)
+        client.response()->sendData(&client);
     // if(client.response()->ready_to_send()) {
     //     client.response()->sendData(client);
     //     // return false;
@@ -344,6 +342,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
         std::cout<<GREEN<<"Connection keep-alive"<<RESET_COLOR<<std::endl;
         delete client.response();
         delete client.request();
+        // client._response=NULL;
         client._request=NULL;
         client._event.data.ptr=NULL;
         client._event.events = EPOLLIN;

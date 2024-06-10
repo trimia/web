@@ -80,16 +80,17 @@ void Client::initClient(Server *server, int clientFd) {
 //    std::cout<<GREEN<<"client max body size: "<<this->_clientMaxBodySize<<RESET_COLOR<<std::endl;
     _initSocket((char *) server->getIp().c_str(), server->getPort(), CLIENT_SOCK, clientFd);
     if (server->is_location()) {
-        this->set_locations(server->getLocations());
-//        std::cout<<GREEN<<"location path: "<<server->getLocations()[0].getPath()<<RESET_COLOR<<std::endl;
-//        std::cout<<GREEN<<"location method: "<<server->getLocations()[0].getMethods()[0]<<RESET_COLOR<<std::endl;
-//        std::cout<<CYAN<<"location path: "<< this->_locations[0].getPath()<<RESET_COLOR<<std::endl;
-//        std::cout<<CYAN<<"location method: "<< this->_locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+    	this->_locations=server->getLocations();
+        // this->set_locations(server->getLocations());
+        std::cout<<GREEN<<"location path: "<<server->getLocations()[0].getPath()<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"location method: "<<server->getLocations()[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+        std::cout<<CYAN<<"location path: "<< this->_locations[0].getPath()<<RESET_COLOR<<std::endl;
+        std::cout<<CYAN<<"location method: "<< this->_locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
 
         this->set_is_location(server->is_location());
         this->set_location_number(server->location_number());
     }
-    this->_event.events = EPOLLIN | EPOLLOUT;
+    this->_event.events = EPOLLIN;
     this->socketType = CLIENT_SOCK;
 }
 
@@ -117,28 +118,28 @@ void Client::initRequest() {
 
 }
 
-void Client::initLocation() {
-    std::cout << YELLOW << "init location" << RESET_COLOR << std::endl;
+// void Client::initLocation() {
+//     std::cout << YELLOW << "init location" << RESET_COLOR << std::endl;
+//
+//     if (this->_isLocation) {
+//
+//         this->response()->set_location(fitBestLocation(this->_locations, this->request()->path_file()));
+//         std::cout << GREEN << "location path: " << this->_locations[0].getPath() << RESET_COLOR << std::endl;
+//         std::cout << GREEN << "location method: " << this->_locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+//         std::cout << CYAN << "location path: " << this->response()->location()->getPath() << RESET_COLOR << std::endl;
+//         std::cout << CYAN << "location method: " << this->response()->location()->getMethods()[0] << RESET_COLOR
+//                   << std::endl;//        std::cout<<GREEN<<"location root: "<<client._locations[0].getRoot()<<RESET_COLOR<<std::endl;
+// //        std::cout<<GREEN<<"location index: "<<client._locations[0].getIndex()<<RESET_COLOR<<std::endl;
+// //        std::cout<<GREEN<<"location autoindex: "<<client._locations[0].getAutoindex()<<RESET_COLOR<<std::endl;
+//
+//     }
+// //    if(!this->response()->location().clientMaxBodySize().empty())
+// //        this->request()->setClientMaxBodySize(toInt(this->response()->location().clientMaxBodySize()));
+//
+//
+// }
 
-    if (this->_isLocation) {
-
-        this->response()->set_location(fitBestLocation(this->_locations, this->request()->path_file()));
-        std::cout << GREEN << "location path: " << this->_locations[0].getPath() << RESET_COLOR << std::endl;
-        std::cout << GREEN << "location method: " << this->_locations[0].getMethods()[0] << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location path: " << this->response()->location().getPath() << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location method: " << this->response()->location().getMethods()[0] << RESET_COLOR
-                  << std::endl;//        std::cout<<GREEN<<"location root: "<<client._locations[0].getRoot()<<RESET_COLOR<<std::endl;
-//        std::cout<<GREEN<<"location index: "<<client._locations[0].getIndex()<<RESET_COLOR<<std::endl;
-//        std::cout<<GREEN<<"location autoindex: "<<client._locations[0].getAutoindex()<<RESET_COLOR<<std::endl;
-
-    }
-//    if(!this->response()->location().clientMaxBodySize().empty())
-//        this->request()->setClientMaxBodySize(toInt(this->response()->location().clientMaxBodySize()));
-
-
-}
-
-Location Client::fitBestLocation(std::vector<Location> locations, std::string path_file) {
+Location *Client::fitBestLocation(std::vector<Location>& locations, std::string path_file) {
     std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
     std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
     Location bestMatch;
@@ -159,19 +160,54 @@ Location Client::fitBestLocation(std::vector<Location> locations, std::string pa
             if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
                 bestMatch = *it;
                 bestMatchLenght = it->getPath().length();
-//                std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-//                std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0] << RESET_COLOR << std::endl;
+                // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
+                // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
 
             }
         }
     std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0] << RESET_COLOR << std::endl;
-    return bestMatch;
+    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
+	// client->response()->set_location(bestMatch);
+	return new Location(bestMatch);
+}
+
+
+Location Client::getTempLocation(std::vector<Location>& locations, std::string path_file) {
+	std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+	std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
+	Location bestMatch ;
+	if (!locations.empty())
+		for (std::vector<Location>::iterator it1 = locations.begin(); it1 != locations.end(); ++it1) {
+			std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+			if (!it1->getMethods().empty()) {
+				std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+						  << RESET_COLOR << std::endl;
+			}
+		}
+	else
+		std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+	size_t bestMatchLenght = 0;
+	// Itera attraverso le posizioni definite nel server
+	if (!locations.empty())
+		for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+			if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+				bestMatch = *it;
+				bestMatchLenght = it->getPath().length();
+				std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+				std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0] << RESET_COLOR << std::endl;
+
+			}
+		}
+	// std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+	// std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
+	// client.response()->set_location(bestMatch);
+	return bestMatch;
 }
 
 
 void Client::initResponse() {
     this->_response = new Response();
+	this->_response->set_location(new Location());
     // Response *response = new Response();
     // this->_response = response;
 }
@@ -340,15 +376,19 @@ void Client::set_connection(std::string connection) {
 }
 
 
-std::vector<Location> Client::locations() const {
+std::vector<Location>& Client::locations(){
 	return _locations;
 }
 
 void Client::set_locations(const std::vector<Location> &locations) {
-	for (std::vector<Location>::const_iterator it = locations.begin();
-		 it != locations.end(); ++it) {
-		this->_locations.push_back(*it);
-		 }
+	std::vector<Location> newLocations;
+
+	this->_locations.clear();
+	for (std::vector<Location>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+		newLocations.push_back(*it);
+	}
+
+	this->_locations = newLocations;
 }
 
 size_t Client::getClientMaxBodySize() const {

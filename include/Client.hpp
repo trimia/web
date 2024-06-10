@@ -35,7 +35,9 @@ class	Client : public sType
 	void initResponse();
     void initLocation();
 
-    Location fitBestLocation(std::vector<Location> locations, std::string path_file);
+    Location *fitBestLocation(std::vector<Location>& locations, std::string path_file);
+
+		Location getTempLocation(std::vector<Location> &locations, std::string path_file);
 
 
 		// void initLocation();
@@ -104,7 +106,7 @@ class	Client : public sType
 
 		void set_connection(std::string connection);
 
-		std::vector<Location> locations() const;
+		std::vector<Location>& locations();
 
 		void set_locations(const std::vector<Location> &locations);
 

@@ -15,12 +15,14 @@ Response::Response() {
     this->_complete = false;
     this->_error = false;
     this->_readyToSend = false;
+    this->_location = new Location();
 
     std::cout << "Response : Default Constructor Called" << std::endl;
 }
 
 Response::~Response() {
     std::cout << "Response : Destructor Called" << std::endl;
+    delete this->_location;
 }
 
 
@@ -52,8 +54,8 @@ void Response::setResponseForMethod(Client *client) {
 //	 	return;
 //	 }
 //	 i--;
-//	 if(client->request()->method().empty())
-//         return;
+	 if(client->request()->method().empty())
+         return;
     if (client->request()->error())
         return;
     // std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
@@ -135,7 +137,7 @@ void Response::checkRequest(Client *client) {
     if (this->_root.find(".") == std::string::npos)
         this->_root = "." + this->root();
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
-    if (location().index().empty() && client->request()->path_file() == "/") {
+    if (location()->index().empty() && client->request()->path_file() == "/") {
         std::cout << CYAN << "root path" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_body = "server is online";
@@ -156,39 +158,47 @@ void Response::checkRequest(Client *client) {
 
 void Response::handleLocation(Client *client) {
     std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
-    std::cout<<GREEN<<"location path: "<<this->_location.getPath()<<RESET_COLOR<<std::endl;
-    std::cout<<GREEN<<"location method: "<<this->_location.getMethods()[0]<<RESET_COLOR<<std::endl;
+    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
+    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
 
-    if (!_location.allowMethod(client->request()->method())) {
+    if (!_location->allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
         this->_statusCode = 405;
         return;
     }
-    std::cout << CYAN << "location autoindex: " << this->_location.getAutoIndex() << RESET_COLOR << std::endl;
-    if (this->_location.getAutoIndex() && _location.autoIndex(client->request()->path_file())) {
+    if (this->root().empty() || this->root() == "/" || _location->root().empty())
+        this->_root = "./www";
+    else
+        this->_root = _location->root();
+    if (this->_root.find(".") == std::string::npos)
+        this->_root = "." + this->root();
+    std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
+
+    std::cout << CYAN << "location autoindex: " << this->_location->getAutoIndex() << RESET_COLOR << std::endl;
+    if (this->_location->getAutoIndex() && _location->autoIndex(this->root() + client->request()->path_file())) {
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
-        this->_body = _location.generateDirectoryListing(client->request()->path_file());
+        this->_body = _location->generateDirectoryListing(this->_root + client->request()->path_file());
         this->_bodySize = this->_body.length();
         this->_content_type = "html";
         this->_readyToSend = true;
         return;
     }
-    if (!this->_location.index().empty())
+    if (!this->_location->index().empty())
     {
         std::cout << CYAN << "index" << RESET_COLOR << std::endl;
-        return readFromFile(this->location().index());
+        return readFromFile(this->location()->index());
 
     }
-    if (this->_location.alias().empty())
+    if (this->_location->alias().empty())
         if (int locationPathPos =
-                client->request()->path_file().find_last_of(location().getPath()) != std::string::npos)
-            client->request()->path_file().replace(locationPathPos, location().getPath().length(), location().alias());
-//    std::cout << YELLOW << "location return: " << this->location().getReturn().at(0) << RESET_COLOR << std::endl;
-//    std::cout << YELLOW << "location return: " << this->location().getReturn().at(1) << RESET_COLOR << std::endl;
-//    std::cout << YELLOW << "location return: " << this->location().getReturn().at(2) << RESET_COLOR << std::endl;
-//    std::cout << YELLOW << "location return: " << this->location().getReturn().at(3) << RESET_COLOR << std::endl;
+                client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
+            client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+//    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(0) << RESET_COLOR << std::endl;
+//    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(1) << RESET_COLOR << std::endl;
+//    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(2) << RESET_COLOR << std::endl;
+//    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(3) << RESET_COLOR << std::endl;
 //        return readFromFile(this->location().root()+client->request()->path_file());
     //TODO client max body size set value for request and add a check in response building
 //    return;
@@ -360,13 +370,17 @@ void Response::set_status_code(int status_code) {
     _statusCode = status_code;
 }
 
-Location Response::location() const {
+Location *Response::location() const {
     return _location;
 }
 
-void Response::set_location(const Location &location) {
+void Response::set_location(Location *location) {
+    std::cout << "Response : set_location" << std::endl;
+    std::cout << "location path" << location->getPath() << std::endl;
+    std::cout << "location method" << location->getMethods()[0]<<location->getMethods()[1] << std::endl;
     _location = location;
 }
+
 
 size_t Response::body_size() const {
     return _bodySize;

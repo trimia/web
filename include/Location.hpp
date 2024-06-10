@@ -60,7 +60,7 @@ class	Location
 
 private	:
     //check if is all necessary and to do what?
-        int                         _id;
+        // int                         _id;
         std::string					_path;
         std::string					_root;
         bool						_autoindex;

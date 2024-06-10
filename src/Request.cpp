@@ -98,7 +98,7 @@ void Request::receiveData(Client *client) {
         {
             Location temp;
 
-            temp=client->fitBestLocation(client->locations(),this->request_url());
+            temp=client->getTempLocation(client->locations(),this->request_url());
             if( !temp.clientMaxBodySize().empty() && this->_body_size>(size_t)toInt(temp.clientMaxBodySize()))
             {
                 this->_ended=true;
@@ -113,7 +113,7 @@ void Request::receiveData(Client *client) {
             client->response()->set_status_code(413);
             return;
         }
-        if(this->_headerSize!=0&& this->_headerSize>MAX_HEADER_SIZE)
+        if(this->_headerSize!=0 && this->_headerSize>MAX_HEADER_SIZE)
         {
             this->_ended=true;
             client->response()->set_status_code(431);

@@ -66,9 +66,9 @@ public	:
 
 	void set_status_code(int status_code);
 
-	Location location() const;
+	Location *location() const;
 
-	void set_location(const Location &location);
+	void set_location(Location *location);
 
 	size_t body_size() const;
 
@@ -120,7 +120,7 @@ private	:
 	std::string     _path;
 	std::string     _root;
 	std::string     _fileExtension;
-    Location        _location;
+    Location        *_location;
 
 
 	std::string     _target_file;

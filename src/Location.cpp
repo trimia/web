@@ -32,8 +32,19 @@ Location::~Location()
 Location::Location(Location const &obj)
 {
 //	std::cout << "Copy Constructor Called" << std::endl;
-	if (this != &obj)
-		*this = obj;
+	if (this != &obj) {
+	    this->_path=obj._path;
+	    this->_root=obj._root;
+	    this->_autoindex=obj._autoindex;
+	    this->_index=obj._index;
+	    this->setMethods(obj._methods);
+	    this->_cgiPath=obj._cgiPath;
+	    this->_alias=obj._alias;
+	    this->_clientMaxBodySize=obj._clientMaxBodySize;
+	}
+
+
+		// *this = obj;
 }
 
 Location	&Location::operator= (const Location &obj)
