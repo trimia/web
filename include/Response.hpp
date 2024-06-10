@@ -30,14 +30,15 @@ public	:
 
 	void buildHttpResponseHeader(std::string httpVersion, std::string statusText,
 										std::string contentType, size_t contentLength);
+    void buildRedirectResponseHeader(std::string httpVersion, std::string statusText, std::string location);
 
 	void readFromFile(std::string path);
 
 	void isDirectory(const std::string &path);
 
-	void initLocation(Client *client);
+	void handleLocation(Client *client);
 
-	void fitBestLocation(Client *client);
+//	void fitBestLocation(Client *client);
 
 	// bool allowMethod(Client *client);
 

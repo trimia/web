@@ -33,6 +33,10 @@ class	Client : public sType
 	void initClient(Server *server, int clientFd);
 	void initRequest();
 	void initResponse();
+    void initLocation();
+
+    Location fitBestLocation(std::vector<Location> locations, std::string path_file);
+
 
 		// void initLocation();
 
@@ -104,7 +108,11 @@ class	Client : public sType
 
 		void set_locations(const std::vector<Location> &locations);
 
-	private	:
+    size_t getClientMaxBodySize() const;
+
+    void setClientMaxBodySize(size_t clientMaxBodySize);
+
+private	:
 //        friend class Socket;
     friend class Webserver;
 
@@ -122,6 +130,7 @@ class	Client : public sType
 		int							_locationNumber;
 		std::vector<Location>		_locations;
 		std::string					_connection;
+        size_t                      _clientMaxBodySize;
 		void _initSocket(char*ip, uint16_t port, char type, int fd);
 
 
@@ -144,7 +153,7 @@ class	Client : public sType
 		size_t			_readBlock;
 		size_t			_blockSize;
 		//	DataType	attributes.
-    void initLocation();
+
 };
 
 // ******************************************************** //

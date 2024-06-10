@@ -92,9 +92,11 @@ class	Request
 
 		void set_is_root(bool is_rooth);
 
+    size_t getClientMaxBodySize() const;
 
+    void setClientMaxBodySize(size_t clientMaxBodySize);
 
-		std::string connection() const;
+    std::string connection() const;
 
 		void set_connection(std::string connection);
 
@@ -104,26 +106,26 @@ class	Request
 
 	private	:
 
-        bool									_error;
-        bool									_cgi;
-        bool									_ended;
-		bool									_complete; // finito di leggere o serve un altro giro
-		std::string								_connection;//keep-alive or close
-		std::time_t								_timeStart;
-		bool									_isBody;
-		std::string								_body;
-		size_t									_body_size;
-        size_t                                  _clientMaxBodySize;
-		std::string								_httpMessage; // messaggio intero preso a pezzi
-		size_t									_headerSize;
+        bool									                    _error;
+        bool									                    _cgi;
+        bool									                    _ended;
+		bool									                    _complete; // finito di leggere o serve un altro giro
+		std::string								            _connection;//keep-alive or close
+		std::time_t								            _timeStart;
+		bool									                    _isBody;
+		std::string								            _body;
+		size_t									                _body_size;
+        size_t                                                   _clientMaxBodySize;
+		std::string								            _httpMessage; // messaggio intero preso a pezzi
+		size_t									                _headerSize;
 		std::map<std::string, std::string>		_requestHeaders;
-		std::string								_method; // GET, POST, DELETE //! GET
-		std::string								_requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		bool									_isRoot;
-		std::string								_path_file; // la url senza query //! /www/html/index.html
-		std::string								_query;//?
-		bool									_isQuery;//?
-		std::string								_HTTPVersion; // HTTP/1.1 //! HTTP/1.1
+		std::string								            _method; // GET, POST, DELETE //! GET
+		std::string								            _requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
+		bool									                    _isRoot;
+		std::string								            _path_file; // la url senza query //! /www/html/index.html
+		std::string								            _query;//?
+		bool									                    _isQuery;//?
+		std::string								            _HTTPVersion; // HTTP/1.1 //! HTTP/1.1
 
 
 

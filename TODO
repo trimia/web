@@ -171,46 +171,43 @@ main status code:
 // }
 
 
-Process 20886 stopped
-* thread #1, name = 'webserver', stop reason = signal SIGABRT
-    frame #0: 0x00007ffff7aa8e44 libc.so.6`___lldb_unnamed_symbol3665 + 276
-libc.so.6`___lldb_unnamed_symbol3665:
-->  0x7ffff7aa8e44 <+276>: movl   %eax, %ebx
-    0x7ffff7aa8e46 <+278>: negl   %ebx
-    0x7ffff7aa8e48 <+280>: cmpl   $0xfffff000, %eax         ; imm = 0xFFFFF000
-    0x7ffff7aa8e4d <+285>: movl   $0x0, %eax
-(lldb) up
-frame #1: 0x00007ffff7a50a30 libc.so.6`raise + 32
-libc.so.6`raise:
-->  0x7ffff7a50a30 <+32>: testl  %eax, %eax
-    0x7ffff7a50a32 <+34>: jne    0x7ffff7a50a40            ; <+48>
-    0x7ffff7a50a34 <+36>: movq   -0x8(%rbp), %rbx
-    0x7ffff7a50a38 <+40>: leave
-(lldb)
-frame #2: 0x00007ffff7a384c3 libc.so.6`abort + 223
-libc.so.6`abort:
-->  0x7ffff7a384c3 <+223>: movq   %fs:0x10, %r12
-    0x7ffff7a384cc <+232>: cmpq   %r12, 0x1bf685(%rip)
-    0x7ffff7a384d3 <+239>: je     0x7ffff7a384f5            ; <+273>
-    0x7ffff7a384d5 <+241>: xorl   %eax, %eax
-(lldb)
-frame #3: 0x00007ffff7c97b0c libstdc++.so.6`__gnu_cxx::__verbose_terminate_handler() (.cold) at vterminate.cc:95:10
-(lldb)
-frame #4: 0x00007ffff7cadf1a libstdc++.so.6`__cxxabiv1::__terminate(void (*)()) at eh_terminate.cc:48:15
-(lldb)
-frame #5: 0x00007ffff7c9750a libstdc++.so.6`std::terminate() at eh_terminate.cc:58:27
-(lldb)
-frame #6: 0x00007ffff7cae1d6 libstdc++.so.6`__cxxabiv1::__cxa_throw(obj=0x00005555555973c0, tinfo=0x00007ffff7e75dc0, dest=(libstdc++.so.6`std::out_of_range::~out_of_range() at stdexcept.cc:65:3)) at eh_throw.cc:98:18
-(lldb)
-frame #7: 0x00007ffff7c9b403 libstdc++.so.6`std::__throw_out_of_range_fmt(__fmt="basic_string::at: __n (which is %zu) >= this->size() (which is %zu)") at functexcept.cc:101:27
-(lldb)
-frame #8: 0x00007ffff7d61e07 libstdc++.so.6`std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>::at(this=<unavailable>, __n=<unavailable>) at basic_string.h:1312:28
-(lldb)
-frame #9: 0x000055555556a845 webserver`Response::getMethod(this=0x00007fffffffb210, client=0x0000555555596bd0) at Response.cpp:63:32
-   60  		memset(response, 0, responseSize);
-   61  		for(size_t i=0; i < client->header_size();i++)
-   62  		{
--> 63  			response[i]= this->_header.at(i);
-   64  		}
-   65  		for(size_t i=0; i < this->header_size();i++)
-   66  		{
+first message on socket
+// void Response::setResponse(Client *client)
+// {
+// 	std::cout<<"setResponse"<<std::endl;
+// 	std::string body = "Hello World!";
+// 	std::string header = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(body.length()) + "\n\n";
+// 	std::string response = header + body;
+// 	client->setResponse(response);
+// }
+    // std::stringstream toStrin;
+    // std::string msg="ZI PUO FAREEEEEEE!!!";
+    // toStrin << msg.size();
+    // this->_header = "HTTP/1.1 200 OK\n";
+    // std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
+    // this->_header += "Content-Type: text/plain\n";
+    // this->_header += "Content-Length: " + toStrin.str() + "\n\n" +msg;
+    // std::cout<<YELLOW<<"header: "<<this->_header<<RESET_COLOR<<std::endl;
+    // this->_headerSize = this->_header.size();
+    // std::cout<<YELLOW<<"header size: "<<this->_headerSize<<RESET_COLOR<<std::endl;
+    // size_t responseSize = this->header_size() + msg.size();
+    // char		*response = new char[responseSize];
+    // memset(response, 0, responseSize);
+    // for(size_t i=0; i < this->_headerSize;i++)
+    // {
+    // 	response[i]= this->_header.at(i);
+    // }
+    // std::cout<<YELLOW<<"response: "<<response<<RESET_COLOR<<std::endl;
+    // int byteCount = (int)send(client->getClientSock()->getFdSock(),this->header().c_str(), this->header().length(), 0);
+    // std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+    // if(byteCount==SOCKET_ERROR)
+    // {
+    // 	std::cout<<RED<<"send error"<<RESET_COLOR<<std::endl;
+    // 	this->_error = true;
+    // }else if (byteCount==0)
+    // {
+    // 	std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+    // }else if(byteCount !=0){
+    // 	std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
+    // 	this->_complete = true;
+    // }

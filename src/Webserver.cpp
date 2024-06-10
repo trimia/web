@@ -205,7 +205,7 @@ bool Webserver::_handleConnection(epoll_event &event) {
     // Client * client = static_cast<Client *>(event.data.ptr);
     // bool bull=true;
     sType *type =static_cast<sType*>(event.data.ptr);
-    // std::cout<<BLUE<<"ptr->socketType: "<<type->socketType<<RESET_COLOR<<std::endl;
+     std::cout<<BLUE<<"ptr->socketType: "<<type->socketType<<RESET_COLOR<<std::endl;
 
     if(type->socketType==SERVER_SOCK)
     {
@@ -216,7 +216,32 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
     client.initRequest();
     client.initResponse();
-    client.initLocation();
+//    client.initLocation();
+    std::cout << GREEN << "location path: " << this->_listOfServer[1]._locations[0].getPath() << RESET_COLOR
+              << std::endl;
+    std::cout << GREEN << "location method: " << this->_listOfServer[1]._locations[0].getMethods()[0] << RESET_COLOR
+              << std::endl;
+//    if(client._isLocation)
+//    {
+//        std::cout<<CYAN<<"here we are"<<RESET_COLOR<<std::endl;
+//        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
+//        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+//        client.response()->set_location(client.fitBestLocation(client._locations,client.request()->request_url()) );
+//        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+//        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR << std::endl;
+//
+//    }
+//    std::cout<<GREEN<<"init location"<<RESET_COLOR<<std::endl;
+//    if(client._isLocation)
+//    {
+//
+//        std::cout<<GREEN<<"location path: "<<client._locations[0].getPath()<<RESET_COLOR<<std::endl;
+//        std::cout<<GREEN<<"location method: "<<client._locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location root: "<<client._locations[0].getRoot()<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location index: "<<client._locations[0].getIndex()<<RESET_COLOR<<std::endl;
+////        std::cout<<GREEN<<"location autoindex: "<<client._locations[0].getAutoindex()<<RESET_COLOR<<std::endl;
+//
+//    }
 
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
@@ -229,10 +254,28 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     client.request()->receiveData(&client);
+
+
+    if (client._isLocation) {
+        std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+        client.response()->set_location(client.fitBestLocation(client._locations, client.request()->request_url()));
+        std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+        std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
+                  << std::endl;
+
+    }
+
+
+
     //TODO check su url per cgi
-    Cgi Cgi(client.request());
-    if(client.response()->status_code()!=1)
+//    Cgi Cgi(client.request());
+    if(client.response()->status_code()!=1){
+        std::cout<<RED<<"status code !=1"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);
+
+    }
     if (client.request()->error() && client.response()->complete())
     {
         std::cout<<RED<<"Error in request 1111"<<RESET_COLOR<<std::endl;
@@ -274,20 +317,21 @@ bool Webserver::_handleConnection(epoll_event &event) {
         client.response()->set_status_code(501);
         client.response()->set_error(true);
     }
-//    std::cout<<std::boolalpha<<"error: "<<client.response()->error()<<"error: "<<client.request()->error()<<std::endl;
+    std::cout<<std::boolalpha<<"error: "<<client.response()->error()<<"error: "<<client.request()->error()<<std::endl;
     if(client.response()->error()||client.request()->error()) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
         client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),
             getMimeType("txt"),0);
+//        client.response()->set_complete(true);
         // bull=false;
         // return false;
     }
     std::cout<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" request error: "<<client.request()->error()<<std::endl;
-//    if(!client.request()->ended() && !client.request()->error()) {
-////        std::cout<<RED<<"Error in request or response"<<RESET_COLOR<<std::endl;
-//        return true;
-//
-//    }
+    if(!client.request()->ended() && !client.request()->error()) {
+//        std::cout<<RED<<"Error in request or response"<<RESET_COLOR<<std::endl;
+        return true;
+
+    }
     client.response()->sendData(&client);
     // if(client.response()->ready_to_send()) {
     //     client.response()->sendData(client);
@@ -341,6 +385,14 @@ bool Webserver::_handleConnection(epoll_event &event) {
     return false;
 }
 
+struct MatchClient {
+    Client* target;
+    MatchClient(Client* target) : target(target) {}
+    bool operator()(const Client* c) const {
+        return c == target;
+    }
+};
+
 bool Webserver::_closeConnection(epoll_event &event) {
 //     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     Client* client = static_cast<Client*>(event.data.ptr);
@@ -357,14 +409,13 @@ bool Webserver::_closeConnection(epoll_event &event) {
     if(close(client->getClientSock()->getFdSock())==-1)
         return false;
 //     _listOfClient.remove_if([&client](const Client& c) { return &c == client; });
-    _listOfClient.remove_if([client](const Client* c) { return c == client; });
+//    _listOfClient.remove_if([client](const Client* c) { return c == client; });
+    _listOfClient.remove_if(MatchClient(client));
     // delete client;
     event.data.ptr=NULL;
     client = NULL;
     return true;
 }
-
-
 
 
 void Webserver::addClientToList(Client *client) {

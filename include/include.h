@@ -44,9 +44,7 @@
 # include <sys/epoll.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
-//TODO remove this line
-# define GETSOCKETERRNO() (errno)
-
+/* Macros */
 # define BUFFER_SIZE 4096
 # define ISVALIDSOCKET(s) ((s) >= 0)
 # define CLOSESOCKET(s) close(s)
@@ -56,6 +54,8 @@
 # define MAX_N_CONNECTION 5
 // MAX_EVENT AND EPOLL_SIZE maybe they could be defined every time after parsing so maybe became part of a struct or class no more a macro
 # define MAX_EVENTS 1024
+# define MAX_BODY_SIZE 4194305  //4MB + 1 Byte
+#define MAX_HEADER_SIZE 7168
 # define EPOLL_TIMEOUT 2000
 # define SERVER_SOCK 1
 # define CLIENT_SOCK 2
@@ -158,6 +158,7 @@ extern int g_sigint; //????
  * @return std::string
  */
 //
-void printCharsAndSpecialChars(std::string str);
+//void printCharsAndSpecialChars(std::string str);
+void printCharsAndSpecialChars(const std::string& str);
 
 #endif
