@@ -113,7 +113,7 @@ bool Webserver::_mainLoop() {
             }
         }
         //TODO remove sleep
-        sleep(3);
+//        sleep(3);
     } while (eventNumber>=0);
     if(eventNumber<0) {
         std::cout<<RED<<"Error epoll wait"<<RESET_COLOR<<std::endl;
@@ -147,7 +147,7 @@ bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_E
         {
             // && !_prova(events[i])
             // _prova(events[i]);
-                // std::cout<<RED<<"Error handling connection"<<RESET_COLOR<<std::endl;
+                 std::cout<<YELLOW<<"out of handling connection"<<RESET_COLOR<<std::endl;
                 return true;
         }
     }
@@ -214,11 +214,13 @@ bool Webserver::_handleConnection(epoll_event &event) {
     }
     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
-    if(event.events & EPOLLIN)
+    if(client._event.events & EPOLLIN){
         client.initRequest();
-    if(event.events & EPOLLOUT)
-        client.initResponse();
-//    client.initLocation();
+//        client.initResponse();
+    }
+    client.initResponse();
+
+    //    client.initLocation();
 
     // std::cout<<BLUE<<"handling connection"<<std::endl;
     // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
@@ -230,46 +232,35 @@ bool Webserver::_handleConnection(epoll_event &event) {
 
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
-    client.request()->receiveData(&client);
-    if (client.request()->ended() && event.events & EPOLLIN) {
-        client._event.data.ptr=NULL;
+    if(client._event.events & EPOLLIN )
+        client.request()->receiveData(&client);
+    std::cout<<BLUE"pre "<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" response error: "<<client.response()->error()<<RESET_COLOR<<std::endl;
+    if (client._event.events & EPOLLIN && client.request()->ended()) {
+        std::cout<<GREEN<<"Request ended set to epollout"<<RESET_COLOR<<std::endl;
+//        client._event.data.ptr=NULL;
         client._event.events = EPOLLOUT;
-        client.socketType=CLIENT_SOCK;
-        client._event.data.ptr = &client;
+//        client.socketType=CLIENT_SOCK;
+//        client._event.data.ptr = &client;
         if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
             // Handle error
-            client.response()->set_status_code(501);
-            client.response()->set_error(true);
+//            client.response()->set_status_code(501);
+//            client.response()->set_error(true);
         }
-
     }
-
-    if (client._isLocation) {
-        std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
-        std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
-        std::cout << CYAN << "request path: " << client.request()->path_file() << RESET_COLOR << std::endl;
-        std::cout << CYAN << "request url: " << client.request()->request_url() << RESET_COLOR << std::endl;
-
-        // client.fitBestLocation(client._locations, client.request()->request_url(),&client);
-        // client.response()->set_location(new Location(client.fitBestLocation(client._locations, client.request()->request_url())));
-        client.response()->set_location(client.fitBestLocation(client._locations, client.request()->request_url()));
-        // client._response.
-        // std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
-        // std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
-        //           << std::endl;
-
-    }
+    std::cout<<BLUE<<"post "<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" response error: "<<client.response()->error()<<RESET_COLOR<<std::endl;
 
 
+//    if(event.events & EPOLLOUT)
+//        client.initResponse();
 
     //TODO check su url per cgi
 //    Cgi Cgi(client.request());
     if(client.response()->status_code()==1) {
+        std::cout<<RED<<"501 internal server error"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);
     }
-    if(event.events & EPOLLOUT && client.request()->ended() && !client.request()->error()) {
-        std::cout<<RED<<"status code !=1"<<RESET_COLOR<<std::endl;
+    if(client._event.events & EPOLLOUT && client.request()->ended() && !client.request()->error() && client.response()->status_code()!=204) {
+        std::cout<<YELLOW<<"handling response"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);
 
     }
@@ -310,12 +301,13 @@ bool Webserver::_handleConnection(epoll_event &event) {
         return true;
         // return true;
     }
-    if(client.request()->ended() && client.response()->status_code()==0) {
-        client.response()->set_status_code(501);
-        client.response()->set_error(true);
-    }
-    std::cout<<std::boolalpha<<"error: "<<client.response()->error()<<"error: "<<client.request()->error()<<std::endl;
-    if(client.response()->error()||client.request()->error()) {
+//    if(client.request()->ended() && client.response()->status_code()==0) {
+//        std::cout<<RED<<"Error not implemented"<<RESET_COLOR<<std::endl;
+//        client.response()->set_status_code(501);
+//        client.response()->set_error(true);
+//    }
+    std::cout<<std::boolalpha<<"response error: "<<client.response()->error()<<" request error: "<<client.request()->error()<<std::endl;
+    if(client._event.events & EPOLLOUT && ((client.response()->error() || client.request()->error()) || client.response()->status_code()==204)) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
         client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),
             getMimeType("txt"),0);
@@ -329,8 +321,20 @@ bool Webserver::_handleConnection(epoll_event &event) {
         return true;
 
     }
-    if(event.events & EPOLLOUT)
+    if(client._event.events & EPOLLOUT)
         client.response()->sendData(&client);
+    if (client._event.events & EPOLLOUT && client.response()->complete()) {
+        std::cout<<GREEN<<"Response ended set to epollin"<<RESET_COLOR<<std::endl;
+//        client._event.data.ptr=NULL;
+        client._event.events = EPOLLIN;
+//        client.socketType=CLIENT_SOCK;
+//        client._event.data.ptr = &client;
+        if (epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
+            // Handle error
+            client.response()->set_status_code(501);
+            client.response()->set_error(true);
+        }
+    }
     // if(client.response()->ready_to_send()) {
     //     client.response()->sendData(client);
     //     // return false;
@@ -340,21 +344,27 @@ bool Webserver::_handleConnection(epoll_event &event) {
     printCharsAndSpecialChars(client.request()->connection());
     if(client.request()->connection()=="keep-alive"&& client.response()->complete()) {
         std::cout<<GREEN<<"Connection keep-alive"<<RESET_COLOR<<std::endl;
-        delete client.response();
-        delete client.request();
-        // client._response=NULL;
-        client._request=NULL;
-        client._event.data.ptr=NULL;
-        client._event.events = EPOLLIN;
-        client.socketType=CLIENT_SOCK;
-        client._event.data.ptr = &client;
-        if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
-            // Handle error
+        if(client.request()){
+            delete client.request();
+            client.set_request(NULL);
         }
+        if(client.response()){
+            delete client.response();
+            client.set_response(NULL);
+        }
+//        // client._response=NULL;
+//        client._request=NULL;
+//        client._event.data.ptr=NULL;
+//        client._event.events = EPOLLIN;
+//        client.socketType=CLIENT_SOCK;
+//        client._event.data.ptr = &client;
+//        if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
+//            // Handle error
+//        }
         // client.socketType=CLIENT_SOCK;
         return true;
     }
-    std::cout<<std::boolalpha<<"complete: "<<client.response()->complete()<<" error: "<<client.request()->error()<<std::endl;
+    std::cout<<std::boolalpha<<"response complete: "<<client.response()->complete()<<"request error: "<<client.request()->error()<<std::endl;
     if(client.request()->error() && client.response()->complete())
     {
         std::cout<<RED<<"Error in request 2222"<<RESET_COLOR<<std::endl;

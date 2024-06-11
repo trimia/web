@@ -117,7 +117,12 @@ void Client::initRequest() {
 	// this->_request = request;
 
 }
-
+void Client::initResponse() {
+    this->_response = new Response();
+//    this->_response->set_location(new Location());
+    // Response *response = new Response();
+    // this->_response = response;
+}
 // void Client::initLocation() {
 //     std::cout << YELLOW << "init location" << RESET_COLOR << std::endl;
 //
@@ -205,12 +210,7 @@ Location Client::getTempLocation(std::vector<Location>& locations, std::string p
 }
 
 
-void Client::initResponse() {
-    this->_response = new Response();
-	this->_response->set_location(new Location());
-    // Response *response = new Response();
-    // this->_response = response;
-}
+
 
 
 /*

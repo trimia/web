@@ -61,20 +61,22 @@ Request	&Request::operator= (const Request &obj)
  */
 
 void Request::receiveData(Client *client) {
-	if(this->ended())
-		return;
-	// std::cout<<MAGENTA<<"receiving data"<<std::endl;
-	// std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
-	// std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
-	// std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
-	// std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
-	// std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
+    std::cout<<MAGENTA<<"receiving data"<<std::endl;
+    if(this->ended()) {
+        std::cout<<GREEN<<"data already received"<<RESET_COLOR<<std::endl;
+        return;
+    }
+	 std::cout<<"client socket fd: "<<client->client_sock()->getFdSock()<<std::endl;
+	 std::cout<<"client socket service: "<<ntohs(client->client_sock()->getService().sin_port)<<std::endl;
+	 std::cout<<"client socket service: "<<inet_ntoa(client->client_sock()->getService().sin_addr)<<std::endl;
+	 std::cout<<"client socket size: "<<*client->client_sock()->getSockSize()<<std::endl;
+	 std::cout << "Service sin family: " << client->client_sock()->getService().sin_family<<RESET_COLOR<< std::endl;
 	char rcv_buffer[RCV_BUF_SIZE];
 	memset(rcv_buffer,0,RCV_BUF_SIZE);
 	int byteCount=(int)recv(client->getClientSock()->getFdSock(),rcv_buffer, RCV_BUF_SIZE,0);
 	if(byteCount==0)
 	{
-//		std::cout<<GREEN<<"ready to close connection"<<RESET_COLOR<<std::endl;
+		std::cout<<GREEN<<"read 0 byte"<<RESET_COLOR<<std::endl;
 		this->_ended=true;
 		client->response()->set_status_code(204);
 		return;

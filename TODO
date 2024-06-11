@@ -211,3 +211,22 @@ first message on socket
     // 	std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
     // 	this->_complete = true;
     // }
+
+
+
+        if (client._isLocation) {
+            std::cout << CYAN << "here we are" << RESET_COLOR << std::endl;
+            std::cout << CYAN << "location path: " << client._locations[0].getPath() << RESET_COLOR << std::endl;
+            std::cout << CYAN << "location method: " << client._locations[0].getMethods()[0] << RESET_COLOR << std::endl;
+            std::cout << CYAN << "request path: " << client.request()->path_file() << RESET_COLOR << std::endl;
+            std::cout << CYAN << "request url: " << client.request()->request_url() << RESET_COLOR << std::endl;
+
+            // client.fitBestLocation(client._locations, client.request()->request_url(),&client);
+            // client.response()->set_location(new Location(client.fitBestLocation(client._locations, client.request()->request_url())));
+            client.response()->set_location(client.fitBestLocation(client._locations, client.request()->request_url()));
+            // client._response.
+            // std::cout << CYAN << "location path: " << client.response()->location().getPath() << RESET_COLOR << std::endl;
+            // std::cout << CYAN << "location method: " << client.response()->location().getMethods()[0] << RESET_COLOR
+            //           << std::endl;
+
+        }
