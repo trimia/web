@@ -157,41 +157,70 @@ void Response::checkRequest(Client *client) {
 }
 
 void Response::handleLocation(Client *client) {
-    std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
-    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
-    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
 
-    if (!_location->allowMethod(client->request()->method())) {
+    std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
+//    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
+//    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+    std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
+    Location bestMatch;
+    if (!client->locations().empty())
+        for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
+            std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+            if (!it1->getMethods().empty()) {
+                std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+                          << RESET_COLOR << std::endl;
+            }
+        }
+    else
+        std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+    size_t bestMatchLenght = 0;
+    // Itera attraverso le posizioni definite nel server
+    if (!client->locations().empty())
+        for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
+            if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+                bestMatch = *it;
+                bestMatchLenght = it->getPath().length();
+                // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
+                // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
+
+            }
+        }
+    std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
+
+
+    if (!bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
         this->_statusCode = 405;
         return;
     }
-    if (this->root().empty() || this->root() == "/" || _location->root().empty())
+    if (this->root().empty() || this->root() == "/" || bestMatch.root().empty())
         this->_root = "./www";
     else
-        this->_root = _location->root();
+        this->_root = bestMatch.root();
     if (this->_root.find(".") == std::string::npos)
         this->_root = "." + this->root();
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
 
-    std::cout << CYAN << "location autoindex: " << this->_location->getAutoIndex() << RESET_COLOR << std::endl;
-    if (this->_location->getAutoIndex() && _location->autoIndex(this->root() + client->request()->path_file())) {
+    std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
+    if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
-        this->_body = _location->generateDirectoryListing(this->_root + client->request()->path_file());
+        this->_body = bestMatch.generateDirectoryListing(this->_root + client->request()->path_file());
         this->_bodySize = this->_body.length();
         this->_content_type = "html";
         this->_readyToSend = true;
         return;
     }
-    if (!this->_location->index().empty())
+    if (!bestMatch.index().empty())
     {
         std::cout << CYAN << "index" << RESET_COLOR << std::endl;
         return readFromFile(this->location()->index());
 
     }
-    if (this->_location->alias().empty())
+    if (bestMatch.alias().empty())
         if (int locationPathPos =
                 client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
             client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
