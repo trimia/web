@@ -191,7 +191,7 @@ void Response::handleLocation(Client *client) {
         std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
 
 
-    if (!bestMatch.allowMethod(client->request()->method())) {
+    if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
         this->_statusCode = 405;
@@ -205,6 +205,13 @@ void Response::handleLocation(Client *client) {
         this->_root = "." + this->root();
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
 
+
+    if (!bestMatch.alias().empty()){
+        std::cout << CYAN << "alias" << RESET_COLOR << std::endl;
+        if (int locationPathPos =client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
+            client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+
+    }
     std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
     if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
@@ -221,9 +228,8 @@ void Response::handleLocation(Client *client) {
         return readFromFile(this->location()->index());
 
     }
-    if (bestMatch.alias().empty())
-        if (int locationPathPos =client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
-            client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+    if (!bestMatch.getReturn().empty())
+        std::cout << YELLOW << "return" << bestMatch.getReturn()[0]<<" : " <<bestMatch.getReturn()[1] <<" : " <<bestMatch.getReturn()[2]<< RESET_COLOR << std::endl;
     if (!bestMatch.getReturn().empty()) {
         std::cout << CYAN << "return" << RESET_COLOR << std::endl;
         int code=0;

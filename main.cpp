@@ -63,6 +63,8 @@ int main(int argc, char* argv[]) {
                 std::cout<<BLUE << std::boolalpha << "AUTOINDEX : " << it1->getAutoIndex() << RESET_COLOR << std::endl;
                 if (!it1->getMethods().empty()) {
                     std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
+                } if (!it1->getReturn().empty()) {
+                    std::cout << BLUE << "LOC RETURN -> " << it1->getReturn()[0] << " : " << it1->getReturn()[1]<< it1->getReturn()[2] << " : "  <<RESET_COLOR <<std::endl;
                 }
             }
         }

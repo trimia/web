@@ -201,7 +201,8 @@ Location Client::getTempLocation(std::vector<Location>& locations, std::string p
 				bestMatch = *it;
 				bestMatchLenght = it->getPath().length();
 				std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-				std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0] << RESET_COLOR << std::endl;
+                if(!bestMatch.getMethods().empty())
+				    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0] << RESET_COLOR << std::endl;
 
 			}
 		}
