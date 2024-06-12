@@ -39,9 +39,9 @@ class	Location
 
 		std::basic_string<char> & clientMaxBodySize();
 
-		std::vector<std::string> & getReturn();
+		std::vector<std::string> getReturn();
 
-		void set_return(std::vector<std::string> return_);
+		// void set_return(std::vector<std::string> return_);
 
 		std::vector<std::string> & cgi_ext();
 
@@ -54,7 +54,7 @@ class	Location
         void                        setAutoIndex(bool autoindex);
         void                        setMethods(std::vector<std::string> methods);
         std::vector<std::string>    getMethods(void);
-        void                        setReturn(std::vector<std::string> &returnPage);
+        void                        setReturn(std::vector<std::string> returnPage);
         void                        setCgiPath(std::vector<std::string> &cgiPath);
         void                        setClientMaxBodySize(std::basic_string<char> clientMaxBodySize);
 

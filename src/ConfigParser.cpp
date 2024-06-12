@@ -11,7 +11,7 @@ static bool    tokenAdmitted(std::string token) {
     if (token != "host" && token != "listen" && token != "server_name"
         && token != "root" && token != "error_page" && token != "body_size"
         && token != "autoindex" && token != "method" && token != "return"
-        && token != "cgi_enable" && token != "index") {
+        && token != "cgi_enable" && token != "index" && token != "alias") {
         return false;
     }
     return true;
@@ -181,7 +181,7 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfLocations.resize(countLocationBlocks);
         this->_vectorOfLocations.push_back(location);
         // printf("location - locations.size() =====> |%d|\n", this->_vectorOfLocations.size());
-        printf("location - countserverblocks|countlocationblocks|&location|&getLocations()[i] =====> |%d|%d|%p|%p|\n", countServerBlocks, countLocationBlocks, &location, &this->_vectorOfLocations[countLocationBlocks]);
+        // printf("location - countserverblocks|countlocationblocks|&location|&getLocations()[i] =====> |%d|%d|%p|%p|\n", countServerBlocks, countLocationBlocks, &location, &this->_vectorOfLocations[countLocationBlocks]);
     }
 }
 
@@ -291,6 +291,8 @@ void    ConfigParser::handleLocationState(std::string line) {
             this->_vectorOfLocations[countLocationBlocks].setRoot(tokens[1]);
         } else if (tokens[0] == "body_size") {
             this->_vectorOfLocations[countLocationBlocks].setClientMaxBodySize(tokens[1]);
+        } else if (tokens[0] == "alias") {
+            this->_vectorOfLocations[countLocationBlocks].set_alias(tokens[1]);
         } else if (!tokenAdmitted(tokens[0])) {
             std::cout << "Error: wrong configuration in location block from config file, found: " << tokens[0] << std::endl;
             exit(2);
@@ -333,7 +335,6 @@ void ConfigParser::printConfig() {
             std::cout << std::endl;
         }
 
-
         // Print location blocks information within this server block
         if (!it->getLocations().empty()) {
             std::vector<Location> locationVec = it->getLocations();
@@ -351,8 +352,7 @@ void ConfigParser::printConfig() {
                         std::cout << BLUE << *it5 << " " << RESET_COLOR;
                     }
                     std::cout << std::endl;
-                }
-                if (!it3->getMethods().empty()) {
+                } if (!it3->getMethods().empty()) {
                     std::vector<std::string> methods = it3->getMethods();
                     std::cout << BLUE << "        Methods: " << RESET_COLOR;
                     for (std::vector<std::string>::iterator it6 = methods.begin(); it6 != methods.end(); ++it6) {
@@ -375,7 +375,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     std::string         out;
 
     this->_parsedConfig = preProcessConfig(this->_configFile);
-    printf("%s\n", this->_parsedConfig.c_str()); /////////// debug
+    // printf("%s\n", this->_parsedConfig.c_str()); /////////// debug
     if (this->_parsedConfig == "CONF ERROR") {
         std::cerr << "Found error in conf file.\n" << this->_parsedConfig << std::endl;
         exit(2);
@@ -394,15 +394,6 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     //////////
     this->printConfig();
     //////////
-
-    // for (std::vector<Server>::iterator vecSer = _vectorOfServers.begin(); vecSer != _vectorOfServers.end(); ++vecSer) {
-    //     std::cout << "SERVER_NAME: " << vecSer->getServerName() << std::endl;
-    //     if (!vecSer->getLocations().empty()) {
-    //         for (std::vector<Location>::iterator vecLoc = vecSer->getLocations().begin(); vecLoc != vecSer->getLocations().end(); ++vecLoc) {
-    //             std::cout << "LOCATION_PATH: " << vecLoc->getPath() << std::endl;
-    //         }
-    //     }
-    // }
 
     return this->_vectorOfServers;
 }

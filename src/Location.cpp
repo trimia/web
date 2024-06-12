@@ -38,6 +38,7 @@ Location::Location(Location const &obj)
 	    this->_autoindex=obj._autoindex;
 	    this->_index=obj._index;
 	    this->setMethods(obj._methods);
+        this->setReturn(obj._return);
 	    this->_cgiPath=obj._cgiPath;
 	    this->_alias=obj._alias;
 	    this->_clientMaxBodySize=obj._clientMaxBodySize;
@@ -57,6 +58,7 @@ Location	&Location::operator= (const Location &obj)
         this->_autoindex=obj._autoindex;
         this->_index=obj._index;
         this->setMethods(obj._methods);
+        this->setReturn(obj._return);
         this->_cgiPath=obj._cgiPath;
         this->_alias=obj._alias;
         this->_clientMaxBodySize=obj._clientMaxBodySize;
@@ -156,13 +158,9 @@ std::basic_string<char> & Location::clientMaxBodySize() {
     return _clientMaxBodySize;
 }
 
-std::vector<std::string> & Location::getReturn() {
-    return _return;
-}
-
-void Location::set_return(std::vector<std::string> return_) {
-    _return = return_;
-}
+// void Location::set_return(std::vector<std::string> return_) {
+//     _return = return_;
+// }
 
 std::vector<std::string> & Location::cgi_ext() {
     return _cgiExt;
@@ -206,8 +204,18 @@ std::vector<std::string> Location::getMethods() {
     return this->_methods;
 }
 
-void Location::setReturn(std::vector<std::string> &returnPage) {
-    this->_return = returnPage;
+void Location::setReturn(std::vector<std::string> returnPage) {
+    std::vector<std::string> newReturn;
+
+    this->_return.clear();
+    for (std::vector<std::string>::iterator it = returnPage.begin(); it != returnPage.end(); it++) {
+        newReturn.push_back(*it);
+    }
+    this->_return = newReturn;
+}
+
+std::vector<std::string> Location::getReturn() {
+    return _return;
 }
 
 void Location::setCgiPath(std::vector<std::string> &cgiPath) {
