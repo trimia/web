@@ -84,6 +84,14 @@ std::string StatusString(int statusCode)
         default: return "Unknown Status";
     }
 }
+
+bool isDigits(const std::string &str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!std::isdigit(*it))
+            return false;
+    }
+    return true;
+}
 // std::string buildHttpResponseHeader(std::string httpVersion,
 //     std::string statusText, std::string& contentType, size_t contentLength) {
 //

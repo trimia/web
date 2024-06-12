@@ -112,9 +112,9 @@ bool Socket::_setSocketOption(int optName) {
     }
     else
     {
-        struct timeval tv;
-        tv.tv_sec = 5;
-        tv.tv_usec = 0;
+            struct timeval tv;
+            tv.tv_sec = 5;
+            tv.tv_usec = 0;
         if (setsockopt(this->_fd_sock, SOL_SOCKET, optName, (char *) &tv, sizeof(tv)) ==
             SOCKET_ERROR) {
             std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;

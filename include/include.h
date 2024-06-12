@@ -113,6 +113,8 @@ std::string getFileExtension(const std::string &path);
 
 std::string getMimeType(std::string extension);
 std::string StatusString(int statusCode);
+bool isDigits(const std::string &str);
+
 // std::string buildHttpResponseHeader(std::string httpVersion,
 // std::string statusText, std::string& contentType, size_t contentLength);
 

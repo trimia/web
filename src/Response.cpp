@@ -187,7 +187,8 @@ void Response::handleLocation(Client *client) {
             }
         }
     std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
+    if(!bestMatch.getMethods().empty())
+        std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
 
 
     if (!bestMatch.allowMethod(client->request()->method())) {
@@ -221,9 +222,29 @@ void Response::handleLocation(Client *client) {
 
     }
     if (bestMatch.alias().empty())
-        if (int locationPathPos =
-                client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
+        if (int locationPathPos =client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
             client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+    if (!bestMatch.getReturn().empty()) {
+        std::cout << CYAN << "return" << RESET_COLOR << std::endl;
+        int code=0;
+        std::string location="";
+        for (std::vector<std::string>::iterator it = bestMatch.getReturn().begin(); it != bestMatch.getReturn().end(); ++it) {
+            if(isDigits(it->c_str()))
+                code=toInt(*it);
+            else if(it->compare("return")!=0)
+                location=*it;
+        }
+        std::cout << CYAN << "return" << RESET_COLOR << std::endl;
+        //TODO understand if we want to put a link in the location return
+        buildRedirectResponseHeader(client->request()->http_version(),StatusString(code),location);
+
+        return;
+    }
+    if(!bestMatch.cgiPath().empty())
+    {
+        //TODO handle cgi
+    }
+
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(0) << RESET_COLOR << std::endl;
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(1) << RESET_COLOR << std::endl;
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(2) << RESET_COLOR << std::endl;
@@ -259,6 +280,19 @@ void Response::buildRedirectResponseHeader(std::string httpVersion,
     this->_header = header.str();
 }
 
+static size_t send_all(int socket, const char* buffer, size_t length, int flags) {
+    size_t total_bytes_sent = 0;
+    while (total_bytes_sent < length) {
+        size_t bytes_sent = send(socket, buffer + total_bytes_sent, length - total_bytes_sent, flags);
+        if ((int)bytes_sent == -1) {
+            // An error occurred
+            return -1;
+        }
+        total_bytes_sent += bytes_sent;
+    }
+    return total_bytes_sent;
+}
+
 void Response::sendData(Client *client) {
     std::cout << MAGENTA << "send data complete: " << this->complete() << RESET_COLOR << std::endl;
     std::cout << MAGENTA << "send data complete: " << client->request()->complete() << RESET_COLOR << std::endl;
@@ -289,9 +323,23 @@ void Response::sendData(Client *client) {
     response[this->header_size() + this->body_size() + 1] = '\n';
     response[this->header_size() + this->body_size() + 2] = '\r';
     response[this->header_size() + this->body_size() + 3] = '\n';
-    std::cout << YELLOW << "response: " << response << " response size:" << responseSize << RESET_COLOR << std::endl;
+
+//    fcntl(response, F_SETFL, O_NONBLOCK);
+
+    int flags = fcntl(client->getClientSock()->getFdSock(), F_GETFL, 0);
+
+// Check if the O_NONBLOCK flag is set
+    if (flags & O_NONBLOCK) {
+        std::cout << "The socket is in non-blocking mode" << std::endl;
+        // The socket is in non-blocking mode
+    } else {
+        std::cout << "The socket is in blocking mode" << std::endl;
+        // The socket is in blocking mode
+    }
+
+//    std::cout << YELLOW << "response: " << response << " response size:" << responseSize << RESET_COLOR << std::endl;
     //TODO https://linux.die.net/man/2/send see which falgs to use or if 0 is ok
-    size_t byteCount = send(client->getClientSock()->getFdSock(), response, responseSize, MSG_DONTWAIT);
+    size_t byteCount = send_all(client->getClientSock()->getFdSock(), response, responseSize, MSG_DONTWAIT);
     //TODO understand if necessary
     // if(this->_statusCode==501)
     // 	return;
@@ -341,7 +389,7 @@ void Response::readFromFile(std::string path) {
     // Read the file into a string
     std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     this->_body = body;
-    std::cout << CYAN << "body: " << this->_body << RESET_COLOR << std::endl;
+//    std::cout << CYAN << "body: " << this->_body << RESET_COLOR << std::endl;
     this->_bodySize = body.length();
     this->_fileExtension = getFileExtension(path);
     std::cout << RED << std::endl;

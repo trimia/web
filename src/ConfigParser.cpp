@@ -239,9 +239,9 @@ void    ConfigParser::handleServerState(std::string line) {
         return ;
     } else if (tokens.size() == 2) {
         if (tokens[1] == "{") {
-            return ;
-        } else if (tokens[1].back() == ';') {
-            tokens[1].pop_back();
+            return;
+        } else if (findLastChar(tokens) == ';') {
+            tokens[1] = trimLastChar(tokens[1]);
             if (tokens[0] == "server_name") {
                 this->_vectorOfServers[countServerBlocks].setServerName(tokens[1]);
             } else if (tokens[0] == "listen") {
@@ -281,8 +281,8 @@ void    ConfigParser::handleLocationState(std::string line) {
     if (tokens.size() == 1 && tokens[0] == "}") {
         this->currentState = ServerState;
         return ;
-    } else if (tokens.size() == 2 && tokens[0] != "method" && tokens[0] != "return" && tokens[1].back() == ';') {
-        tokens.pop_back();
+    } else if (tokens.size() == 2 && tokens[0] != "method" && tokens[0] != "return" && findLastChar(tokens) == ';') {
+        tokens[1] = trimLastChar(tokens[1]);
         if (tokens[0] == "autoindex") {
             this->_vectorOfLocations[countLocationBlocks].setAutoIndex(true);
         } else if (tokens[0] == "index") {

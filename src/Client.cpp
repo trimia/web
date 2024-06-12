@@ -83,9 +83,11 @@ void Client::initClient(Server *server, int clientFd) {
     	this->_locations=server->getLocations();
         // this->set_locations(server->getLocations());
         std::cout<<GREEN<<"location path: "<<server->getLocations()[0].getPath()<<RESET_COLOR<<std::endl;
-        std::cout<<GREEN<<"location method: "<<server->getLocations()[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+        if(!server->getLocations()[0].getMethods().empty())
+            std::cout<<GREEN<<"location method: "<<server->getLocations()[0].getMethods()[0]<<RESET_COLOR<<std::endl;
         std::cout<<CYAN<<"location path: "<< this->_locations[0].getPath()<<RESET_COLOR<<std::endl;
-        std::cout<<CYAN<<"location method: "<< this->_locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
+        if(!this->_locations[0].getMethods().empty())
+            std::cout<<CYAN<<"location method: "<< this->_locations[0].getMethods()[0]<<RESET_COLOR<<std::endl;
 
         this->set_is_location(server->is_location());
         this->set_location_number(server->location_number());
