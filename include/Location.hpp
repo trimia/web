@@ -39,7 +39,6 @@ class	Location
 
 		std::basic_string<char> & clientMaxBodySize();
 
-		std::vector<std::string> getReturn();
 
 		// void set_return(std::vector<std::string> return_);
 
@@ -55,8 +54,13 @@ class	Location
         void                        setMethods(std::vector<std::string> methods);
         std::vector<std::string>    getMethods(void);
         void                        setReturn(std::vector<std::string> returnPage);
-        void                        setCgiPath(std::vector<std::string> &cgiPath);
+        std::vector<std::string>    getReturn(void);
+//        void                        setCgiPath(std::vector<std::string> &cgiPath);
         void                        setClientMaxBodySize(std::basic_string<char> clientMaxBodySize);
+
+    bool getIsCgi() const;
+
+    void setIsCgi(bool isCgi);
 
 private	:
     //check if is all necessary and to do what?
@@ -66,7 +70,7 @@ private	:
         bool						_autoindex;
         std::string					_index;
         std::vector<std::string>    _methods; // GET+ POST- DELETE- PUT- HEAD-
-        std::vector<std::string>	_cgiPath;
+        bool	                    _isCgi;
         std::string					_alias;
 		std::basic_string<char>     _clientMaxBodySize;
 		std::vector<std::string>	_return;

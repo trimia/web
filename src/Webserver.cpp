@@ -68,10 +68,11 @@ bool Webserver::runEpoll()
         std::cout<<"Error adding server to epoll"<<std::endl;
         return false;
     }
-    if(this->_mainLoop()) {
+    if(!this->_mainLoop()) {
         std::cout<<"Error main loop"<<std::endl;
         return false;
     }
+    std::cout<<"out of run epoll"<<std::endl;
     return true;
 
     // understand if is necessary to allocate event
@@ -115,6 +116,7 @@ bool Webserver::_mainLoop() {
         //TODO remove sleep
 //        sleep(3);
     } while (eventNumber>=0);
+    std::cout<<RED<<"out of do while loop"<<RESET_COLOR<<std::endl;
     if(eventNumber<0) {
         std::cout<<RED<<"Error epoll wait"<<RESET_COLOR<<std::endl;
         return false;
@@ -141,7 +143,8 @@ bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_E
            if(!this->_acceptConnection(server))
            {
                std::cout<<"Error accepting connection"<<std::endl;
-                return false;
+               return false;
+//               continue;
            }
         }else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) && _handleConnection(events[i]) )
         {
@@ -155,26 +158,30 @@ bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_E
 }
 
 bool Webserver::_acceptConnection(Server *server) {
-    // std::cout<<BLUE<<"accepting connection"<<RESET_COLOR<<std::endl;
-
+     std::cout<<BLUE<<"accepting connection"<<RESET_COLOR<<std::endl;
+    std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
+     std::cout<<"server socket fd: "<<server->getserver_socket()->getFdSock()<<std::endl;
+        std::cout<<"server socket service: "<<ntohs(server->getserver_socket()->getService().sin_port)<<std::endl;
+        std::cout<<"server socket service: "<<inet_ntoa(server->getserver_socket()->getService().sin_addr)<<std::endl;
+        std::cout<<"server socket size: "<<*server->getserver_socket()->getSockSize()<<std::endl;
     int clientFd = accept(server->getserver_socket()->getFdSock(),(sockaddr *)&server->getserver_socket()->getService(),server->getserver_socket()->getSockSize());
     std::cout<<CYAN<<"client fd from accept: "<<clientFd<<RESET_COLOR<<std::endl;
     if (clientFd == -1) {
         std::cout <<RED<< "Error accepting connection: " << RESET_COLOR<<std::endl;
+        printf("Errno: %d\n", errno);  // This will print the errno value
+        printf("Error message: %s\n", strerror(errno));  // This will print the error message
         return false;
     }else
         std::cout<<GREEN<<"connection accepted"<<RESET_COLOR<<std::endl;
     Client *client= new Client();
     client->initClient(server,clientFd);
     std::cout<<BLUE<<"socket type: "<<client->socketType<<RESET_COLOR<<std::endl;
-
-    // std::cout<<BLUE<<"accepting connection"<<std::endl;
-    // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-    // std::cout<<"client socket fd: "<<client->_clientSock->getFdSock()<<std::endl;
-    // std::cout<<"client socket service: "<<ntohs(client->_clientSock->getService().sin_port)<<std::endl;
-    // std::cout<<"client socket service: "<<inet_ntoa(client->_clientSock->getService().sin_addr)<<std::endl;
-    // std::cout<<"client socket size: "<<*client->_clientSock->getSockSize()<<std::endl;
-    // std::cout << "Service sin family: " << client->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
+     std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
+     std::cout<<"client socket fd: "<<client->_clientSock->getFdSock()<<std::endl;
+     std::cout<<"client socket service: "<<ntohs(client->_clientSock->getService().sin_port)<<std::endl;
+     std::cout<<"client socket service: "<<inet_ntoa(client->_clientSock->getService().sin_addr)<<std::endl;
+     std::cout<<"client socket size: "<<*client->_clientSock->getSockSize()<<std::endl;
+     std::cout << "Service sin family: " << client->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
 
     this->_listOfClient.push_back(client);
     client->_event.data.ptr=client;
@@ -316,8 +323,10 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<std::boolalpha<<"response error: "<<client.response()->error()<<" request error: "<<client.request()->error()<<std::endl;
     if(client._event.events & EPOLLOUT && ((client.response()->error() || client.request()->error()) && client.response()->status_code()!=204)) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
-        client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),
-            getMimeType("txt"),0);
+        if(client.response()->getReturn_())
+            client.response()->buildRedirectResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),client.response()->getLocation());
+        else
+            client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),getMimeType("txt"),0);
 //        client.response()->set_complete(true);
         // bull=false;
         // return false;

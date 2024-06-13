@@ -145,42 +145,42 @@ void Client::initResponse() {
 //
 //
 // }
-
-Location *Client::fitBestLocation(std::vector<Location>& locations, std::string path_file) {
-    std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-    std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
-    Location bestMatch;
-    if (!locations.empty())
-        for (std::vector<Location>::iterator it1 = locations.begin(); it1 != locations.end(); ++it1) {
-            std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-            if (!it1->getMethods().empty()) {
-                std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-                          << RESET_COLOR << std::endl;
-            }
-        }
-    else
-        std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
-    size_t bestMatchLenght = 0;
-    // Itera attraverso le posizioni definite nel server
-    if (!locations.empty())
-        for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
-            if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-                bestMatch = *it;
-                bestMatchLenght = it->getPath().length();
-                // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
-                // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
-
-            }
-        }
-    std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
-	// client->response()->set_location(bestMatch);
-	return new Location(bestMatch);
-}
+//
+//Location *Client::fitBestLocation(std::vector<Location>& locations, std::string path_file) {
+//    std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+//    std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
+//    Location bestMatch;
+//    if (!locations.empty())
+//        for (std::vector<Location>::iterator it1 = locations.begin(); it1 != locations.end(); ++it1) {
+//            std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+//            if (!it1->getMethods().empty()) {
+//                std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+//                          << RESET_COLOR << std::endl;
+//            }
+//        }
+//    else
+//        std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+//    size_t bestMatchLenght = 0;
+//    // Itera attraverso le posizioni definite nel server
+//    if (!locations.empty())
+//        for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+//            if (path_file.find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+//                bestMatch = *it;
+//                bestMatchLenght = it->getPath().length();
+//                // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
+//                // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
+//
+//            }
+//        }
+//    std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+//    std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
+//	// client->response()->set_location(bestMatch);
+//	return new Location(bestMatch);
+//}
 
 
 Location Client::getTempLocation(std::vector<Location>& locations, std::string path_file) {
-	std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+	std::cout<<YELLOW<<"get temp location"<<RESET_COLOR<<std::endl;
 	std::cout << YELLOW<<"path file:" <<path_file << RESET_COLOR << std::endl;
 	Location bestMatch ;
 	if (!locations.empty())

@@ -6,9 +6,10 @@ Location::Location()
     this->_path = "";
     this->_root = "";
     this->_autoindex = false;
+    this->_isCgi=false;
     this->_index = "";
     this->_methods.reserve(0);
-    this->_cgiPath.reserve(0);
+//    this->_cgiPath.reserve(0);
     this->_alias = "";
     this->_clientMaxBodySize = "";
     this->_return.reserve(0);
@@ -39,7 +40,7 @@ Location::Location(Location const &obj)
 	    this->_index=obj._index;
 	    this->setMethods(obj._methods);
         this->setReturn(obj._return);
-	    this->_cgiPath=obj._cgiPath;
+//	    this->_cgiPath=obj._cgiPath;
 	    this->_alias=obj._alias;
 	    this->_clientMaxBodySize=obj._clientMaxBodySize;
 	}
@@ -59,7 +60,7 @@ Location	&Location::operator= (const Location &obj)
         this->_index=obj._index;
         this->setMethods(obj._methods);
         this->setReturn(obj._return);
-        this->_cgiPath=obj._cgiPath;
+//        this->_cgiPath=obj._cgiPath;
         this->_alias=obj._alias;
         this->_clientMaxBodySize=obj._clientMaxBodySize;
         //        this->_error_pages=obj._error_pages;
@@ -141,10 +142,10 @@ bool & Location::getAutoIndex() {
 std::string & Location::index() {
     return _index;
 }
-
-std::vector<std::string> & Location::cgiPath() {
-    return _cgiPath;
-}
+//
+//std::vector<std::string> & Location::cgiPath() {
+//    return _cgiPath;
+//}
 
 std::string & Location::alias() {
     return _alias;
@@ -218,10 +219,18 @@ std::vector<std::string> Location::getReturn() {
     return _return;
 }
 
-void Location::setCgiPath(std::vector<std::string> &cgiPath) {
-    this->_cgiPath = cgiPath;
-}
+//void Location::setCgiPath(std::vector<std::string> &cgiPath) {
+//    this->_cgiPath = cgiPath;
+//}
 
 void Location::setClientMaxBodySize(std::basic_string<char> clientMaxBodySize) {
     this->_clientMaxBodySize = clientMaxBodySize;
+}
+
+bool Location::getIsCgi() const {
+    return _isCgi;
+}
+
+void Location::setIsCgi(bool isCgi) {
+    _isCgi = isCgi;
 }

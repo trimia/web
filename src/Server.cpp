@@ -3,7 +3,7 @@
 Server::Server()
 {
 	std::cout << "Server : Default Constructor Called" << std::endl;
-    this->_isCgiEnabled = false;
+//    this->_isCgiEnabled = false;
     this->_port = 0;
     this->_ip = "";
     this->_server_name = "";
@@ -42,7 +42,7 @@ Server::Server(Server const &obj)
 	    this->_port=obj._port;
 	    this->_root=obj._root;
 	    this->_server_socket = new Socket(*obj._server_socket);
-        this->_isCgiEnabled = obj._isCgiEnabled;
+//        this->_isCgiEnabled = obj._isCgiEnabled;
 	    this->_index=obj._index;
 	    this->_client_max_body_size=obj._client_max_body_size;
 	    this->_autoindex=obj._autoindex;
@@ -69,7 +69,7 @@ Server	&Server::operator= (const Server &obj)
         this->_index=obj._index;
         this->_client_max_body_size=obj._client_max_body_size;
         this->_autoindex=obj._autoindex;
-        this->_isCgiEnabled = obj._isCgiEnabled;
+//        this->_isCgiEnabled = obj._isCgiEnabled;
         // this->set_server_socket(new Socket(*obj._server_socket));
 
 	    // this->_server_socket = new Socket(*obj._server_socket);
@@ -126,14 +126,14 @@ void Server::initSock() {
  *
  *
  */
-
-bool    Server::getIsCgiEnabled() {
-    return this->_isCgiEnabled;
-}
-
-void    Server::setIsCgiEnabled(bool cgiEnabled) {
-    this->_isCgiEnabled = cgiEnabled;
-}
+//
+//bool    Server::getIsCgiEnabled() {
+//    return this->_isCgiEnabled;
+//}
+//
+//void    Server::setIsCgiEnabled(bool cgiEnabled) {
+//    this->_isCgiEnabled = cgiEnabled;
+//}
 
 uint16_t Server::getPort() const {
     return _port;

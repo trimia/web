@@ -38,6 +38,8 @@ public	:
 
 	void handleLocation(Client *client);
 
+    void checkPath(Client *client);
+
 //	void fitBestLocation(Client *client);
 
 	// bool allowMethod(Client *client);
@@ -66,9 +68,9 @@ public	:
 
 	void set_status_code(int status_code);
 
-	Location *location() const;
+	std::string getLocation();
 
-	void set_location(Location *location);
+	void setLocation(std::string &location);
 
 	size_t body_size() const;
 
@@ -93,6 +95,10 @@ public	:
 	void set_complete(bool complete);
 
 	void set_error(bool error);
+
+    void set_return(bool return_);
+
+    bool getReturn_();
 
 	bool ready_to_send() const;
 
@@ -120,7 +126,8 @@ private	:
 	std::string     _path;
 	std::string     _root;
 	std::string     _fileExtension;
-    Location        *_location;
+    std::string     _location;
+    bool            return_;
 
 
 	std::string     _target_file;

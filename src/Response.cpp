@@ -15,14 +15,15 @@ Response::Response() {
     this->_complete = false;
     this->_error = false;
     this->_readyToSend = false;
-    this->_location = new Location();
+    this->return_= false;
+//    this->_location = new Location();
 
     std::cout << "Response : Default Constructor Called" << std::endl;
 }
 
 Response::~Response() {
     std::cout << "Response : Destructor Called" << std::endl;
-    delete this->_location;
+//    delete this->_location;
 }
 
 
@@ -127,17 +128,19 @@ void Response::headMethod(Client *client) {
 
 void Response::checkRequest(Client *client) {
     std::cout << BLUE << "checkRequest" << RESET_COLOR << std::endl;
-
     if (client->is_location())
         handleLocation(client);
     if(this->error()||this->ready_to_send())
         return;
     if (this->root().empty() || this->root() == "/")
-        this->_root = "./www";
-    if (this->_root.find(".") == std::string::npos)
+        this->_root = "/www";
+    if(!client->is_location())
+        checkPath(client);
+    if (this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
+    }
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
-    if (location()->index().empty() && client->request()->path_file() == "/") {
+    if (!client->is_location() && client->request()->path_file() == "/") {
         std::cout << CYAN << "root path" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_body = "server is online";
@@ -153,6 +156,29 @@ void Response::checkRequest(Client *client) {
         readFromFile(this->root() + client->request()->path_file());
     std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
     return;
+
+}
+
+void Response::checkPath(Client *client) {
+    std::cout << CYAN << "checkPath" << RESET_COLOR << std::endl;
+    std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
+    size_t rootPos=client->request()->path_file().find(this->_root);
+    std::cout<<"root pos: "<<rootPos<<std::endl;
+    if(rootPos != std::string::npos){
+        std::cout<<"pre   " << CYAN << "path file: " << client->request()->path_file() <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+        std::string temp;
+        temp=client->request()->path_file().erase(rootPos, this->_root.length());
+        std::cout <<"temp   "<< CYAN << temp <<" temp lenght "<<temp.length()<< RESET_COLOR << std::endl;
+        client->request()->set_path_file(temp);
+        std::cout <<"post   "<< CYAN << "path file: " << client->request()->path_file()  <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+
+    }
+    if(client->request()->path_file().find_last_of("/")==client->request()->path_file().length()){
+        std::string temp;
+        temp=client->request()->path_file().substr(0,client->request()->path_file().length()-1);
+        client->request()->set_path_file(temp);
+    }
+
 
 }
 
@@ -198,11 +224,13 @@ void Response::handleLocation(Client *client) {
         return;
     }
     if (this->root().empty() || this->root() == "/" || bestMatch.root().empty())
-        this->_root = "./www";
+        this->_root = "/www";
     else
         this->_root = bestMatch.root();
-    if (this->_root.find(".") == std::string::npos)
+    checkPath(client);
+    if (this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
+    }
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
 
     if (!bestMatch.alias().empty()){
@@ -237,28 +265,34 @@ void Response::handleLocation(Client *client) {
     if (!bestMatch.index().empty())
     {
         std::cout << CYAN << "index" << RESET_COLOR << std::endl;
-        return readFromFile(this->location()->index());
+        return readFromFile(bestMatch.index());
 
     }
     if (!bestMatch.getReturn().empty())
         std::cout << YELLOW << "return" << bestMatch.getReturn()[0]<<" : " <<bestMatch.getReturn()[1] <<" : " <<bestMatch.getReturn()[2]<< RESET_COLOR << std::endl;
     if (!bestMatch.getReturn().empty()) {
         std::cout << CYAN << "return" << RESET_COLOR << std::endl;
-        int code=0;
-        std::string location="";
-        for (std::vector<std::string>::iterator it = bestMatch.getReturn().begin(); it != bestMatch.getReturn().end(); ++it) {
-            if(isDigits(it->c_str()))
-                code=toInt(*it);
+//        int code=0;
+//        std::string location="";
+        std::vector<std::string> return_ = bestMatch.getReturn();
+        for (std::vector<std::string>::iterator it = return_.begin(); it != return_.end(); ++it) {
+            std::cout << YELLOW << "return" << *it << RESET_COLOR << std::endl;
+            if(isDigits(*it)){
+                this->_statusCode=toInt(*it);
+                this->_error=true;
+            }
             else if(it->compare("return")!=0)
-                location=*it;
+                this->_location=*it;
         }
+
         std::cout << CYAN << "return" << RESET_COLOR << std::endl;
         //TODO understand if we want to put a link in the location return
-        buildRedirectResponseHeader(client->request()->http_version(),StatusString(code),location);
-
+        this->return_= true;
+//        buildRedirectResponseHeader(client->request()->http_version(),StatusString(code),location);
+        this->_readyToSend = true;
         return;
     }
-    if(!bestMatch.cgiPath().empty())
+    if(bestMatch.getIsCgi())
     {
         //TODO handle cgi
     }
@@ -288,13 +322,15 @@ void Response::buildHttpResponseHeader(std::string httpVersion,
 
 void Response::buildRedirectResponseHeader(std::string httpVersion,
                                            std::string statusText, std::string location) {
-
+    std::cout << CYAN << "buildRedirectResponseHeader" << RESET_COLOR << std::endl;
+    std::cout << CYAN << "code: " << statusText << RESET_COLOR << std::endl;
     std::ostringstream header;
     header << httpVersion << " " << statusText << "\r\n";
     header << "Location: " << location << "\r\n";
     header << "\r\n";  // End of header
     this->_headerSize = header.str().length();
 //    this->_readyToSend = true;
+    std::cout << YELLOW << "header: " << header.str() << RESET_COLOR << std::endl;
     this->_header = header.str();
 }
 
@@ -355,7 +391,7 @@ void Response::sendData(Client *client) {
         // The socket is in blocking mode
     }
 
-//    std::cout << YELLOW << "response: " << response << " response size:" << responseSize << RESET_COLOR << std::endl;
+    std::cout << YELLOW << "response: " << response << " response size:" << responseSize << RESET_COLOR << std::endl;
     //TODO https://linux.die.net/man/2/send see which falgs to use or if 0 is ok
     size_t byteCount = send_all(client->getClientSock()->getFdSock(), response, responseSize, MSG_DONTWAIT);
     //TODO understand if necessary
@@ -465,17 +501,17 @@ void Response::set_status_code(int status_code) {
     _statusCode = status_code;
 }
 
-Location *Response::location() const {
-    return _location;
-}
-
-void Response::set_location(Location *location) {
-    std::cout << "Response : set_location" << std::endl;
-    std::cout << "location path" << location->getPath() << std::endl;
-    std::cout << "location method" << location->getMethods()[0]<<location->getMethods()[1] << std::endl;
-    _location = location;
-}
-
+//Location *Response::location() const {
+//    return _location;
+//}
+//
+//void Response::set_location(Location *location) {
+//    std::cout << "Response : set_location" << std::endl;
+//    std::cout << "location path" << location->getPath() << std::endl;
+//    std::cout << "location method" << location->getMethods()[0]<<location->getMethods()[1] << std::endl;
+//    _location = location;
+//}
+//
 
 size_t Response::body_size() const {
     return _bodySize;
@@ -547,4 +583,22 @@ void Response::set_header(const std::string &header) {
 
 const std::string &Response::getContent() const {
     return _content;
+}
+
+void Response::set_return(bool bull) {
+    this->return_ = bull;
+}
+
+
+bool Response::getReturn_() {
+    return return_;
+}
+
+std::string Response::getLocation() {
+    return _location;
+}
+
+void Response::setLocation(std::string &location) {
+    this->_location = location;
+
 }

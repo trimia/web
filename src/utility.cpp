@@ -68,20 +68,25 @@ std::string StatusString(int statusCode)
         case 204: return "204 No Content";
         case 301: return "301 Moved Permanently";
         case 302: return "302 Found";
+        case 303: return "303 See Other";
         case 304: return "304 Not Modified";
+        case 307: return "307 Temporary Redirect";
+        case 308: return "308 Permanent Redirect";
         case 400: return "400 Bad Request";
         case 401: return "401 Unauthorized";
         case 403: return "403 Forbidden";
         case 404: return "404 Not Found";
         case 405: return "405 Method Not Allowed";
+        case 406: return "406 Not Acceptable";
         case 408: return "408 Request Timeout";
+        case 410: return "410 Gone";
         case 413: return "413 Request Entity Too Large";
         case 500: return "500 Internal Server Error";
         case 501: return "501 Not Implemented";
         case 503: return "503 Service Unavailable";
         case 504: return "504 Gateway Timeout";
         case 505: return "505 HTTP Version Not Supported";
-        default: return "Unknown Status";
+        default: return "501 Not Implemented";
     }
 }
 

@@ -42,7 +42,7 @@ class	Server : public sType
     //     this->_port = 0;
     // };
 
-    bool getIsCgiEnabled(void);
+//    bool getIsCgiEnabled(void);
 
     uint16_t getPort() const;
 
@@ -100,7 +100,7 @@ class	Server : public sType
 
     void set_location_number(int location_number);
 
-    void setIsCgiEnabled(bool cgiEnabled);
+//    void setIsCgiEnabled(bool Enabled);
 
 
 
@@ -111,7 +111,7 @@ class	Server : public sType
 private	:
 //        friend class Socket;
         friend class Webserver;
-        bool                            _isCgiEnabled;
+//        bool                            _isCgiEnabled;
         uint16_t						_port;
         std::string                     _ip;
         std::string						_server_name;
