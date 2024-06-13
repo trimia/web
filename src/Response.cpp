@@ -177,11 +177,11 @@ void Response::handleLocation(Client *client) {
     size_t bestMatchLenght = 0;
     // Itera attraverso le posizioni definite nel server
     if (!client->locations().empty())
-        for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
-            if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
+        for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); ++it) {
+            if (client->request()->path_file().find(it->getPath()) != std::string::npos && it->getPath().length() > bestMatchLenght) {
                 bestMatch = *it;
                 bestMatchLenght = it->getPath().length();
-                // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch->getPath() << RESET_COLOR << std::endl;
+                 std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
                 // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
 
             }
@@ -205,12 +205,24 @@ void Response::handleLocation(Client *client) {
         this->_root = "." + this->root();
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
 
-
     if (!bestMatch.alias().empty()){
-        std::cout << CYAN << "alias" << RESET_COLOR << std::endl;
-        if (int locationPathPos =client->request()->path_file().find_last_of(location()->getPath()) != std::string::npos)
-            client->request()->path_file().replace(locationPathPos, location()->getPath().length(), location()->alias());
+        std::cout << CYAN << "alias" << bestMatch.alias() << RESET_COLOR << std::endl;
+        size_t locationPathPos = client->request()->path_file().find(bestMatch.getPath());
+        if ( locationPathPos  != std::string::npos){
+            std::cout<<"location path pos: "<<locationPathPos<<std::endl;
+            std::cout<<"pre   " << CYAN << "path file: " << client->request()->path_file() <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+//            client->request()->path_file().reserve(client->request()->path_file().length()-bestMatch.getPath().length()+bestMatch.alias().length());
+            std::string temp;
+            temp=client->request()->path_file().replace(locationPathPos, bestMatch.getPath().length(), bestMatch.alias());
+            client->request()->set_path_file(temp);
+//            std::stringstream ss;
+//            ss << client->request()->path_file().substr(0, locationPathPos);
+//            ss << bestMatch.alias();
+//            ss << client->request()->path_file().substr(locationPathPos + bestMatch.getPath().length());
+//            client->request()->set_path_file(ss.str());
 
+            std::cout <<"post   "<< CYAN << "path file: " << client->request()->path_file()  <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+        }
     }
     std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
     if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
