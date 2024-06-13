@@ -17,6 +17,18 @@ static bool    tokenAdmitted(std::string token) {
     return true;
 }
 
+bool    checkCgiExtension(std::vector<std::string> tokens) {
+    std::vector<std::string>::iterator it = tokens.begin();
+
+    tokens.erase(it);
+    for (std::vector<std::string>::iterator elem = tokens.begin(); elem != tokens.end(); ++elem) {
+        if (*elem != ".py" && *elem != ".pl" && *elem != ".sh") {
+            return false ;
+        }
+    }
+    return true;
+}
+
 /*
  * Implement the simil Data Transfer Object
  * sends from parsed block to relative Object
@@ -264,9 +276,6 @@ void    ConfigParser::handleServerState(std::string line) {
     } else if (tokens.size() > 2 && tokens[0] == "error_page" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfServers[countServerBlocks].setErrorPages(tokens);
-    } else if (tokens.size() > 2 && tokens[0] == "cgi_enable" && findLastChar(tokens) == ';') {
-        tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
-        // this->_vectorOfServers[countServerBlocks].setCgiPath(tokens); /////////////////
     } else {
         std::cerr << "Error: Server block got wrong configuration" << std::endl;
     }
@@ -281,6 +290,10 @@ void    ConfigParser::handleLocationState(std::string line) {
     if (tokens.size() == 1 && tokens[0] == "}") {
         this->currentState = ServerState;
         return ;
+    } if (tokens.size() > 1 && tokens[0] == "cgi_enable" && findLastChar(tokens) == ';') {
+        tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
+        if (checkCgiExtension(tokens) == true)
+            this->_vectorOfLocations[countLocationBlocks].setIsCgi(true);
     } else if (tokens.size() == 2 && tokens[0] != "method" && tokens[0] != "return" && findLastChar(tokens) == ';') {
         tokens[1] = trimLastChar(tokens[1]);
         if (tokens[0] == "autoindex") {
@@ -343,6 +356,7 @@ void ConfigParser::printConfig() {
                 std::cout << BLUE << "        PATH: " << it3->getPath() << RESET_COLOR << std::endl;
                 std::cout << BLUE << "        ROOT: " << it3->root() << RESET_COLOR << std::endl;
                 std::cout << BLUE << std::boolalpha << "        AUTOINDEX: " << it3->getAutoIndex() << RESET_COLOR << std::endl;
+                std::cout << BLUE << std::boolalpha << "        CGI_ENABLED: " << it3->getIsCgi() << RESET_COLOR << std::endl;
                 std::cout << BLUE << "        ALIAS: " << it3->alias() << RESET_COLOR << std::endl;
                 // Print error pages for this location block
                 if (!it3->getReturn().empty()) {

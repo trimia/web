@@ -38,6 +38,7 @@ Location::Location(Location const &obj)
 	    this->_root=obj._root;
 	    this->_autoindex=obj._autoindex;
 	    this->_index=obj._index;
+        this->_isCgi = obj._isCgi;
 	    this->setMethods(obj._methods);
         this->setReturn(obj._return);
 //	    this->_cgiPath=obj._cgiPath;

@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
             for (std::vector<Location>::iterator it1 = listOfLocation.begin(); it1 != listOfLocation.end(); ++it1)
             {
                 std::cout<<BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+                std::cout<<BLUE << std::boolalpha << "LOC IS CGI : " << it1->getIsCgi() << RESET_COLOR << std::endl;
                 std::cout<<BLUE << std::boolalpha << "AUTOINDEX : " << it1->getAutoIndex() << RESET_COLOR << std::endl;
                 if (!it1->getMethods().empty()) {
                     std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1] <<RESET_COLOR <<std::endl;
