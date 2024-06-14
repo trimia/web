@@ -411,14 +411,14 @@ void Response::sendData(Client *client) {
         std::cout << YELLOW << "send " << byteCount << " byte" << RESET_COLOR << std::endl;
         if (this->_statusCode == 0)
             this->_statusCode = 204;
-        // this->_complete = true;
+        // this->_not_complete = true;
         // return error handling
     } else if (byteCount == responseSize) {
         std::cout << GREEN << "send " << byteCount << " byte" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_complete = true;
     }
-    // this->_complete = false;
+    // this->_not_complete = false;
 }
 
 void Response::readFromFile(std::string path) {

@@ -141,7 +141,7 @@ bool allowMethod(std::vector<std::string> methods,std::string method)
     return false;
 }
 
-std::string toString(int number)
+std::string toStr(int number)
 {
     std::stringstream ss;
     ss << number;
@@ -165,6 +165,48 @@ int toInt(std::string str)
         throw std::invalid_argument("toInt: invalid number");
     return number;
 }
+
+static std::string trim(std::string str) {
+    size_t start = 0;
+    size_t end = str.length();
+
+    while (start < end && std::isspace(str[start])) {
+        start++;
+    }
+
+    while (end > start && std::isspace(str[end - 1])) {
+        end--;
+    }
+
+    return str.substr(start, end - start);
+}
+
+static std::vector<std::string> tokenize(std::string s, std::string del)
+{
+    std::vector<std::string>    tokens;
+    size_t start = 0, end = -1 * del.size();
+
+    while ((end = s.find(del, start)) != std::string::npos) {
+        tokens.push_back(s.substr(start, end - start));
+        start = end + del.size();
+    }
+
+    if (start < s.length()) {
+        tokens.push_back(s.substr(start));
+    }
+
+    return tokens;
+}
+
+std::vector<std::string> AKAftSplit(std::string& str, std::string div) {
+    std::vector<std::string>    tokens;
+    std::string                 temp;
+
+    temp = trim(str);
+    tokens = tokenize(temp, div);
+    return tokens;
+}
+
 
 /**
  *uncomment to debug is no cpp98

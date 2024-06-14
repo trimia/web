@@ -20,7 +20,7 @@ class	Request
 
 		void receiveData(Client *client);
 
-		std::string checktype(std::string input);
+		void checkTypeAndSize(std::string input);
 
 		void fillRequest(std::string &httpRequest);
 
@@ -29,6 +29,8 @@ class	Request
 		std::string getQueryFromHttpRequest(std::string &httpRequest);
 
 		int parseRequest();
+
+        void buildBody(Client *client,char input[RCV_BUF_SIZE],int size);
 
 		bool error() const;
 
@@ -104,28 +106,34 @@ class	Request
 
 		void set_header_size(size_t header_size);
 
-	private	:
+    const std::string &getContentType() const;
 
-        bool									                    _error;
-        bool									                    _cgi;
-        bool									                    _ended;
-		bool									                    _complete; // finito di leggere o serve un altro giro
-		std::string								            _connection;//keep-alive or close
-		std::time_t								            _timeStart;
-		bool									                    _isBody;
-		std::string								            _body;
-		size_t									                _body_size;
-        size_t                                                   _clientMaxBodySize;
-		std::string								            _httpMessage; // messaggio intero preso a pezzi
-		size_t									                _headerSize;
-		std::map<std::string, std::string>		_requestHeaders;
-		std::string								            _method; // GET, POST, DELETE //! GET
-		std::string								            _requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-		bool									                    _isRoot;
-		std::string								            _path_file; // la url senza query //! /www/html/index.html
-		std::string								            _query;//?
-		bool									                    _isQuery;//?
-		std::string								            _HTTPVersion; // HTTP/1.1 //! HTTP/1.1
+    void setContentType(const std::string &contentType);
+
+private	:
+
+        bool									    _error;
+        bool									    _cgi;
+        bool									    _ended;
+		bool									    _not_complete; // finito di leggere o serve un altro giro
+		std::string								    _connection;//keep-alive or close
+		std::time_t								    _timeStart;
+		bool									    _isBody;
+		std::string								    _body;
+		size_t									    _body_size;
+        std::string								    _content_type;
+        size_t                                      _clientMaxBodySize;
+		std::string								    _header; // messaggio intero preso a pezzi
+		size_t									    _headerSize;
+		std::map<std::string, std::string>		    _requestHeaders;
+		std::string								    _method; // GET, POST, DELETE //! GET
+		std::string								    _requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
+		bool									    _isRoot;
+		std::string								    _path_file; // la url senza query //! /www/html/index.html
+		std::string								    _query;//?
+		bool									    _isQuery;//?
+		std::string								    _HTTPVersion; // HTTP/1.1 //! HTTP/1.1
+        std::string								    _fileName; // if post from our site name of file to upload
 
 
 
@@ -133,7 +141,6 @@ class	Request
 		bool									_parsed;
 		bool									_answered;
 		std::vector<std::string>				_folders; // le cartelle del URL //! www html
-		std::string								_fileName; // solo il file nella URL //! index.html
 		std::string								_extension; // estensione del file se esiste //! html
 		std::string								_queryName; // le query, dopo il '?' nella URL //! ciao=asd/bella=zi
 		std::map<std::string, std::string>		_queryMap; // querry divisa per: chiave=valore&... //! ciao[asd] bella[zi]

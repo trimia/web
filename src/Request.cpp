@@ -6,13 +6,13 @@ Request::Request()
 	this->_cgi=false;
 	this->_error=false;
 	this->_ended=false;
-	this->_complete=false;
+	this->_not_complete=false;
     this->_isRoot=false;
 	// this->_isPathFileDir=true;
 	this->_body_size=0;
 	this->_headerSize=0;
 	this->_method="";
-	this->_httpMessage="";
+	this->_header="";
 	this->_body="";
 
 	std::cout << "Request : Default Constructor Called" << std::endl;
@@ -24,7 +24,7 @@ Request::~Request()
 	// this->_cgi=false;
 	// this->_error=false;
 	// this->_ended=false;
-	// this->_complete=false;
+	// this->_not_complete=false;
 	std::cout << "Request : Destructor Called" << std::endl;
 }
 
@@ -43,13 +43,13 @@ Request	&Request::operator= (const Request &obj)
 		this->_error=obj._error;
 		this->_cgi=obj._cgi;
 		this->_ended=obj._ended;
-		this->_complete=obj._complete;
+		this->_not_complete=obj._not_complete;
 		this->_timeStart=obj._timeStart;
 		this->_body_size=obj._body_size;
 		this->_requestHeaders=obj._requestHeaders;
 		this->_method=obj._method;
 		this->_headerSize=obj._headerSize;
-		this->_httpMessage=obj._httpMessage;
+		this->_header=obj._header;
 		//	this->attributes = obj.attributes;
 		//	...
 	}
@@ -88,13 +88,62 @@ void Request::receiveData(Client *client) {
 		return;
 	}
 	else if(byteCount !=0) {
+        for (const auto &item: rcv_buffer){
+            std::cout << item;
+        }
 		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-		this->_headerSize=byteCount;
-		this->_ended=true;
-		this->_httpMessage=checktype(rcv_buffer);
-		parseRequest();
-		fillRequest(this->_httpMessage);
+//		this->_headerSize=byteCount;
+//		this->_ended=true;
+		if(!this->_not_complete)
+        {
+            checkTypeAndSize(rcv_buffer);
+            parseRequest();
+            fillRequest(this->_header);
+        }
+        if(this->is_body()){
+
+
+
+//            size_t len = 0;
+////            for (size_t i =0;i<size-this->_headerSize-4;i++){
+////                rcv_buffer[i]=input[this->_headerSize+4+i];
+////            }
+//            if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
+//                std::cout<<"primo giro"<<std::endl;
+//                std::string pippo(rcv_buffer, byteCount);
+//                this->_body=pippo.substr(this->_headerSize);
+//                len=byteCount - this->_headerSize;
+//            }
+////        this->_body(rcv_buffer, byteCount - this->_headerSize - 4);
+//            else{
+//                std::cout<<"secondo giro"<<std::endl;
+//                std::string pippo(rcv_buffer, byteCount);
+//                this->_body+=pippo;
+//                len+=byteCount;
+//            }
+////        this->_body(rcv_buffer, size);
+//            std::cout<<YELLOW<<"len : "<<len<<RESET_COLOR<<std::endl;
+//            std::cout<<YELLOW<<"body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
+//            if(len==this->_body_size)
+//            {
+//                std::cout<<CYAN<<"end of body"<<RESET_COLOR<<std::endl;
+//                this->_ended=true;
+//                std::ofstream file("./www/temp/prova.jpg", std::ios::app | std::ios::binary);
+//                file.write(this->_body.c_str(), this->_body.size());
+//                file.close();
+//            } else
+//                this->_not_complete=true;
+//
+
+
+
+
+
+            buildBody(client,rcv_buffer,byteCount);
+
+        } else
+            this->_ended=true;
 		client->set_connection(this->connection());
         if(client->is_location())
         {
@@ -146,13 +195,13 @@ void Request::receiveData(Client *client) {
 
 
 
-std::string Request::checktype(std::string httpRequest) {
+void Request::checkTypeAndSize(std::string httpRequest) {
 	size_t methodEndPos = httpRequest.find(" ");
 	if (methodEndPos == std::string::npos)
     {
 		this->_error= true;
 		// Handle error: Invalid HTTP request
-		return "";
+		return ;
 	}
 	std::istringstream input(httpRequest);
 	std::string method;
@@ -162,26 +211,28 @@ std::string Request::checktype(std::string httpRequest) {
     {
 		set_method(method);
 	} else
-		this->_error = true;// Se non corrisponde a nessuno dei formati noti, messaggio HTTP non valido
+		this->_error = true;
 	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
-	int lastLineStart=httpRequest.find("Content-Length: ");
-	if(lastLineStart>0)
-    {
-		int numberEnd=httpRequest.find("\r",lastLineStart);
-		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
-	}
+//	int lastLineStart=httpRequest.find("Content-Length: ");
+//	if(lastLineStart>0)
+//    {
+//		int numberEnd=httpRequest.find("\r",lastLineStart);
+//		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
+//	}
     if(httpRequest.find("Connection")==std::string::npos)
         this->_connection="close";
     int headerEnd=httpRequest.find("\r\n\r\n");
-    if(headerEnd>0 && this->_body_size>0)
-        this->_body=httpRequest.substr(headerEnd+4);
+    this->_headerSize = headerEnd + 4;
+    this->_header=httpRequest.substr(0,headerEnd+4);
+    std::cout<<YELLOW<<"header size :"<<this->_headerSize<<" header :"<<this->_header.length()<<"headerEnd :"<<headerEnd<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
+
 //    printCharsAndSpecialChars(this->_body);
 	// int numberEnd=httpRequest.find("\r",lastLineStart);
 	// int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
 //	std::cout<<RED<<"****body size ****:"<<this->body_size()<<RESET_COLOR<<std::endl;
-	this->_headerSize=_headerSize-_body_size;
-	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
-	std::cout<<YELLOW<<"checktype body size :"<<this->_body_size<<RESET_COLOR<<std::endl;
+//	this->_headerSize=_headerSize-_body_size;
+//	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
 
 	//maybe we can delete this:
 	// size_t pos = httpRequest.find("\n");
@@ -189,7 +240,7 @@ std::string Request::checktype(std::string httpRequest) {
 	// 	// Erase the first line including the newline character
 	// 	httpRequest.erase(0, pos + 1);
 	// }
-	return httpRequest;
+//	return httpRequest;
 }
 
 /*
@@ -200,7 +251,7 @@ std::string Request::checktype(std::string httpRequest) {
 int Request::parseRequest()
 {
 	std::cout<<YELLOW<<"parseRequest"<<RESET_COLOR<<std::endl;
-	std::string input= this->_httpMessage;
+	std::string input= this->_header;
 	size_t pos = 0;
 	while ((pos = input.find("\n")) != std::string::npos)
 	{
@@ -239,6 +290,26 @@ void Request::fillRequest(std::string &httpRequest) {
  			it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
  			this->_connection=it->second;
  		}
+         if(it->first=="Content-Length")
+         {
+             std::cout<<YELLOW<<"fillRequest Content-Length :"<<it->second<<RESET_COLOR<<std::endl;
+             it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
+             printCharsAndSpecialChars(it->second);
+             this->_body_size=toInt(it->second);
+             this->_isBody=true;
+         }
+         if(it->first=="Content-Type")
+         {
+             it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
+             printCharsAndSpecialChars(it->second);
+             this->_content_type=it->second;
+         }
+         if(it->first=="Filename")
+         {
+             it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
+             printCharsAndSpecialChars(it->second);
+             this->_fileName=it->second;
+         }
  		// if(it->first=="")
  		// 	this.=it->second;
  		// if(it->first=="")
@@ -300,6 +371,59 @@ std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
 	return httpRequest.substr(queryStartPos + 1, queryEndPos - queryStartPos - 1);
 }
 
+void Request::buildBody(Client *client,char*  input, int size){
+
+    std::cout<<YELLOW<<"buildBody"<<RESET_COLOR<<std::endl;
+    std::cout<<YELLOW<<"client socket fd: "<<client->client_sock()->getFdSock()<<RESET_COLOR<<std::endl;
+    size_t len = 0;
+    if(this->_content_type.find("multipart/form-data")!=std::string::npos)
+    {
+        std::string temp(input, size);
+        std::string boundary="boundary=";
+        size_t boundaryPos=temp.find(boundary);
+        if(boundaryPos==std::string::npos)
+        {
+            this->_ended=true;
+            client->response()->set_status_code(400);
+            return;
+        }
+        boundaryPos+=boundary.length();
+        size_t boundaryEndPos=temp.find("\r\n", boundaryPos);
+        std::string boundaryString=temp.substr(boundaryPos, boundaryEndPos - boundaryPos);
+        std::vector<std::string> parts = AKAftSplit(this->_body, "--" + boundary);
+        for(std::vector<std::string>::iterator it=parts.begin();it!=parts.end();it++)
+        {
+            //WIP
+        }
+
+    }
+
+    if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
+//        std::cout<<"primo giro"<<std::endl;
+        std::string temp(input, size);
+        this->_body=temp.substr(this->_headerSize);
+        len=size - this->_headerSize;
+    }
+
+    std::cout<<YELLOW<<"len : "<<len<<" body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
+    if(len==this->_body_size){
+        std::cout<<CYAN<<"end of body"<<RESET_COLOR<<std::endl;
+        this->_ended=true;
+        if(this->_fileName.empty()){
+            static int i=0;
+            std::string n= toStr(i);
+            if(i==0)
+                n="";
+            this->_fileName="temp"+ n+this->_content_type;
+            i++;
+        }
+        std::ofstream file(this->_fileName, std::ios::app | std::ios::binary);
+        file.write(this->_body.c_str(), this->_body.size());
+        file.close();
+    } else
+        this->_not_complete=true;
+
+}
 
 /*
  *getter & setter
@@ -330,11 +454,11 @@ void Request::set_ended(bool ended) {
 }
 
 bool Request::complete() const {
-	return _complete;
+	return _not_complete;
 }
 
 void Request::set_complete(bool complete) {
-	_complete = complete;
+    _not_complete = complete;
 }
 
 std::time_t Request::time_start() const {
@@ -433,11 +557,11 @@ inline void Request::set_request_headers(const std::map<std::string, std::string
 }
 
 std::string Request::http_message(){
-	return _httpMessage;
+	return _header;
 }
 
 inline void Request::set_http_message(const std::string &http_message) {
-	_httpMessage = http_message;
+    _header = http_message;
 }
 
 size_t Request::getClientMaxBodySize() const {
@@ -446,4 +570,12 @@ size_t Request::getClientMaxBodySize() const {
 
 void Request::setClientMaxBodySize(size_t clientMaxBodySize) {
     _clientMaxBodySize = clientMaxBodySize;
+}
+
+const std::string &Request::getContentType() const {
+    return _content_type;
+}
+
+void Request::setContentType(const std::string &contentType) {
+    _content_type = contentType;
 }

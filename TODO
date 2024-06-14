@@ -209,7 +209,7 @@ first message on socket
     // 	std::cout<<YELLOW<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
     // }else if(byteCount !=0){
     // 	std::cout<<GREEN<<"send "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-    // 	this->_complete = true;
+    // 	this->_not_complete = true;
     // }
 
 
