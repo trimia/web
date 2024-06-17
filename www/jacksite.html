@@ -23,14 +23,19 @@
 </div>
 <div class="container">
     <h1>Multipart File Upload</h1>
-    <form id="form" enctype="multipart/form-data">
-        <div class="input-group">
-            <label for="files">Select files</label><input id="files" type="file" multiple />
+    <form  enctype="multipart/form-data">
+        <div class="input">
+            <label for="file">Select file</label><input id="file" type="file" />
         </div>
-        <button class="submit-btn" type="submit">Upload</button>
+        <button id="form" class="submit-btn" type="submit">Upload</button>
     </form>
 </div>
-<script src="index.js"></script>
+<h2>File Upload Form</h2>
+<form action="http://127.1.0.1:8090/" method="post" enctype="multipart/form-data">
+    <label for="newfile">Select file:</label>
+    <input type="file" id="newfile" name="file">
+    <input type="submit" value="Upload">
+</form>
 </body>
 <script>
     document.getElementById("pippo").addEventListener("click", function(){
@@ -48,37 +53,20 @@
 </script>
 <script>
 
-    //  document.getElementById("form")("click", function(){
-    //      var inputFile = document.getElementById("file")[0];
-    //      var formData = new FormData();
-    //      for (const file of inputFile.files) {
-    //          formData.append("files", file);
-    //      }
-    //     fetch("http://localhost:8090", {
-    //         method: "post",
-    //         headers: {
-    //             // "Content-Type": file.type,
-    //             "Filename": inputFile.name
-    //         },
-    //         body: formData,
-    //     })
-    // });
-    const form = document.getElementById("form");
-    const inputFile = document.getElementById("files")[0];
-    const formData = new FormData();
+     document.getElementById("form").addEventListener("click", function(){
+         var inputFile = document.getElementById("file")[0];
+         var formData = new FormData();
+         formData.append("file", inputFile.files[0]);
+                fetch("http://localhost:8090", {
+                    method: "POST",
+                    // headers: {
+                    //     // "Content-Type": file.type,
+                    //     // "Filename": inputFile.name
+                    // },
+                    body: formData,
+                })
+    });
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        formData.append("files", inputFile);
-
-
-        fetch("http://localhost:8090", {
-            method: "post",
-            body: formData,
-        }).catch((error) => ("Something went wrong!", error));
-    };
-
-    form.addEventListener("submit", handleSubmit);
 </script>
 <script>
     document.getElementById("pippi?").addEventListener("click", function(){

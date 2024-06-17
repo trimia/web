@@ -6,7 +6,7 @@ Request::Request()
 	this->_cgi=false;
 	this->_error=false;
 	this->_ended=false;
-	this->_not_complete=false;
+	// this->_not_complete=false;
     this->_isRoot=false;
 	// this->_isPathFileDir=true;
 	this->_body_size=0;
@@ -43,7 +43,7 @@ Request	&Request::operator= (const Request &obj)
 		this->_error=obj._error;
 		this->_cgi=obj._cgi;
 		this->_ended=obj._ended;
-		this->_not_complete=obj._not_complete;
+		// this->_not_complete=obj._not_complete;
 		this->_timeStart=obj._timeStart;
 		this->_body_size=obj._body_size;
 		this->_requestHeaders=obj._requestHeaders;
@@ -88,60 +88,20 @@ void Request::receiveData(Client *client) {
 		return;
 	}
 	else if(byteCount !=0) {
-        for (const auto &item: rcv_buffer){
-            std::cout << item;
-        }
-		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
+        // for (const auto &item: rcv_buffer){
+        //     std::cout << item;
+        // }
+		std::cout<<MAGENTA<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
-//		this->_headerSize=byteCount;
-//		this->_ended=true;
-		if(!this->_not_complete)
+		if(!client->get_not_complete())
         {
             checkTypeAndSize(rcv_buffer);
-            parseRequest();
+			std::cout<<CYAN<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
+            parseRequest(rcv_buffer);
             fillRequest(this->_header);
         }
         if(this->is_body()){
-
-
-
-//            size_t len = 0;
-////            for (size_t i =0;i<size-this->_headerSize-4;i++){
-////                rcv_buffer[i]=input[this->_headerSize+4+i];
-////            }
-//            if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
-//                std::cout<<"primo giro"<<std::endl;
-//                std::string pippo(rcv_buffer, byteCount);
-//                this->_body=pippo.substr(this->_headerSize);
-//                len=byteCount - this->_headerSize;
-//            }
-////        this->_body(rcv_buffer, byteCount - this->_headerSize - 4);
-//            else{
-//                std::cout<<"secondo giro"<<std::endl;
-//                std::string pippo(rcv_buffer, byteCount);
-//                this->_body+=pippo;
-//                len+=byteCount;
-//            }
-////        this->_body(rcv_buffer, size);
-//            std::cout<<YELLOW<<"len : "<<len<<RESET_COLOR<<std::endl;
-//            std::cout<<YELLOW<<"body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
-//            if(len==this->_body_size)
-//            {
-//                std::cout<<CYAN<<"end of body"<<RESET_COLOR<<std::endl;
-//                this->_ended=true;
-//                std::ofstream file("./www/temp/prova.jpg", std::ios::app | std::ios::binary);
-//                file.write(this->_body.c_str(), this->_body.size());
-//                file.close();
-//            } else
-//                this->_not_complete=true;
-//
-
-
-
-
-
             buildBody(client,rcv_buffer,byteCount);
-
         } else
             this->_ended=true;
 		client->set_connection(this->connection());
@@ -157,7 +117,6 @@ void Request::receiveData(Client *client) {
                 return;
             }
         }
-
         if((client->getClientMaxBodySize()!=0 && this->_body_size > client->getClientMaxBodySize()))
         {
             this->_ended=true;
@@ -172,7 +131,6 @@ void Request::receiveData(Client *client) {
         }
 
         printCharsAndSpecialChars(this->http_version());
-		// std::cout<<YELLOW<<"httpversion :"<<this->http_version()<<RESET_COLOR<<std::endl;
 		if(this->http_version()!="HTTP/1.1")
         {
             client->response()->set_status_code(505);
@@ -200,7 +158,6 @@ void Request::checkTypeAndSize(std::string httpRequest) {
 	if (methodEndPos == std::string::npos)
     {
 		this->_error= true;
-		// Handle error: Invalid HTTP request
 		return ;
 	}
 	std::istringstream input(httpRequest);
@@ -213,12 +170,6 @@ void Request::checkTypeAndSize(std::string httpRequest) {
 	} else
 		this->_error = true;
 	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
-//	int lastLineStart=httpRequest.find("Content-Length: ");
-//	if(lastLineStart>0)
-//    {
-//		int numberEnd=httpRequest.find("\r",lastLineStart);
-//		this->_body_size=toInt(httpRequest.substr(lastLineStart+16,numberEnd-lastLineStart-16).c_str());
-//	}
     if(httpRequest.find("Connection")==std::string::npos)
         this->_connection="close";
     int headerEnd=httpRequest.find("\r\n\r\n");
@@ -226,21 +177,6 @@ void Request::checkTypeAndSize(std::string httpRequest) {
     this->_header=httpRequest.substr(0,headerEnd+4);
     std::cout<<YELLOW<<"header size :"<<this->_headerSize<<" header :"<<this->_header.length()<<"headerEnd :"<<headerEnd<<RESET_COLOR<<std::endl;
     std::cout<<YELLOW<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
-
-//    printCharsAndSpecialChars(this->_body);
-	// int numberEnd=httpRequest.find("\r",lastLineStart);
-	// int numberEnd=httpRequest.find("\r\n\r\n",lastLineStart);
-//	std::cout<<RED<<"****body size ****:"<<this->body_size()<<RESET_COLOR<<std::endl;
-//	this->_headerSize=_headerSize-_body_size;
-//	std::cout<<YELLOW<<"checktype header size :"<<this->_headerSize<<RESET_COLOR<<std::endl;
-
-	//maybe we can delete this:
-	// size_t pos = httpRequest.find("\n");
-	// if (pos != std::string::npos) {
-	// 	// Erase the first line including the newline character
-	// 	httpRequest.erase(0, pos + 1);
-	// }
-//	return httpRequest;
 }
 
 /*
@@ -248,17 +184,24 @@ void Request::checkTypeAndSize(std::string httpRequest) {
  *necessary to fill information like hethere body method etc
  */
 
-int Request::parseRequest()
+int Request::parseRequest(std::string httpRequest)
 {
 	std::cout<<YELLOW<<"parseRequest"<<RESET_COLOR<<std::endl;
-	std::string input= this->_header;
+	std::string input= httpRequest;
 	size_t pos = 0;
+	int i = 0;
 	while ((pos = input.find("\n")) != std::string::npos)
 	{
 		std::string line = input.substr(0, pos);
+		// std::cout<<YELLOW<<"line :"<<line<<RESET_COLOR<<std::endl;
+		// printCharsAndSpecialChars(line);
 		input.erase(0, pos + 1);
-		if (line.empty())
+		//TODO check if is necessary a better way to escape from while
+		if ((line=="\r" && this->method()!="POST")||(line=="\r" && i==1))
 			break;
+		if (line=="\r" && this->method()=="POST"){
+			i=1;
+		}
 		size_t colonPos = line.find_first_of(':');
 		if (colonPos != std::string::npos)
 		{
@@ -298,7 +241,7 @@ void Request::fillRequest(std::string &httpRequest) {
              this->_body_size=toInt(it->second);
              this->_isBody=true;
          }
-         if(it->first=="Content-Type")
+         if(it->first=="Content-Type" && this->_content_type.empty())
          {
              it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
              printCharsAndSpecialChars(it->second);
@@ -310,12 +253,21 @@ void Request::fillRequest(std::string &httpRequest) {
              printCharsAndSpecialChars(it->second);
              this->_fileName=it->second;
          }
- 		// if(it->first=="")
- 		// 	this.=it->second;
- 		// if(it->first=="")
- 		// 	this.=it->second;
- 		// if(it->first=="")
- 		// 	this.=it->second;
+ 		if(it->first=="Content-Disposition") {
+ 			std::cout<<YELLOW<<"fillRequest Content-Disposition :"<<RESET_COLOR<<std::endl;
+ 			std::string str = "filename=\"";
+ 			size_t fileNameStart=it->second.find(str);
+			if(fileNameStart!=std::string::npos)
+ 				this->_fileName=it->second.substr(fileNameStart+str.length(), it->second.find(".",fileNameStart)-fileNameStart-str.length());
+ 			printCharsAndSpecialChars(this->_fileName);
+ 			this->_extension=it->second.substr(it->second.find(".",fileNameStart)+1, it->second.find("\r",fileNameStart)-it->second.find(".",fileNameStart)-2);
+ 			printCharsAndSpecialChars(this->_extension);
+ 		}
+ 		if(!this->_content_type.empty() && it->first=="Content-Type") {
+ 			it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
+			this->_mymeType=it->second;
+ 			printCharsAndSpecialChars(this->_mymeType);
+ 		}
  	}
  }
 
@@ -326,16 +278,7 @@ void Request::setUrlPathQuery(std::string &url) {
 		this->_error= true;
 	size_t urlStartPos = methodEndPos + 1;
 	size_t urlEndPos = url.find(" ", urlStartPos);
-	// if (urlEndPos == std::string::npos)
-	// 	this->_isPathFileDir=false;
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
-    std::cout<<YELLOW<<"setUrlPathQuery requestURL :"<<this->_requestURL<<RESET_COLOR<<std::endl;
-
-	if (this->_requestURL.find("/")) {
-
-	}
-	// printf("n\n\n===========================================> U R I : %s\n\n\n", this->_requestURL.c_str());
-
 	this->_query= getQueryFromHttpRequest(url);
 	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
 	size_t endLinePos = url.find("\r", urlEndPos);
@@ -344,9 +287,6 @@ void Request::setUrlPathQuery(std::string &url) {
 	} else {
 		this->_HTTPVersion=url.substr(urlEndPos + 1, endLinePos - urlEndPos - 1);
 	}
-	// printCharsAndSpecialChars(this->_requestURL);
-	// printCharsAndSpecialChars(this->_HTTPVersion);
-	std::cout<<RED<<"HTTPVersion :"<<this->_HTTPVersion<<RESET_COLOR<<std::endl;
 	int pathEndPos=0;
 	int n = url.find("?");
 	if (n >0)
@@ -375,9 +315,15 @@ void Request::buildBody(Client *client,char*  input, int size){
 
     std::cout<<YELLOW<<"buildBody"<<RESET_COLOR<<std::endl;
     std::cout<<YELLOW<<"client socket fd: "<<client->client_sock()->getFdSock()<<RESET_COLOR<<std::endl;
-    size_t len = 0;
+    static size_t len=0;
+	if(client->get_not_complete())
+		len+= size;
+	else
+		len = size - this->_headerSize;
+
     if(this->_content_type.find("multipart/form-data")!=std::string::npos)
     {
+    	std::cout<<YELLOW<<"multipart/form-data"<<RESET_COLOR<<std::endl;
         std::string temp(input, size);
         std::string boundary="boundary=";
         size_t boundaryPos=temp.find(boundary);
@@ -387,42 +333,29 @@ void Request::buildBody(Client *client,char*  input, int size){
             client->response()->set_status_code(400);
             return;
         }
+    	// this->_body+=*it;
+
         boundaryPos+=boundary.length();
         size_t boundaryEndPos=temp.find("\r\n", boundaryPos);
         std::string boundaryString=temp.substr(boundaryPos, boundaryEndPos - boundaryPos);
-        std::vector<std::string> parts = AKAftSplit(this->_body, "--" + boundary);
+        std::vector<std::string> parts = AKAftSplit(this->_body, boundaryString+"--");
         for(std::vector<std::string>::iterator it=parts.begin();it!=parts.end();it++)
         {
+        	this->_body+=*it;
             //WIP
         }
-
     }
-
-    if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
-//        std::cout<<"primo giro"<<std::endl;
+    else if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
         std::string temp(input, size);
         this->_body=temp.substr(this->_headerSize);
-        len=size - this->_headerSize;
     }
-
     std::cout<<YELLOW<<"len : "<<len<<" body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
     if(len==this->_body_size){
         std::cout<<CYAN<<"end of body"<<RESET_COLOR<<std::endl;
         this->_ended=true;
-        if(this->_fileName.empty()){
-            static int i=0;
-            std::string n= toStr(i);
-            if(i==0)
-                n="";
-            this->_fileName="temp"+ n+this->_content_type;
-            i++;
-        }
-        std::ofstream file(this->_fileName, std::ios::app | std::ios::binary);
-        file.write(this->_body.c_str(), this->_body.size());
-        file.close();
-    } else
-        this->_not_complete=true;
 
+    } else
+		client->set_not_complete(true);
 }
 
 /*
@@ -452,14 +385,14 @@ bool Request::ended() const {
 void Request::set_ended(bool ended) {
 	_ended = ended;
 }
-
-bool Request::complete() const {
-	return _not_complete;
-}
-
-void Request::set_complete(bool complete) {
-    _not_complete = complete;
-}
+//
+// bool Request::complete() const {
+// 	return _not_complete;
+// }
+//
+// void Request::set_complete(bool complete) {
+//     _not_complete = complete;
+// }
 
 std::time_t Request::time_start() const {
 	return _timeStart;
@@ -548,6 +481,39 @@ size_t Request::header_size(){
 void Request::set_header_size(size_t header_size) {
 	_headerSize = header_size;
 }
+
+std::string & Request::file_name() {
+	return _fileName;
+}
+
+void Request::set_file_name(std::string file_name) {
+	_fileName = file_name;
+}
+
+std::string & Request::getExtension() {
+	return _extension;
+}
+
+void Request::set_extension(std::string extension) {
+	_extension = extension;
+}
+
+std::string & Request::getMyme_type() {
+	return _mymeType;
+}
+
+void Request::set_myme_type(std::string myme_type) {
+	_mymeType = myme_type;
+}
+
+// bool & Request::getNot_complete() {
+// 	return _not_complete;
+// }
+//
+// void Request::set_not_complete(bool not_complete) {
+// 	_not_complete = not_complete;
+// }
+
 inline std::map<std::string, std::string> Request::request_headers() const {
 	return _requestHeaders;
 }

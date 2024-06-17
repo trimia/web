@@ -46,6 +46,45 @@ std::string getMimeType(std::string extension){
     return extensionMap[extension];
 }
 
+std::string getExtensionFromMimeType(std::string mimeType){
+    std::map<std::string, std::string> mimeTypeMap;
+    mimeTypeMap["text/plain"] = "txt";
+    mimeTypeMap["text/html"] = "html";
+    mimeTypeMap["text/css"] = "css";
+    mimeTypeMap["text/javascript"] = "js";
+    mimeTypeMap["image/jpeg"] = "jpg";
+    mimeTypeMap["image/png"] = "png";
+    mimeTypeMap["image/gif"] = "gif";
+    mimeTypeMap["image/x-icon"] = "ico";
+    mimeTypeMap["image/bmp"] = "bmp";
+    mimeTypeMap["image/svg+xml"] = "svg";
+    mimeTypeMap["audio/mpeg"] = "mp3";
+    mimeTypeMap["video/mp4"] = "mp4";
+    mimeTypeMap["video/webm"] = "webm";
+    mimeTypeMap["application/json"] = "json";
+    mimeTypeMap["application/xml"] = "xml";
+    mimeTypeMap["application/pdf"] = "pdf";
+    mimeTypeMap["application/zip"] = "zip";
+    mimeTypeMap["application/gzip"] = "gzip";
+    mimeTypeMap["application/x-tar"] = "tar";
+    mimeTypeMap["application/x-7z-compressed"] = "7z";
+    mimeTypeMap["application/vnd.rar"] = "rar";
+    mimeTypeMap["application/msword"] = "doc";
+    mimeTypeMap["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] = "docx";
+    mimeTypeMap["application/vnd.ms-excel"] = "xls";
+    mimeTypeMap["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] = "xlsx";
+    mimeTypeMap["application/vnd.ms-powerpoint"] = "ppt";
+    mimeTypeMap["application/vnd.openxmlformats-officedocument.presentationml.presentation"] = "pptx";
+    mimeTypeMap["application/vnd.oasis.opendocument.text"] = "odt";
+    mimeTypeMap["application/vnd.oasis.opendocument.spreadsheet"] = "ods";
+    mimeTypeMap["application/vnd.oasis.opendocument.presentation"] = "odp";
+    mimeTypeMap["text/csv"] = "csv";
+    mimeTypeMap["text/tab-separated-values"] = "tsv";
+    mimeTypeMap["application/rtf"] = "rtf";
+
+    return mimeTypeMap[mimeType];
+}
+
 std::string getFileExtension(const std::string& filename) {
     // std::string extension;
     // if(filename.find_last_of(".") == std::string::npos)
@@ -77,6 +116,7 @@ std::string StatusString(int statusCode)
         case 403: return "403 Forbidden";
         case 404: return "404 Not Found";
         case 405: return "405 Method Not Allowed";
+        case 409: return "409 Conflict";//when upload in a non existing directory
         case 406: return "406 Not Acceptable";
         case 408: return "408 Request Timeout";
         case 410: return "410 Gone";

@@ -28,7 +28,7 @@ class	Request
 
 		std::string getQueryFromHttpRequest(std::string &httpRequest);
 
-		int parseRequest();
+		int parseRequest(std::string httpRequest);
 
         void buildBody(Client *client,char input[RCV_BUF_SIZE],int size);
 
@@ -106,7 +106,23 @@ class	Request
 
 		void set_header_size(size_t header_size);
 
-    const std::string &getContentType() const;
+		std::string & file_name();
+
+		void set_file_name(std::string file_name);
+
+		std::string & getExtension();
+
+		void set_extension(std::string extension);
+
+		std::string & getMyme_type();
+
+		void set_myme_type(std::string myme_type);
+
+		bool & getNot_complete();
+
+		void set_not_complete(bool not_complete);
+
+		const std::string &getContentType() const;
 
     void setContentType(const std::string &contentType);
 
@@ -115,7 +131,7 @@ private	:
         bool									    _error;
         bool									    _cgi;
         bool									    _ended;
-		bool									    _not_complete; // finito di leggere o serve un altro giro
+		// bool									    _not_complete; // finito di leggere o serve un altro giro
 		std::string								    _connection;//keep-alive or close
 		std::time_t								    _timeStart;
 		bool									    _isBody;
@@ -134,17 +150,16 @@ private	:
 		bool									    _isQuery;//?
 		std::string								    _HTTPVersion; // HTTP/1.1 //! HTTP/1.1
         std::string								    _fileName; // if post from our site name of file to upload
-
+		std::string									_extension; // estensione del file se esiste //! html
+		std::string									_mymeType; // tipo del file se esiste //! text/html
 
 
 		bool			_hasBeenClosed;//?? necessary here or in client
 		bool									_parsed;
 		bool									_answered;
 		std::vector<std::string>				_folders; // le cartelle del URL //! www html
-		std::string								_extension; // estensione del file se esiste //! html
 		std::string								_queryName; // le query, dopo il '?' nella URL //! ciao=asd/bella=zi
 		std::map<std::string, std::string>		_queryMap; // querry divisa per: chiave=valore&... //! ciao[asd] bella[zi]
-		std::string								_version; // HTTP1.1
 
 		std::string								_path;
 		//        //maybe insted of string string we can do httmethod string or maybe isn't necessary a map
