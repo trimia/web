@@ -60,13 +60,13 @@ void Cgi::checkCgiExtension() {
 	uint8_t len = _pathFile.length();
 
 	if (len >= 3 && _pathFile.substr(len - 3) == ".py") {
-		this->_scriptPath = "/usr/bin/python3";
+		this->_scriptPath = strToChar("/usr/bin/python3");
 	} else if (len >= 3 && _pathFile.substr(len - 3) == ".pl") {
-		this->_scriptPath = "/usr/bin/perl";
+		this->_scriptPath = strToChar("/usr/bin/perl");
 	} else if (len >= 3 && _pathFile.substr(len - 3) == ".sh") {
-		this->_scriptPath = "/usr/bin/bash";
+		this->_scriptPath = strToChar("/usr/bin/bash");
 	} else {
-		this->_scriptPath = "NOT IMPLEMENTED";
+		this->_scriptPath = strToChar("NOT IMPLEMENTED");
 	}
 }
 
@@ -79,7 +79,6 @@ void Cgi::sanitize() {
 	uint8_t cgiBinStart = _pathFile.find("/cgi-bin/");
 
 	if (cgiBinStart == std::string::npos || cgiBinStart == 0) {
-		this->_scriptPath = "";
 		return;
 	}
 

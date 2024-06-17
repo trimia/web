@@ -5,16 +5,26 @@
 #include "../include/ConfigParser.hpp"
 
 
-std::vector<Location> vectorOfLocations;
+# define S 0
+# define L 1
 
-static bool    tokenAdmitted(std::string token) {
-    if (token != "host" && token != "listen" && token != "server_name"
-        && token != "root" && token != "error_page" && token != "body_size"
-        && token != "autoindex" && token != "method" && token != "return"
-        && token != "cgi_enable" && token != "index" && token != "alias") {
-        return false;
+static bool    tokenAdmitted(std::string token, uint8_t flag) {
+    if (flag == S) {
+        if (token != "host" && token != "listen" && token != "server_name"
+            && token != "root" && token != "body_size" && token != "autoindex"
+            && token != "return" && token != "index") {
+            return false;
+        }
+        return true;
+    } else if (flag == L) {
+        if (token != "root" && token != "body_size" && token != "autoindex"
+            && token != "method" && token != "return" && token != "cgi_enable"
+            && token != "index" && token != "alias") {
+            return false;
+        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool    checkCgiExtension(std::vector<std::string> tokens) {
@@ -268,7 +278,7 @@ void    ConfigParser::handleServerState(std::string line) {
                 this->_vectorOfServers[countServerBlocks].setClientMaxBodySize(tokens[1]);
             } else if (tokens[0] == "host") {
                 this->_vectorOfServers[countServerBlocks].setIp(tokens[1]);
-            } else if (!tokenAdmitted(tokens[0])) {
+            } else if (!tokenAdmitted(tokens[0], S)) { // ???
                 std::cout << "Error: wrong error page in server block from config file, found: " << tokens[0] << std::endl;
                 exit(2);
             }
@@ -278,6 +288,7 @@ void    ConfigParser::handleServerState(std::string line) {
         this->_vectorOfServers[countServerBlocks].setErrorPages(tokens);
     } else {
         std::cerr << "Error: Server block got wrong configuration" << std::endl;
+        exit(2);
     }
 }
 
@@ -306,7 +317,7 @@ void    ConfigParser::handleLocationState(std::string line) {
             this->_vectorOfLocations[countLocationBlocks].setClientMaxBodySize(tokens[1]);
         } else if (tokens[0] == "alias") {
             this->_vectorOfLocations[countLocationBlocks].set_alias(tokens[1]);
-        } else if (!tokenAdmitted(tokens[0])) {
+        } else if (!tokenAdmitted(tokens[0], L)) { // ???
             std::cout << "Error: wrong configuration in location block from config file, found: " << tokens[0] << std::endl;
             exit(2);
         }
@@ -318,6 +329,9 @@ void    ConfigParser::handleLocationState(std::string line) {
     } else if (tokens[0] == "return" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfLocations[countLocationBlocks].setReturn(tokens);
+    } else {
+        std::cerr << "Error: Location block got wrong configuration" << std::endl;
+        exit(2);
     }
 }
 

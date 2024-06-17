@@ -262,8 +262,6 @@ bool Webserver::_handleConnection(epoll_event &event) {
 //    if(event.events & EPOLLOUT)
 //        client.initResponse();
 
-    //TODO check su url per cgi
-    Cgi Cgi(client.request());
     if(client.response()->status_code()==1) {
         std::cout<<RED<<"501 internal server error"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);

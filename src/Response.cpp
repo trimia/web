@@ -277,21 +277,7 @@ void Response::checkPath(Client *client) {
 void Response::handleLocation(Client *client) {
 
     std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
-//    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
-//    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
-    // std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-    // std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
-    // if (!client->locations().empty())
-    //     for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
-    //         std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-    //         if (!it1->getMethods().empty()) {
-    //             std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-    //                       << RESET_COLOR << std::endl;
-    //         }
-    //     }
-    // else
-    //     std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
-    // // Itera attraverso le posizioni definite nel server
+    // Itera attraverso le posizioni definite nel server
     Location bestMatch;
     size_t bestMatchLenght = 0;
     if (!client->locations().empty())
@@ -299,11 +285,14 @@ void Response::handleLocation(Client *client) {
             if (client->request()->path_file().find(it->getPath()) != std::string::npos && it->getPath().length() > bestMatchLenght) {
                 bestMatch = *it;
                 bestMatchLenght = it->getPath().length();
-                 // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-                // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
             }
         }
     std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+    std::cout << std::boolalpha << GREEN << "BEST MATCH getIsCgi() : " << bestMatch.getIsCgi() << RESET_COLOR << std::endl;
+    if(bestMatch.getIsCgi()) { ////////////// is it the right moment to check the CGI ? 
+        Cgi cgi(client->request());
+        // cgi.executeCgi();
+    }
     if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
@@ -368,10 +357,6 @@ void Response::handleLocation(Client *client) {
         this->return_= true;
         this->_readyToSend = true;
         return;
-    }
-    if(bestMatch.getIsCgi())
-    {
-        //TODO handle cgi
     }
 
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(0) << RESET_COLOR << std::endl;
