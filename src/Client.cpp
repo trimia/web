@@ -4,6 +4,7 @@ Client::Client() {
     this->_id = 0;
     this->_isLocation = false;
     this->_locationNumber = 0;
+	this->_not_complete=false;
     std::cout << "Client : Default Constructor Called" << std::endl;
 }
 
@@ -24,6 +25,7 @@ Client::Client(Client const &obj)
 		this->socketType = obj.socketType;
 		this->_headerSize = obj._headerSize;
 		this->_bodySize = obj._bodySize;
+		this->_not_complete = obj._not_complete;
 		this->_error = obj._error;
 		this->_cgi = obj._cgi;
 		this->_ended = obj._ended;
@@ -58,6 +60,7 @@ Client	&Client::operator= (const Client &obj)
 		this->_bodySize=obj._bodySize;
 		this->_isLocation=obj._isLocation;
 		this->_locationNumber=obj._locationNumber;
+		// this->_not_complete=obj._not_complete;
 		this->set_locations(obj._locations);
 
 		//	this->attributes = obj.attributes;
@@ -392,6 +395,14 @@ void Client::set_locations(const std::vector<Location> &locations) {
 	}
 
 	this->_locations = newLocations;
+}
+
+bool & Client::get_not_complete() {
+	return _not_complete;
+}
+
+void Client::set_not_complete(bool not_complete) {
+	_not_complete = not_complete;
 }
 
 size_t Client::getClientMaxBodySize() const {

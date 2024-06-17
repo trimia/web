@@ -110,7 +110,11 @@ class	Client : public sType
 
 		void set_locations(const std::vector<Location> &locations);
 
-    size_t getClientMaxBodySize() const;
+		bool & get_not_complete();
+
+		void set_not_complete(bool not_complete);
+
+		size_t getClientMaxBodySize() const;
 
     void setClientMaxBodySize(size_t clientMaxBodySize);
 
@@ -133,13 +137,14 @@ private	:
 		std::vector<Location>		_locations;
 		std::string					_connection;
         size_t                      _clientMaxBodySize;
+		std::time_t					_timeStart;
+		bool						_not_complete;
 		void _initSocket(char*ip, uint16_t port, char type, int fd);
 
 
 		bool            _error;
 		bool            _cgi;
 		bool            _ended;
-		std::time_t     _timeStart;
 		bool			_hasBeenClosed;
 
 		size_t			_headerSize;

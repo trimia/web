@@ -75,6 +75,8 @@ void Response::setResponseForMethod(Client *client) {
     methodMap["PUT"] = &Response::putMethod;
     methodMap["HEAD"] = &Response::headMethod;
     (this->*methodMap[method])(client);
+    buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
+                            getMimeType(this->file_extension()), this->body_size());
 
 }
 
@@ -89,9 +91,36 @@ void Response::getMethod(Client *client) {
     // // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
-    checkRequest(client);
-    buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
-                            getMimeType(this->file_extension()), this->body_size());
+    if (client->is_location())
+        handleLocation(client);
+    if(this->error()||this->ready_to_send())
+        return;
+    if (this->root().empty() || this->root() == "/")
+        this->_root = "/www";
+    if(!client->is_location())
+        checkPath(client);
+    if (this->_root.find(".") == std::string::npos) {
+        this->_root = "." + this->root();
+    }
+    std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
+    if (!client->is_location() && client->request()->path_file() == "/") {
+        std::cout << CYAN << "root path" << RESET_COLOR << std::endl;
+        this->_statusCode = 200;
+        this->_body = "server is online";
+        this->_bodySize = this->_body.length();
+        this->_fileExtension = getFileExtension("txt");
+        //        this->_readyToSend = true;
+        return;
+    }
+    if (client->request()->path_file().find_last_of(".") == std::string::npos) {
+        std::cout << CYAN << "no extension" << RESET_COLOR << std::endl;
+        isDirectory(this->root() + client->request()->path_file());
+    } else
+        readFromFile(this->root() + client->request()->path_file());
+    std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
+
+    // buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
+    //                         getMimeType(this->file_extension()), this->body_size());
     return;
 }
 void Response::postMethod(Client *client) {
@@ -103,10 +132,75 @@ void Response::postMethod(Client *client) {
     // // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
-    checkRequest(client);
-    buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
-                            getMimeType(this->file_extension()), this->body_size());
-    return;
+    // checkRequest(client);
+    std::string str;
+
+    if (client->is_location())
+        handleLocation(client);
+    if(this->error()||this->ready_to_send())
+        return;
+    if (this->root().empty() || this->root() == "/")
+        this->_root = "/www";
+    if(!client->is_location())
+        checkPath(client);
+    if (this->_root.find(".") == std::string::npos) {
+        this->_root = "." + this->root();
+    }
+    std::string path;
+    std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
+    struct stat infoFile;
+    if(client->request()->path_file() == "/") {
+        path=this->_root+"/upload";
+        std::cout<<"if " << YELLOW << "stat path file: " << path << RESET_COLOR << std::endl;
+        // stat((this->_root+path).c_str(), &infoFile);
+
+    }
+    else {
+        path=this->_root+client->request()->path_file();
+        std::cout<<"else "  << YELLOW << "stat path file: " << path << RESET_COLOR << std::endl;
+        // stat((this->_root+client->request()->path_file()).c_str(), &infoFile);
+    }
+    stat((path).c_str(), &infoFile);
+
+    if (S_ISDIR(infoFile.st_mode)) {
+        if(client->request()->file_name().empty())
+            client->request()->set_file_name("temp");
+        if(client->request()->getExtension().empty())
+            client->request()->set_extension(getExtensionFromMimeType(client->request()->getMyme_type()));
+        struct  stat info;
+        stat((path+"/"+client->request()->file_name()+"."+client->request()->getExtension()).c_str(),&info);
+        if(S_ISREG(info.st_mode))
+        {
+            static int i=1;
+            std::string n= toStr(i);
+            if(i==0)
+                n="";
+            str=path+"/"+client->request()->file_name()+"("+n+")"+"."+client->request()->getExtension();
+            // client->request()->set_file_name();
+            i++;
+        }else
+            str=path+"/"+client->request()->file_name()+"."+client->request()->getExtension();
+        std::cout << YELLOW << "str: " << str << RESET_COLOR << std::endl;
+        std::ofstream file(str.c_str(), std::ios::app | std::ios::binary);
+        file.write(this->_body.c_str(), this->_body.size());
+        if(file.fail())
+        {
+            std::cout << RED << "file write error" << RESET_COLOR << std::endl;
+            this->_statusCode = 500;
+            return;
+        }
+        file.close();
+        this->_statusCode = 201;
+        }else {
+            std::cout << RED << "stat() error" << RESET_COLOR << std::endl;
+            this->_statusCode = 409;
+            return;
+    }
+
+
+    // buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
+    //                         getMimeType(this->file_extension()), this->body_size());
+
 }
 
 
@@ -156,7 +250,6 @@ void Response::checkRequest(Client *client) {
         readFromFile(this->root() + client->request()->path_file());
     std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
     return;
-
 }
 
 void Response::checkPath(Client *client) {
@@ -179,7 +272,6 @@ void Response::checkPath(Client *client) {
         client->request()->set_path_file(temp);
     }
 
-
 }
 
 void Response::handleLocation(Client *client) {
@@ -187,36 +279,31 @@ void Response::handleLocation(Client *client) {
     std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
 //    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
 //    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
-    std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-    std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
+    // std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+    // std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
+    // if (!client->locations().empty())
+    //     for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
+    //         std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+    //         if (!it1->getMethods().empty()) {
+    //             std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+    //                       << RESET_COLOR << std::endl;
+    //         }
+    //     }
+    // else
+    //     std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+    // // Itera attraverso le posizioni definite nel server
     Location bestMatch;
-    if (!client->locations().empty())
-        for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
-            std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-            if (!it1->getMethods().empty()) {
-                std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-                          << RESET_COLOR << std::endl;
-            }
-        }
-    else
-        std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
     size_t bestMatchLenght = 0;
-    // Itera attraverso le posizioni definite nel server
     if (!client->locations().empty())
         for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); ++it) {
             if (client->request()->path_file().find(it->getPath()) != std::string::npos && it->getPath().length() > bestMatchLenght) {
                 bestMatch = *it;
                 bestMatchLenght = it->getPath().length();
-                 std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
+                 // std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
                 // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
-
             }
         }
     std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
-    if(!bestMatch.getMethods().empty())
-        std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch.getMethods()[0]<<" : "<< bestMatch.getMethods()[1] << RESET_COLOR << std::endl;
-
-
     if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
@@ -239,7 +326,6 @@ void Response::handleLocation(Client *client) {
         if ( locationPathPos  != std::string::npos){
             std::cout<<"location path pos: "<<locationPathPos<<std::endl;
             std::cout<<"pre   " << CYAN << "path file: " << client->request()->path_file() <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
-//            client->request()->path_file().reserve(client->request()->path_file().length()-bestMatch.getPath().length()+bestMatch.alias().length());
             std::string temp;
             temp=client->request()->path_file().replace(locationPathPos, bestMatch.getPath().length(), bestMatch.alias());
             client->request()->set_path_file(temp);
@@ -248,11 +334,10 @@ void Response::handleLocation(Client *client) {
 //            ss << bestMatch.alias();
 //            ss << client->request()->path_file().substr(locationPathPos + bestMatch.getPath().length());
 //            client->request()->set_path_file(ss.str());
-
             std::cout <<"post   "<< CYAN << "path file: " << client->request()->path_file()  <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
         }
     }
-    std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
+    // std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
     if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
@@ -268,12 +353,8 @@ void Response::handleLocation(Client *client) {
         return readFromFile(bestMatch.index());
 
     }
-    if (!bestMatch.getReturn().empty())
-        std::cout << YELLOW << "return" << bestMatch.getReturn()[0]<<" : " <<bestMatch.getReturn()[1] <<" : " <<bestMatch.getReturn()[2]<< RESET_COLOR << std::endl;
     if (!bestMatch.getReturn().empty()) {
         std::cout << CYAN << "return" << RESET_COLOR << std::endl;
-//        int code=0;
-//        std::string location="";
         std::vector<std::string> return_ = bestMatch.getReturn();
         for (std::vector<std::string>::iterator it = return_.begin(); it != return_.end(); ++it) {
             std::cout << YELLOW << "return" << *it << RESET_COLOR << std::endl;
@@ -284,11 +365,7 @@ void Response::handleLocation(Client *client) {
             else if(it->compare("return")!=0)
                 this->_location=*it;
         }
-
-        std::cout << CYAN << "return" << RESET_COLOR << std::endl;
-        //TODO understand if we want to put a link in the location return
         this->return_= true;
-//        buildRedirectResponseHeader(client->request()->http_version(),StatusString(code),location);
         this->_readyToSend = true;
         return;
     }
@@ -302,7 +379,6 @@ void Response::handleLocation(Client *client) {
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(2) << RESET_COLOR << std::endl;
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(3) << RESET_COLOR << std::endl;
 //        return readFromFile(this->location().root()+client->request()->path_file());
-    //TODO client max body size set value for request and add a check in response building
 //    return;
 
 }
@@ -349,7 +425,7 @@ static size_t send_all(int socket, const char* buffer, size_t length, int flags)
 
 void Response::sendData(Client *client) {
     std::cout << MAGENTA << "send data complete: " << this->complete() << RESET_COLOR << std::endl;
-    std::cout << MAGENTA << "send data complete: " << client->request()->complete() << RESET_COLOR << std::endl;
+    std::cout << MAGENTA << "send data complete: " << client->response()->complete() << RESET_COLOR << std::endl;
     if (this->complete())
         return;
 

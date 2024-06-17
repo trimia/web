@@ -210,7 +210,6 @@ bool Webserver::_handleConnection(epoll_event &event) {
     std::cout<<MAGENTA<<"handling connection"<<RESET_COLOR<<std::endl;
     //TODO choose wich is better
     // Client * client = static_cast<Client *>(event.data.ptr);
-    // bool bull=true;
     sType *type =static_cast<sType*>(event.data.ptr);
      std::cout<<BLUE<<"ptr->socketType: "<<type->socketType<<RESET_COLOR<<std::endl;
 
@@ -221,11 +220,14 @@ bool Webserver::_handleConnection(epoll_event &event) {
     }
     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
-    if(client._event.events & EPOLLIN){
-        client.initRequest();
-//        client.initResponse();
+    if(!client.get_not_complete())
+    {
+        if(client._event.events & EPOLLIN){
+            client.initRequest();
+            //        client.initResponse();
+        }
+        client.initResponse();
     }
-    client.initResponse();
 
     //    client.initLocation();
 
@@ -267,11 +269,11 @@ bool Webserver::_handleConnection(epoll_event &event) {
         this->_closeConnection(event);
     }
     std::cout<<BLUE<<"response status code: "<<client.response()->status_code()<<"client request connection: "<<client.request()->connection()<<RESET_COLOR<<std::endl;
-    if(client.response()->status_code()==204) {
-        std::cout<<YELLOW<<"client close so server close"<<RESET_COLOR<<std::endl;
-        _closeConnection(event);
-        return true;
-    }
+    // if(client.response()->status_code()==204) {
+    //     std::cout<<YELLOW<<"client close so server close"<<RESET_COLOR<<std::endl;
+    //     _closeConnection(event);
+    //     return true;
+    // }
     if(client._event.events & EPOLLOUT && client.request()->ended() && !client.request()->error() && client.response()->status_code()!=204) {
         std::cout<<YELLOW<<"handling response"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);
