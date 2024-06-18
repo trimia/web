@@ -230,7 +230,12 @@ void Response::postMethod(Client *client) {
 
 
 void Response::deleteMethod(Client *client) {
-    (void) client;
+//    (void) client;
+    std::cout<<"delete mehod"<<client->request()->path_file()<<std::endl;
+    std::cout<<"delete mehod"<<client->request()->request_url()<<std::endl;
+
+
+
     std::cout << "deleteMethod" << std::endl;
 }
 

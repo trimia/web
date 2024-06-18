@@ -132,19 +132,19 @@ class	Request
 
 private	:
 
-        bool									    _error;
-        bool									    _cgi;
-        bool									    _ended;
+        bool									             _error;
+        bool									             _cgi;
+        bool									            _ended;
 		// bool									    _not_complete; // finito di leggere o serve un altro giro
 		std::string								    _connection;//keep-alive or close
 		std::time_t								    _timeStart;
-		bool									    _isBody;
+		bool									            _isBody;
 		std::string								    _body;
-		size_t									    _body_size;
+		size_t									        _body_size;
         std::string								    _content_type;
-        size_t                                      _clientMaxBodySize;
+        size_t                                          _clientMaxBodySize;
 		std::string								    _header; // messaggio intero preso a pezzi
-		size_t									    _headerSize;
+		size_t									        _headerSize;
 		std::map<std::string, std::string>		    _requestHeaders;
 		std::string								    _method; // GET, POST, DELETE //! GET
 		std::string								    _requestURL; // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
