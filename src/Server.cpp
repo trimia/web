@@ -24,11 +24,14 @@ Server::Server()
 }
 Server::~Server()
 {
-    // if(serv_sock_created_with_new())
-    delete this->_server_socket;
+//     if(this->_servSockCreatedWithNew)
+         delete this->_server_socket;
+//
+//    if(this->_server_socket->getFdSock() != INVALID_SOCKET)
     if(this->_server_socket->getFdSock() != INVALID_SOCKET) {
         close(this->_server_socket->getFdSock());
     }
+//    this->_server_socket=NULL;
 	std::cout << "Server : Destructor Called" << std::endl;
 }
 
@@ -41,7 +44,11 @@ Server::Server(Server const &obj)
 	    this->_ip=obj._ip;
 	    this->_port=obj._port;
 	    this->_root=obj._root;
-	    this->_server_socket = new Socket(*obj._server_socket);
+//        if(this->_servSockCreatedWithNew)
+//            delete this->_server_socket;
+        this->_server_socket =new Socket(*obj._server_socket);
+//        delete obj._server_socket;
+//        this->_servSockCreatedWithNew= false;
 //        this->_isCgiEnabled = obj._isCgiEnabled;
 	    this->_index=obj._index;
 	    this->_client_max_body_size=obj._client_max_body_size;
@@ -71,8 +78,11 @@ Server	&Server::operator= (const Server &obj)
         this->_autoindex=obj._autoindex;
 //        this->_isCgiEnabled = obj._isCgiEnabled;
         // this->set_server_socket(new Socket(*obj._server_socket));
-
-	    // this->_server_socket = new Socket(*obj._server_socket);
+//        if(this->_servSockCreatedWithNew)
+//            delete this->_server_socket;
+//        this->_server_socket = new Socket(*obj._server_socket);
+//        delete obj._server_socket;
+//        this->_servSockCreatedWithNew= false;
         // this->_server_socket=obj._server_socket;
         this->_event=obj._event;
         this->setLocations(obj._locations);

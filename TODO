@@ -81,6 +81,10 @@ main status code:
 
     These status codes are part of the HTTP/1.1 standard. For a more detailed explanation, you can refer to the [HTTP/1.1 Status Code Definitions](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
 
+
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt ./webserver
+have to delete socket in same place meh
+
 // old code
 // bool Webserver::_handleConnection(epoll_event &event) {
 //     Client& client= *reinterpret_cast<Client*>(event.data.ptr);

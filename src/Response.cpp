@@ -230,13 +230,40 @@ void Response::postMethod(Client *client) {
 
 
 void Response::deleteMethod(Client *client) {
-//    (void) client;
-    std::cout<<"delete mehod"<<client->request()->path_file()<<std::endl;
-    std::cout<<"delete mehod"<<client->request()->request_url()<<std::endl;
+    std::cout <<CYAN<< "deleteMethod" <<RESET_COLOR <<std::endl;
 
+    if (client->is_location())
+        handleLocation(client);
+    if(this->error()||this->ready_to_send())
+        return;
+    if (this->root().empty() || this->root() == "/")
+        this->_root = "/www";
+    if(!client->is_location())
+        checkPath(client);
+    if (this->_root.find(".") == std::string::npos) {
+        this->_root = "." + this->root();
+    }
 
+    std::string uri=client->request()->path_file();
+    std::string fileName=uri.substr(client->request()->path_file().find_last_of("/"));
+    std::string path=uri.substr(0,client->request()->path_file().find_last_of("/"));
+    std::cout<<"path "<<path<<std::endl;
+//    std::cout<<"file name"<<fileName<<std::endl;
+    std::string dirPath = this->_root + path;
+    std::cout<<"dir path"<<dirPath<<std::endl;
+   if(access(dirPath.c_str(), W_OK) == 0) {
+       if (std::remove((dirPath+"/"+fileName).c_str()) == 0) {
+           this->_statusCode = 204;
+           return;
+       } else {
+           this->_statusCode = 500;
+           return;
+       }
+   } else {
+       this->_statusCode = 403;
+       return;
+   }
 
-    std::cout << "deleteMethod" << std::endl;
 }
 
 void Response::putMethod(Client *client) {
