@@ -118,6 +118,10 @@ class	Client : public sType
 
     void setClientMaxBodySize(size_t clientMaxBodySize);
 
+    int getTempfilen() const;
+
+    void setTempfilen(int tempfilen);
+
 private	:
 //        friend class Socket;
     friend class Webserver;
@@ -126,6 +130,7 @@ private	:
 
 
         int							_id;
+        int                         _tempfilen;
         Socket						*_clientSock;
         Server						*_server;
         Request						*_request;

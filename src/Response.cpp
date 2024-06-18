@@ -24,6 +24,19 @@ Response::Response() {
 Response::~Response() {
     std::cout << "Response : Destructor Called" << std::endl;
 //    delete this->_location;
+//    memset(&this->_header, 0, this->_headerSize);
+//    memset(&this->_body, 0, this->_bodySize);
+//    memset(&this->_content_type, 0, this->_content_type.length());
+    this->_header = "";
+    this->_headerSize = 0;
+    this->_body = "";
+    this->_bodySize = 0;
+    this->_content_type = "";
+    this->_statusCode = 0;
+    this->_complete = false;
+    this->_error = false;
+    this->_readyToSend = false;
+    this->return_= false;
 }
 
 
@@ -124,6 +137,8 @@ void Response::getMethod(Client *client) {
     return;
 }
 void Response::postMethod(Client *client) {
+    if(client->get_not_complete())
+        return;
     std::cout << YELLOW << "POSTMETHOD" << RESET_COLOR << std::endl;
     // std::cout<<BLUE<<"body size :"<<client->request()->body_size()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"header size :"<<client->request()->header_size()<<RESET_COLOR<<std::endl;
@@ -171,18 +186,28 @@ void Response::postMethod(Client *client) {
         stat((path+"/"+client->request()->file_name()+"."+client->request()->getExtension()).c_str(),&info);
         if(S_ISREG(info.st_mode))
         {
-            static int i=1;
-            std::string n= toStr(i);
-            if(i==0)
+
+            std::string n= toStr(client->getTempfilen());
+            if(client->getTempfilen()==0)
                 n="";
             str=path+"/"+client->request()->file_name()+"("+n+")"+"."+client->request()->getExtension();
             // client->request()->set_file_name();
-            i++;
+            client->setTempfilen(client->getTempfilen()+1);
         }else
             str=path+"/"+client->request()->file_name()+"."+client->request()->getExtension();
         std::cout << YELLOW << "str: " << str << RESET_COLOR << std::endl;
         std::ofstream file(str.c_str(), std::ios::app | std::ios::binary);
-        file.write(this->_body.c_str(), this->_body.size());
+
+//        print debug
+        std::cout<<"body"<< client->request()->getBody().length()<<GREEN<<std::endl;
+        for (const auto &item: client->request()->getBody()){
+            printsingleCharAndSpecialChar(item);
+        }
+        std::cout<<RESET_COLOR<<std::endl;
+
+
+
+        file.write(client->request()->getBody().c_str(), client->request()->getBody().size());
         if(file.fail())
         {
             std::cout << RED << "file write error" << RESET_COLOR << std::endl;

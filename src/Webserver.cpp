@@ -243,6 +243,8 @@ bool Webserver::_handleConnection(epoll_event &event) {
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     if(client._event.events & EPOLLIN )
         client.request()->receiveData(&client);
+    if(client.get_not_complete())
+        return true;
     std::cout<<BLUE"pre "<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" response error: "<<client.response()->error()<<RESET_COLOR<<std::endl;
     if (client._event.events & EPOLLIN && client.request()->ended()) {
         std::cout<<GREEN<<"Request ended set to epollout"<<RESET_COLOR<<std::endl;
@@ -269,11 +271,11 @@ bool Webserver::_handleConnection(epoll_event &event) {
         this->_closeConnection(event);
     }
     std::cout<<BLUE<<"response status code: "<<client.response()->status_code()<<"client request connection: "<<client.request()->connection()<<RESET_COLOR<<std::endl;
-    // if(client.response()->status_code()==204) {
-    //     std::cout<<YELLOW<<"client close so server close"<<RESET_COLOR<<std::endl;
-    //     _closeConnection(event);
-    //     return true;
-    // }
+     if(client.response()->status_code()==204) {
+         std::cout<<YELLOW<<"client close so server close"<<RESET_COLOR<<std::endl;
+         _closeConnection(event);
+         return true;
+     }
     if(client._event.events & EPOLLOUT && client.request()->ended() && !client.request()->error() && client.response()->status_code()!=204) {
         std::cout<<YELLOW<<"handling response"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);

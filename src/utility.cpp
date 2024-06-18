@@ -286,3 +286,12 @@ void printCharsAndSpecialChars(const std::string& str) {
     }
     std::cout << '\n';
 }
+void printsingleCharAndSpecialChar(const char c) {
+        if (std::isprint(c)) {
+            std::cout << c << ' ';
+        } else {
+//            std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
+            std::cout<< "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' ';
+        }
+//    std::cout << '\n';
+}

@@ -50,8 +50,8 @@
 # define CLOSESOCKET(s) close(s)
 # define SOCKET_ERROR -1
 //# define RCV_BUF_SIZE (MAX_HTTP_HEAD_LINE > MAX_HTTP_REQ_LINE ? MAX_HTTP_HEAD_LINE : MAX_HTTP_REQ_LINE)
-// # define RCV_BUF_SIZE 5000000
-# define RCV_BUF_SIZE 8000
+ # define RCV_BUF_SIZE 5000000
+//# define RCV_BUF_SIZE 8000
 # define MAX_N_CONNECTION 5
 // MAX_EVENT AND EPOLL_SIZE maybe they could be defined every time after parsing so maybe became part of a struct or class no more a macro
 # define MAX_EVENTS 1024
@@ -168,5 +168,6 @@ extern int g_sigint; //????
 //
 //void printCharsAndSpecialChars(std::string str);
 void printCharsAndSpecialChars(const std::string& str);
+void printsingleCharAndSpecialChar(const char c);
 
 #endif

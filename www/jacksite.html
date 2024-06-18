@@ -31,7 +31,7 @@
     </form>
 </div>
 <h2>File Upload Form</h2>
-<form action="http://127.1.0.1:8090/" method="post" enctype="multipart/form-data">
+<form action="http://127.1.0.1:8090/" method="post" enctype="multipart/form-data" accept-charset=utf-8>
     <label for="newfile">Select file:</label>
     <input type="file" id="newfile" name="file">
     <input type="submit" value="Upload">
@@ -64,7 +64,7 @@
                     //     // "Filename": inputFile.name
                     // },
                     body: formData,
-                })
+                }).then(data => console.log(data));
     });
 
 </script>

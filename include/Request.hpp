@@ -118,7 +118,11 @@ class	Request
 
 		void set_myme_type(std::string myme_type);
 
-		bool & getNot_complete();
+    const std::string &getBody() const;
+
+    void setBody(const std::string &body);
+
+    bool & getNot_complete();
 
 		void set_not_complete(bool not_complete);
 

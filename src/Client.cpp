@@ -5,6 +5,7 @@ Client::Client() {
     this->_isLocation = false;
     this->_locationNumber = 0;
 	this->_not_complete=false;
+    this->_tempfilen=1;
     std::cout << "Client : Default Constructor Called" << std::endl;
 }
 
@@ -411,4 +412,12 @@ size_t Client::getClientMaxBodySize() const {
 
 void Client::setClientMaxBodySize(size_t clientMaxBodySize) {
     _clientMaxBodySize = clientMaxBodySize;
+}
+
+int Client::getTempfilen() const {
+    return _tempfilen;
+}
+
+void Client::setTempfilen(int tempfilen) {
+    _tempfilen = tempfilen;
 }

@@ -14,13 +14,35 @@ Request::Request()
 	this->_method="";
 	this->_header="";
 	this->_body="";
+    this->_content_type="";
+    this->_mymeType="";
 
 	std::cout << "Request : Default Constructor Called" << std::endl;
 }
 
 Request::~Request()
 {
-	// this->_timeStart=0;
+    this->_timeStart=0;
+    this->_cgi=false;
+    this->_error=false;
+    this->_ended=false;
+    // this->_not_complete=false;
+    this->_isRoot=false;
+    // this->_isPathFileDir=true;
+    this->_body_size=0;
+    this->_headerSize=0;
+//    memset(&this->_method,0,this->_method.length());
+//    memset(&this->_header,0,this->_header.length());
+//    memset(&this->_body,0,this->_body.length());
+//    memset(&this->_content_type,0,this->_content_type.length());
+//    memset(&this->_mymeType,0,this->_mymeType.length());
+    this->_method="";
+    this->_header="";
+    this->_body="";
+    this->_content_type="";
+    this->_mymeType="";
+
+    // this->_timeStart=0;
 	// this->_cgi=false;
 	// this->_error=false;
 	// this->_ended=false;
@@ -62,7 +84,7 @@ Request	&Request::operator= (const Request &obj)
 
 void Request::receiveData(Client *client) {
     std::cout<<MAGENTA<<"receiving data"<<std::endl;
-    if(this->ended()) {
+    if(this->ended() && !client->get_not_complete()) {
         std::cout<<GREEN<<"data already received"<<RESET_COLOR<<std::endl;
         return;
     }
@@ -88,10 +110,10 @@ void Request::receiveData(Client *client) {
 		return;
 	}
 	else if(byteCount !=0) {
-        // for (const auto &item: rcv_buffer){
-        //     std::cout << item;
-        // }
-		std::cout<<MAGENTA<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
+//         for (const auto &item: rcv_buffer){
+//             std::cout << item;
+//         }
+		std::cout<<CYAN<<"buffer:"<<std::endl<<rcv_buffer<<RESET_COLOR<<std::endl;
 		std::cout<<GREEN<<"receive data, "<<byteCount<<" byte"<<RESET_COLOR<<std::endl;
 		if(!client->get_not_complete())
         {
@@ -102,7 +124,7 @@ void Request::receiveData(Client *client) {
         }
         if(this->is_body()){
             buildBody(client,rcv_buffer,byteCount);
-        } else
+        } else if(!client->get_not_complete())
             this->_ended=true;
 		client->set_connection(this->connection());
         if(client->is_location())
@@ -206,15 +228,21 @@ int Request::parseRequest(std::string httpRequest)
 		if (colonPos != std::string::npos)
 		{
 			std::string key = line.substr(0, colonPos);
-			std::string value = line.substr(colonPos + 2); // Skip the colon and space
-			this->_requestHeaders[key]= value;
-		}
+            std::string value = line.substr(colonPos + 2); // Skip the colon and space
+            {
+                if (this->_requestHeaders.find(key) == this->_requestHeaders.end())
+                    this->_requestHeaders[key] = value;
+                else
+                    this->_requestHeaders[key + "1"] = value;
+            }
+
+        }
 	}
 
-	// print for debug
-	// for (const auto& pair : this->_requestHeaders) {
-	//     std::cout<<CYAN << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
-	// }
+//	 print for debug
+	 for (const auto& pair : this->_requestHeaders) {
+	     std::cout<<BLUE << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
+	 }
 	return 0;
 }
 
@@ -241,8 +269,9 @@ void Request::fillRequest(std::string &httpRequest) {
              this->_body_size=toInt(it->second);
              this->_isBody=true;
          }
-         if(it->first=="Content-Type" && this->_content_type.empty())
+         if(it->first=="Content-Type")
          {
+             std::cout<<YELLOW<<"fillRequest Content-Type :"<<it->second<<RESET_COLOR<<std::endl;
              it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
              printCharsAndSpecialChars(it->second);
              this->_content_type=it->second;
@@ -263,7 +292,7 @@ void Request::fillRequest(std::string &httpRequest) {
  			this->_extension=it->second.substr(it->second.find(".",fileNameStart)+1, it->second.find("\r",fileNameStart)-it->second.find(".",fileNameStart)-2);
  			printCharsAndSpecialChars(this->_extension);
  		}
- 		if(!this->_content_type.empty() && it->first=="Content-Type") {
+ 		if(it->first=="Content-Type1") {
  			it->second.erase(std::remove(it->second.begin(), it->second.end(), '\r'), it->second.end());
 			this->_mymeType=it->second;
  			printCharsAndSpecialChars(this->_mymeType);
@@ -320,41 +349,54 @@ void Request::buildBody(Client *client,char*  input, int size){
 		len+= size;
 	else
 		len = size - this->_headerSize;
-
-    if(this->_content_type.find("multipart/form-data")!=std::string::npos)
+    std::cout<<YELLOW<<"content type :"<<this->_content_type<<RESET_COLOR<<std::endl;
+    if(this->_content_type.find("multipart/form-data;")!=std::string::npos)
     {
     	std::cout<<YELLOW<<"multipart/form-data"<<RESET_COLOR<<std::endl;
         std::string temp(input, size);
         std::string boundary="boundary=";
-        size_t boundaryPos=temp.find(boundary);
-        if(boundaryPos==std::string::npos)
-        {
-            this->_ended=true;
-            client->response()->set_status_code(400);
-            return;
-        }
-    	// this->_body+=*it;
+//        size_t boundaryPos=temp.find(boundary);
+//        if(boundaryPos==std::string::npos)
+//        {
+//            this->_ended=true;
+//            client->response()->set_status_code(400);
+//            return;
+//        }
+        size_t bodyStart=temp.find("\r\n\r\n", this->_headerSize);
+        if(client->get_not_complete())
+            this->_body+=temp;
+        else
+            this->_body=temp.substr(bodyStart+4);
 
-        boundaryPos+=boundary.length();
-        size_t boundaryEndPos=temp.find("\r\n", boundaryPos);
-        std::string boundaryString=temp.substr(boundaryPos, boundaryEndPos - boundaryPos);
-        std::vector<std::string> parts = AKAftSplit(this->_body, boundaryString+"--");
-        for(std::vector<std::string>::iterator it=parts.begin();it!=parts.end();it++)
-        {
-        	this->_body+=*it;
-            //WIP
-        }
+//        std::cout<<GREEN<<std::endl;
+//        for (const auto &item: this->_body){
+//            printsingleCharAndSpecialChar(item);
+//        }
+//        std::cout<<RESET_COLOR<<std::endl;
+
+//        boundaryPos+=boundary.length();
+//        size_t boundaryEndPos=temp.find("\r\n", boundaryPos);
+//        std::string boundaryString=temp.substr(boundaryPos, boundaryEndPos - boundaryPos);
+//        std::vector<std::string> parts = AKAftSplit(this->_body, boundaryString+"--");
+//        for(std::vector<std::string>::iterator it=parts.begin();it!=parts.end();it++)
+//        {
+//        	this->_body+=*it;
+//            //WIP
+//        }
     }
     else if (this->_headerSize > 0 && this->_body_size > 0 && this->_body.length() == 0){
+        this->_mymeType= this->_content_type;
         std::string temp(input, size);
         this->_body=temp.substr(this->_headerSize);
+        std::cout<<YELLOW<<"body length :"<<this->_body.length()<<RESET_COLOR<<std::endl;
     }
-    std::cout<<YELLOW<<"len : "<<len<<" body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
+    std::cout<<BLUE<<"len : "<<len<<" body size : "<<this->_body_size<<RESET_COLOR<<std::endl;
     if(len==this->_body_size){
         std::cout<<CYAN<<"end of body"<<RESET_COLOR<<std::endl;
         this->_ended=true;
+        client->set_not_complete(false);
 
-    } else
+    } else if(!client->get_not_complete())
 		client->set_not_complete(true);
 }
 
@@ -544,4 +586,12 @@ const std::string &Request::getContentType() const {
 
 void Request::setContentType(const std::string &contentType) {
     _content_type = contentType;
+}
+
+const std::string &Request::getBody() const {
+    return _body;
+}
+
+void Request::setBody(const std::string &body) {
+    _body = body;
 }
