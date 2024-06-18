@@ -31,6 +31,7 @@ private:
 
 public:
     bool            insideServerBlock;
+	uint8_t 		portCounter;
     int             countServerBlocks;
     int             countLocationBlocks;
     int             currentState;
@@ -45,6 +46,7 @@ public:
     void                                handleHttpState(std::string line);
     void                                handleServerState(std::string line);
     void                                handleLocationState(std::string line);
+	bool								isConfigurationOk();
 
 
 
@@ -54,8 +56,9 @@ public:
         this->countServerBlocks = 0;
         this->countLocationBlocks = 0;
         this->currentState = -1;
-        this->_vectorOfServers.reserve(0);
-        this->_vectorOfLocations.reserve(0);
+		this->portCounter = 0;
+		this->_vectorOfServers.reserve(0);
+		this->_vectorOfLocations.reserve(0);
     } ;
 
     ~ConfigParser() {} ;
