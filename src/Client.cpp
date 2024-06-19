@@ -77,6 +77,7 @@ bool Client::operator==(const Client &obj)const {
 void Client::initClient(Server *server, int clientFd) {
 	// (void)clientFd;
 	this->_id = clock();
+	this->_root=server->getRoot();
     if(!server->getClientMaxBodySize().empty())
         this->_clientMaxBodySize=toInt(server->getClientMaxBodySize());
     else
@@ -125,6 +126,7 @@ void Client::initRequest() {
 }
 void Client::initResponse() {
     this->_response = new Response();
+	this->_response->set_root(this->_root);
 //    this->_response->set_location(new Location());
     // Response *response = new Response();
     // this->_response = response;

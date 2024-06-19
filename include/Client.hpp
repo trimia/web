@@ -136,6 +136,7 @@ private	:
         Request						*_request;
         Response					*_response;
         epoll_event					_event;
+		std::string					_root;
 		// std::vector<int>			_allowmethods;
 		bool						_isLocation;
 		int							_locationNumber;

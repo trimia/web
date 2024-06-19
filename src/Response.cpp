@@ -104,6 +104,7 @@ void Response::getMethod(Client *client) {
     // // std::cout<<BLUE<<"cgi :"<<client->request()->cgi()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"ended :"<<client->request()->ended()<<RESET_COLOR<<std::endl;
     // std::cout<<BLUE<<"method :"<<client->request()->method()<<RESET_COLOR<<std::endl;
+    std::cout<<CYAN<<"root: "<<this->root()<<RESET_COLOR<<std::endl;
     if (client->is_location())
         handleLocation(client);
     if(this->error()||this->ready_to_send())
@@ -115,6 +116,7 @@ void Response::getMethod(Client *client) {
     if (this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
+    std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
     if (!client->is_location() && client->request()->path_file() == "/") {
         std::cout << CYAN << "root path" << RESET_COLOR << std::endl;
@@ -367,7 +369,7 @@ void Response::handleLocation(Client *client) {
         this->_statusCode = 405;
         return;
     }
-    if (this->root().empty() || this->root() == "/" || bestMatch.root().empty())
+    if (this->root() == "/" || bestMatch.root().empty())
         this->_root = "/www";
     else
         this->_root = bestMatch.root();
@@ -375,6 +377,7 @@ void Response::handleLocation(Client *client) {
     if (this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
+    // std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
     std::cout << YELLOW << "path file: " << client->request()->path_file() << RESET_COLOR << std::endl;
 
     if (!bestMatch.alias().empty()){

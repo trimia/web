@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
         std::cout << std::boolalpha <<"islocation: " << it->is_location() << std::endl;
         std::cout << "location number: " << it->location_number() << std::noboolalpha << std::endl;
         std::cout << "IP: " << it->getIp().c_str() <<RESET_COLOR << std::endl;
+        std::cout<< "ROOT: " << it->getRoot() << std::endl;
         std::vector<Location> listOfLocation = it->getLocations();
         if (!listOfLocation.empty())
         {

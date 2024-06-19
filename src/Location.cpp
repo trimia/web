@@ -114,7 +114,8 @@ std::string Location::generateDirectoryListing(const std::string& path) {
 
     if ((dir = opendir(path.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-            html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
+            if(std::strcmp(ent->d_name,".")!=0)
+                html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
         }
         closedir(dir);
     } else {
