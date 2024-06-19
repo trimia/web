@@ -30,6 +30,7 @@ std::string readScriptOutputFromPipe(int pipeFd) {
 		}
 	}
 
+	printf("---------> |%s|\n", output.c_str());
 	return output;
 }
 
@@ -100,6 +101,8 @@ void Cgi::sanitize() {
 }
 
 char **Cgi::getEnv() {
+	printf("dioporco103\n\n");
+
 	char **env = new char *[this->_envVars.size() + 1];
 	int c = 0;
 
@@ -108,6 +111,7 @@ char **Cgi::getEnv() {
 		env[c++] = strToChar(it->first + "=" + it->second);
 	}
 	env[c] = NULL;
+	printf("dioporco113\n\n");
 
 	return env;
 }
@@ -131,20 +135,23 @@ void Cgi::freeEnv(char** environment) {
  * */
 void Cgi::setEnv() {
 	// this->sanitize(); ? evaluate this check for some values
+	printf("dioporco134\n\n");
 
+	this->checkCgiExtension();
 	this->_envVars.insert(std::make_pair("CONTENT_TYPE", "application/x-www-form-urlencoded"));
 	this->_envVars.insert(std::make_pair("CONTENT_LENGTH", toStr(this->_body.size()))); /// ok toStr ? is it c++98 friendly ?
-	this->_envVars.insert(std::make_pair("PATH_INFO", std::string(this->_scriptPath))); /// ?
+	this->_envVars.insert(std::make_pair("PATH_INFO", std::string(this->_pathFile))); /// ?
 	this->_envVars.insert(std::make_pair("SERVER_PORT", this->_port));
 	this->_envVars.insert(std::make_pair("SERVER_SOFTWARE", "Webserve/1.0"));
 	this->_envVars.insert(std::make_pair("QUERY_STRING", this->_queryString));
 	this->_envVars.insert(std::make_pair("REQUEST_METHOD", this->_method));
 	this->_envVars.insert(std::make_pair("REQUEST_URI", this->_requestUri));
 	this->_envVars.insert(std::make_pair("SCRIPT_NAME", this->_scriptPath));
-	this->_envVars.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	this->_envVars.insert(std::make_pair("SERVER_PROTOCOL", "HTTP/1.1"));
+	this->_envVars.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	this->_envVars.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	this->_envVars.insert(std::make_pair("BODY", this->_body));
+	printf("envVars:::::::::::::::::::: |%s|\n\n", this->_envVars["BODY"].c_str());
 
 	this->_envVars.insert(std::make_pair("PATH_TRANSLATED", ""));
 	this->_envVars.insert(std::make_pair("REMOTE_IDENT", ""));
@@ -155,7 +162,6 @@ void Cgi::setEnv() {
 	this->_envVars.insert(std::make_pair("AUTH_TYPE", ""));
 
 	//query map filling
-
 }
 
 /*
@@ -165,85 +171,72 @@ void Cgi::setEnv() {
  * */
 std::string Cgi::executeCgi() {
 	std::string scriptOutput = "";
+	this->setEnv();
+	char **envp = this->getEnv();
 
-	if (this->_isCgiRequest) {
-		int pipe_fd[2];
+	printf("dioporco1\n");
+	int pipe_fd[2];
 
-		/*
-		// Create a temporary file for script output
-		int outputFd = open("script_output.tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		//// print body to stdIN ? lseek()
-		if (outputFd == -1) {
-			std::cerr << "Error creating temporary file for script output" << std::endl;
-			exit(2);
-		}
-
-		if (pipe(pipe_fd) == -1) {
-			std::cerr << "Error creating pipe for communication" << std::endl;
-			close(outputFd);
-			exit(2);
-		}
-
-		pid_t pid = fork();
-		if (pid == -1) {
-			std::cerr << "Error creating child process" << std::endl;
-			close(outputFd);
-			close(pipe_fd[0]);
-			close(pipe_fd[1]);
-			exit(2);
-		}
-		*/
-
-
-		// Create pipe for communication
-		if (pipe(pipe_fd) == -1) {
-			std::cerr << "Error creating pipe for communication" << std::endl;
-			return scriptOutput;
-		}
-
-		pid_t pid = fork();
-		if (pid == -1) {
-			std::cerr << "Error creating child process" << std::endl;
-			close(pipe_fd[0]);
-			close(pipe_fd[1]);
-			return scriptOutput;
-		}
-
-
-		if (pid == 0) {
-			///// check the dup2 in stdIN | stdOUT
-			dup2(pipe_fd[0], STDOUT_FILENO);
-			close(pipe_fd[0]);
-			close(pipe_fd[1]);
-
-			this->setEnv();
-			char **envp = this->getEnv();
-
-			//// length 3 : executable python [0] file python to execute [1] NULL [2] ?
-			execve(this->_scriptPath, this->_argv, envp);
-			this->freeEnv(envp);
-			exit(0);
-		} else {
-			close(pipe_fd[0]);
-			// recreate the body and wait for the end
-			//// wait for end length of body
-
-			int status;
-			waitpid(pid, &status, 0);
-
-			if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-				scriptOutput = readScriptOutputFromPipe(pipe_fd[1]);
-			} else {
-				std::cerr << "CGI script exited with error status: " << WEXITSTATUS(status) << std::endl;
-			}
-			close(pipe_fd[1]);
-		}
+	// Create pipe for communication
+	if (pipe(pipe_fd) == -1) {
+		std::cerr << "CGI: Error creating pipe for communication" << std::endl;
+		return "";
 	}
+
+	pid_t pid = fork();
+	if (pid == -1) {
+		std::cerr << "CGI: Error creating child process" << std::endl;
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
+		return "";
+	}
+
+
+	if (pid == 0) {
+		printf("dioporco2\n");
+		///// check the dup2 in stdIN | stdOUT
+		close(pipe_fd[1]);
+		dup2(pipe_fd[0], STDOUT_FILENO);
+		close(pipe_fd[0]);
+		printf("gbufdiavbjkad;invcfjdklnavcjfkda;nvcjkdfl\n");
+
+		printf("dioporco3\n");
+		//// length 3 : executable python [0] file python to execute [1] NULL [2] ?
+		this->_argv[0] = this->_scriptPath;
+		this->_argv[1] = strToChar(this->_pathFile);
+		this->_argv[2] = NULL;
+		printf("============> |%s|%s|%s|\n", this->_scriptPath, this->_argv[0], this->_argv[1]);
+
+		execve(this->_scriptPath, this->_argv, envp);
+		this->freeEnv(envp);
+		printf("dioporco4\n");
+		exit(0);
+	} else {
+		printf("dioporco5\n");
+		close(pipe_fd[0]);
+		// recreate the body and wait for the end
+		//// wait for end length of body
+		printf("dioporco6\n");
+		int status;
+		waitpid(pid, &status, 0);
+
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+			printf("dioporco7\n");
+			scriptOutput = readScriptOutputFromPipe(pipe_fd[1]);
+		} else {
+			printf("dioporco8\n");
+			std::cerr << "CGI: script exited with error status: " << WEXITSTATUS(status) << std::endl;
+		}
+		close(pipe_fd[1]);
+	}
+	printf("dioporco9 |%s|\n", scriptOutput.c_str());
+
 	/*
 	 * TODO setStatusCode
 	 * */
 	return scriptOutput;
 }
+
 
 /*
  * Use the CGI constructor when filled
@@ -251,7 +244,7 @@ std::string Cgi::executeCgi() {
  * then Cgi.executeCgi()
  */
 Cgi::Cgi(Request *request) { ////// SET CLIENT INSTEAD OF REQUEST TO HAVE CLIENT.REQUEST
-	this->_isCgiRequest = request->cgi();
+//	this->_isCgiRequest = request->cgi();
 	this->_requestUri = request->request_url();  // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
 	this->_pathFile = request->path_file(); // la url senza query //! /www/html/index.html
 	this->_method = request->method();

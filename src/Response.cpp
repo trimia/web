@@ -291,7 +291,7 @@ void Response::handleLocation(Client *client) {
     std::cout << std::boolalpha << GREEN << "BEST MATCH getIsCgi() : " << bestMatch.getIsCgi() << RESET_COLOR << std::endl;
     if(bestMatch.getIsCgi()) { ////////////// is it the right moment to check the CGI ? 
         Cgi cgi(client->request());
-        // cgi.executeCgi();
+		cgi.executeCgi();
     }
     if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
