@@ -131,7 +131,7 @@ void Response::getMethod(Client *client) {
         std::cout << CYAN << "no extension" << RESET_COLOR << std::endl;
         isDirectory(this->root() + client->request()->path_file());
     } else
-        readFromFile(this->root() + client->request()->path_file());
+        readFromFile(this->root() + client->request()->path_file(),client);
     std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
 
     // buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
@@ -306,23 +306,23 @@ void Response::checkRequest(Client *client) {
         std::cout << CYAN << "no extension" << RESET_COLOR << std::endl;
         isDirectory(this->root() + client->request()->path_file());
     } else
-        readFromFile(this->root() + client->request()->path_file());
+        readFromFile(this->root() + client->request()->path_file(), client);
     std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
     return;
 }
 
 void Response::checkPath(Client *client) {
     std::cout << CYAN << "checkPath" << RESET_COLOR << std::endl;
-    std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
+    std::cout << YELLOW << "root: " << this->_root << RESET_COLOR << std::endl;
     size_t rootPos=client->request()->path_file().find(this->_root);
     std::cout<<"root pos: "<<rootPos<<std::endl;
     if(rootPos != std::string::npos){
-        std::cout<<"pre   " << CYAN << "path file: " << client->request()->path_file() <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+//        std::cout<<"pre   " << CYAN << "path file: " << client->request()->path_file() <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
         std::string temp;
         temp=client->request()->path_file().erase(rootPos, this->_root.length());
-        std::cout <<"temp   "<< CYAN << temp <<" temp lenght "<<temp.length()<< RESET_COLOR << std::endl;
+//        std::cout <<"temp   "<< CYAN << temp <<" temp lenght "<<temp.length()<< RESET_COLOR << std::endl;
         client->request()->set_path_file(temp);
-        std::cout <<"post   "<< CYAN << "path file: " << client->request()->path_file()  <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
+//        std::cout <<"post   "<< CYAN << "path file: " << client->request()->path_file()  <<" path file lenght "<<client->request()->path_file().length()<< RESET_COLOR << std::endl;
 
     }
     if(client->request()->path_file().find_last_of("/")==client->request()->path_file().length()){
@@ -336,20 +336,18 @@ void Response::checkPath(Client *client) {
 void Response::handleLocation(Client *client) {
 
     std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
-//    std::cout<<GREEN<<"location path: "<<this->_location->getPath()<<RESET_COLOR<<std::endl;
-//    std::cout<<GREEN<<"location method: "<<this->_location->getMethods()[0]<<RESET_COLOR<<std::endl;
-    // std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-    // std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
-    // if (!client->locations().empty())
-    //     for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
-    //         std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-    //         if (!it1->getMethods().empty()) {
-    //             std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-    //                       << RESET_COLOR << std::endl;
-    //         }
-    //     }
-    // else
-    //     std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+     std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+     std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
+     if (!client->locations().empty())
+         for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
+             std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+             if (!it1->getMethods().empty()) {
+                 std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+                           << RESET_COLOR << std::endl;
+             }
+         }
+     else
+         std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
     // // Itera attraverso le posizioni definite nel server
     Location bestMatch;
     size_t bestMatchLenght = 0;
@@ -369,10 +367,12 @@ void Response::handleLocation(Client *client) {
         this->_statusCode = 405;
         return;
     }
-    if (this->root() == "/" || bestMatch.root().empty())
+    std::cout<<CYAN<<"root: "<<this->root()<<RESET_COLOR<<std::endl;
+    if (bestMatch.isIsRoot() &&(this->root() == "/" || bestMatch.root().empty()))
         this->_root = "/www";
-    else
+    else if(bestMatch.isIsRoot())
         this->_root = bestMatch.root();
+    std::cout<<CYAN<<"root: "<<this->root()<<RESET_COLOR<<std::endl;
     checkPath(client);
     if (this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
@@ -401,7 +401,7 @@ void Response::handleLocation(Client *client) {
     if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
-        this->_body = bestMatch.generateDirectoryListing(this->_root + client->request()->path_file());
+        this->_body = bestMatch.generateDirectoryListing( client->request()->path_file(),this->root());
         this->_bodySize = this->_body.length();
         this->_content_type = "html";
         this->_readyToSend = true;
@@ -410,7 +410,7 @@ void Response::handleLocation(Client *client) {
     if (!bestMatch.index().empty())
     {
         std::cout << CYAN << "index" << RESET_COLOR << std::endl;
-        return readFromFile(bestMatch.index());
+        return readFromFile(bestMatch.index(),client);
 
     }
     if (!bestMatch.getReturn().empty()) {
@@ -501,18 +501,59 @@ void Response::sendData(Client *client) {
 //    std::cout << MAGENTA << "method :" << client->request()->method() << RESET_COLOR << std::endl;
 //    std::cout << MAGENTA << "header size :" << this->header_size() << RESET_COLOR << std::endl;
 //    std::cout << MAGENTA << "header :" << this->header() << RESET_COLOR << std::endl;
+    std::ostringstream response;
+    size_t responseSize = 0;
 
-    size_t responseSize = this->header().length() + this->body_size() + 4;
-    char *response = new char[responseSize];
-    memset(response, 0, responseSize);
-    for (size_t i = 0; i < this->header().length(); i++)
-        response[i] = this->header().at(i);
-    for (size_t i = 0; i < this->body_size(); i++)
-        response[this->header_size() + i] = this->body().at(i);
-    response[this->header_size() + this->body_size()] = '\r';
-    response[this->header_size() + this->body_size() + 1] = '\n';
-    response[this->header_size() + this->body_size() + 2] = '\r';
-    response[this->header_size() + this->body_size() + 3] = '\n';
+//    if(!client->isChunked()) {
+//        size_t responseSize = this->header().length() + this->body_size() + 4;
+//        char *response = new char[responseSize];
+//        memset(response, 0, responseSize);
+//        for (size_t i = 0; i < this->header().length(); i++)
+//            response[i] = this->header().at(i);
+//        for (size_t i = 0; i < this->body_size(); i++)
+//            response[this->header_size() + i] = this->body().at(i);
+//        response[this->header_size() + this->body_size()] = '\r';
+//        response[this->header_size() + this->body_size() + 1] = '\n';
+//        response[this->header_size() + this->body_size() + 2] = '\r';
+//        response[this->header_size() + this->body_size() + 3] = '\n';
+//    } else
+    if(!client->isChunked()) {
+        std::cout << YELLOW << "not chunked" << RESET_COLOR << std::endl;
+        response.clear();
+        response << this->header();
+        response << this->body();
+        response << "\r\n\r\n";
+        responseSize = response.str().length();
+    } else
+    {
+        std::cout << YELLOW << "chunked" << RESET_COLOR << std::endl;
+        response.clear();
+        response << client->request()->http_version() << " " << StatusString(client->response()->_statusCode) << "\r\n";
+        response << "Content-Type: " << getMimeType(client->response()->_fileExtension) << "\r\n";
+        response << "Transfer-Encoding: chunked\r\n";
+        response << "\r\n";  // End of header
+
+        // Add the body in chunks
+        size_t chunkSize = 4096;  // Size of each chunk
+        for (size_t i = 0; i < this->_body.length(); i += chunkSize) {
+            // Calculate the size of the current chunk
+            size_t currentChunkSize = std::min(chunkSize, this->_body.length() - i);
+
+            // Add the size of the current chunk
+            response << std::hex << currentChunkSize << "\r\n";
+
+            // Add the current chunk
+            response << this->_body.substr(i, currentChunkSize);
+
+            // Add the chunk end marker
+            response << "\r\n";
+        }
+
+        // Add the end of the message
+        response << "0\r\n\r\n";
+        responseSize = response.str().length();
+    }
+
 
 //    fcntl(response, F_SETFL, O_NONBLOCK);
 
@@ -527,9 +568,9 @@ void Response::sendData(Client *client) {
         // The socket is in blocking mode
     }
 
-    std::cout << YELLOW << "response: " << response << " response size:" << responseSize << RESET_COLOR << std::endl;
+//    std::cout << YELLOW << "response: " << response.str().c_str() << " response size:" << responseSize << RESET_COLOR << std::endl;
     //TODO https://linux.die.net/man/2/send see which falgs to use or if 0 is ok
-    size_t byteCount = send_all(client->getClientSock()->getFdSock(), response, responseSize, MSG_DONTWAIT);
+    size_t byteCount = send_all(client->getClientSock()->getFdSock(), response.str().c_str(), responseSize, MSG_DONTWAIT);
     //TODO understand if necessary
     // if(this->_statusCode==501)
     // 	return;
@@ -557,7 +598,7 @@ void Response::sendData(Client *client) {
     // this->_not_complete = false;
 }
 
-void Response::readFromFile(std::string path) {
+void Response::readFromFile(std::string path, Client *client) {
     std::cout << CYAN << "readFromFile" << RESET_COLOR << std::endl;
     // int	body_fd = open(path.c_str(), O_RDONLY);
     std::cout << CYAN << "path: " << path << RESET_COLOR << std::endl;
@@ -571,7 +612,7 @@ void Response::readFromFile(std::string path) {
 
     std::ifstream file(path.c_str(), std::ios::binary);
     // Check if the file was opened successfully
-    if (!file.is_open()) {
+    if (!file.is_open()){
         std::cout << RED << "file open error" << RESET_COLOR << std::endl;
         this->_statusCode = 404;
         return;
@@ -585,8 +626,11 @@ void Response::readFromFile(std::string path) {
     std::cout << RED << std::endl;
     printCharsAndSpecialChars(this->file_extension());
     std::cout << RESET_COLOR << std::endl;
+//    std::cout<<CYAN<<"body size: "<<this->_bodySize<<"body: "<<RESET_COLOR<<this->_body<<std::endl;
     if (!this->_body.empty()) {
         this->_statusCode = 200;// Close the file
+        if(this->_bodySize > 4096)
+            client->setChunked(true);
 //        this->_readyToSend = true;
     }
     file.close();
@@ -738,3 +782,38 @@ void Response::setLocation(std::string &location) {
     this->_location = location;
 
 }
+
+//
+//void Response::pippo(Client *client) {
+//    // ...
+//
+//    // Add the "Transfer-Encoding: chunked" header
+//    std::ostringstream response;
+//    response.clear();
+//    response << httpVersion << " " << statusText << "\r\n";
+//    response << "Content-Type: " << contentType << "\r\n";
+//    response << "Transfer-Encoding: chunked\r\n";
+//    response << "\r\n";  // End of header
+//
+//    // Add the body in chunks
+//    size_t chunkSize = 4096;  // Size of each chunk
+//    for (size_t i = 0; i < this->_body.length(); i += chunkSize) {
+//        // Calculate the size of the current chunk
+//        size_t currentChunkSize = std::min(chunkSize, this->_body.length() - i);
+//
+//        // Add the size of the current chunk
+//        response << std::hex << currentChunkSize << "\r\n";
+//
+//        // Add the current chunk
+//        response << this->_body.substr(i, currentChunkSize);
+//
+//        // Add the chunk end marker
+//        response << "\r\n";
+//    }
+//
+//    // Add the end of the message
+//    response << "0\r\n\r\n";
+//
+//    // Send the entire message
+//    send_all(client->getClientSock()->getFdSock(), response.str().c_str(), response.str().length(), 0);
+//}

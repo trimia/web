@@ -5,6 +5,7 @@ Client::Client() {
     this->_isLocation = false;
     this->_locationNumber = 0;
 	this->_not_complete=false;
+    this->_chunked=false;
     this->_tempfilen=1;
     std::cout << "Client : Default Constructor Called" << std::endl;
 }
@@ -422,4 +423,12 @@ int Client::getTempfilen() const {
 
 void Client::setTempfilen(int tempfilen) {
     _tempfilen = tempfilen;
+}
+
+bool Client::isChunked() const {
+    return _chunked;
+}
+
+void Client::setChunked(bool chunked) {
+    _chunked = chunked;
 }

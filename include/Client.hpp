@@ -114,7 +114,11 @@ class	Client : public sType
 
 		void set_not_complete(bool not_complete);
 
-		size_t getClientMaxBodySize() const;
+    bool isChunked() const;
+
+    void setChunked(bool chunked);
+
+    size_t getClientMaxBodySize() const;
 
     void setClientMaxBodySize(size_t clientMaxBodySize);
 
@@ -135,6 +139,7 @@ private	:
         Server						*_server;
         Request						*_request;
         Response					*_response;
+        bool                        _chunked;
         epoll_event					_event;
 		std::string					_root;
 		// std::vector<int>			_allowmethods;

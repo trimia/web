@@ -5,6 +5,7 @@ Location::Location()
 //	std::cout << "Location : Default Constructor Called" << std::endl;
     this->_path = "";
     this->_root = "";
+    this->_isRoot = false;
     this->_autoindex = false;
     this->_isCgi=false;
     this->_index = "";
@@ -36,6 +37,7 @@ Location::Location(Location const &obj)
 	if (this != &obj) {
 	    this->_path=obj._path;
 	    this->_root=obj._root;
+        this->_isRoot=obj._isRoot;
 	    this->_autoindex=obj._autoindex;
 	    this->_index=obj._index;
         this->_isCgi = obj._isCgi;
@@ -57,6 +59,7 @@ Location	&Location::operator= (const Location &obj)
     {
         this->_path=obj._path;
         this->_root=obj._root;
+        this->_isRoot=obj._isRoot;
         this->_autoindex=obj._autoindex;
         this->_index=obj._index;
         this->setMethods(obj._methods);
@@ -104,18 +107,73 @@ bool Location::autoIndex(std::string path){
     }
     return false;
 }
+
+//std::string Location::generateDirectoryListing(const std::string& path) {
+//    DIR* dir;
+//    struct dirent* ent;
+//    std::ostringstream html;
 //
-std::string Location::generateDirectoryListing(const std::string& path) {
+//    html << "<html><body><ul>";
+//
+//    if ((dir = opendir(path.c_str())) != NULL) {
+//        while ((ent = readdir(dir)) != NULL) {
+////            if(std::strcmp(ent->d_name,".")!=0)
+//                html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
+//        }
+//        closedir(dir);
+//    } else {
+//        // Could not open directory
+//        return "";
+//    }
+//
+//    html << "</ul></body></html>";
+//
+//    return html.str();
+//}
+
+std::string Location::generateDirectoryListing(std::string path,std::string root){
     DIR* dir;
     struct dirent* ent;
     std::ostringstream html;
-
+    std::string temp="";
+//    std::cout<<RED<<"generate path: "<<path<<RESET_COLOR<<std::endl;
     html << "<html><body><ul>";
 
-    if ((dir = opendir(path.c_str())) != NULL) {
+    if ((dir = opendir((root+path).c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-            if(std::strcmp(ent->d_name,".")!=0)
-                html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
+            if(std::string(ent->d_name)==".."){
+                temp.clear();
+//                std::cout<<RED<<"name: "<<ent->d_name<<RESET_COLOR<<std::endl;
+//                std::cout<<BLUE<<"path: "<<path<<" temp: "<<temp<<RESET_COLOR<<std::endl;
+                if(path=="/"||temp=="/"){
+                    temp = "";
+                }
+                else{
+//                    std::cout<<CYAN<<"generate path length: "<<path.length()<<"len"<<path.find_last_of("/")<<RESET_COLOR<<std::endl;
+//                std::cout<<"pre erase"<<MAGENTA<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
+                    temp=path;
+                    temp.erase(path.find_last_of("/")+1,path.length() - path.find_last_of("/"));
+//                    std::cout<<"erase"<<MAGENTA<<"generate temp: "<<&temp<<RESET_COLOR<<std::endl;
+                    temp=temp.substr(path.find_last_of("/"));
+//                    std::cout<<MAGENTA<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
+                }
+                if(temp=="/"){
+                    temp="";
+                }
+
+            } else{
+                temp = ent->d_name;
+            }
+            if(path=="/"){
+                path="";
+            }
+//            std::cout<<RED<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
+            std::string filePath = path + "/" + temp;
+            if(path==""){
+                path ="/";
+            }
+//            std::cout<<BLUE<<ent->d_name<<" generate filePath: "<<filePath<<RESET_COLOR<<std::endl;
+            html << "<li><a href=\"" << filePath << "\">" << ent->d_name << "</a></li>";
         }
         closedir(dir);
     } else {
@@ -127,7 +185,6 @@ std::string Location::generateDirectoryListing(const std::string& path) {
 
     return html.str();
 }
-
 
 /*
  *			getter & setter
@@ -235,4 +292,12 @@ bool Location::getIsCgi() const {
 
 void Location::setIsCgi(bool isCgi) {
     _isCgi = isCgi;
+}
+
+bool Location::isIsRoot() const {
+    return _isRoot;
+}
+
+void Location::setIsRoot(bool isRoot) {
+    _isRoot = isRoot;
 }

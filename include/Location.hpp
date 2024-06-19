@@ -22,7 +22,7 @@ class	Location
 
         bool autoIndex(std::string path);
 
-        std::string generateDirectoryListing(const std::string &path);
+        std::string generateDirectoryListing(std::string path,std::string root);
 
 
 		std::string & root();
@@ -39,8 +39,11 @@ class	Location
 
 		std::basic_string<char> & clientMaxBodySize();
 
+    bool isIsRoot() const;
 
-		// void set_return(std::vector<std::string> return_);
+    void setIsRoot(bool isRoot);
+
+    // void set_return(std::vector<std::string> return_);
 
 		std::vector<std::string> & cgi_ext();
 
@@ -67,6 +70,7 @@ private	:
         // int                         _id;
         std::string					_path;
         std::string					_root;
+        bool                        _isRoot;
         bool						_autoindex;
         std::string					_index;
         std::vector<std::string>    _methods; // GET+ POST- DELETE- PUT- HEAD-

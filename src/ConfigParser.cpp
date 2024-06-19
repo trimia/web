@@ -301,6 +301,7 @@ void    ConfigParser::handleLocationState(std::string line) {
         } else if (tokens[0] == "index") {
             this->_vectorOfLocations[countLocationBlocks].setIndex(tokens[1]);
         } else if (tokens[0] == "root") {
+            this->_vectorOfLocations[countLocationBlocks].setIsRoot(true);
             this->_vectorOfLocations[countLocationBlocks].setRoot(tokens[1]);
         } else if (tokens[0] == "body_size") {
             this->_vectorOfLocations[countLocationBlocks].setClientMaxBodySize(tokens[1]);

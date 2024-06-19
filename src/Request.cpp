@@ -14,6 +14,7 @@ Request::Request()
 	this->_method="";
 	this->_header="";
 	this->_body="";
+    this->_isBody=false;
     this->_content_type="";
     this->_mymeType="";
 
@@ -28,6 +29,7 @@ Request::~Request()
     this->_ended=false;
     // this->_not_complete=false;
     this->_isRoot=false;
+    this->_isBody=false;
     // this->_isPathFileDir=true;
     this->_body_size=0;
     this->_headerSize=0;
@@ -118,7 +120,7 @@ void Request::receiveData(Client *client) {
 		if(!client->get_not_complete())
         {
             checkTypeAndSize(rcv_buffer);
-			std::cout<<CYAN<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
+//			std::cout<<CYAN<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
             parseRequest(rcv_buffer);
             fillRequest(this->_header);
         }
@@ -191,14 +193,17 @@ void Request::checkTypeAndSize(std::string httpRequest) {
 		set_method(method);
 	} else
 		this->_error = true;
-	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
+    if(this->method()=="POST"){
+        this->_isBody=true;
+    }
+//	std::cout<<YELLOW<<"checktype method :"<<this->method()<<RESET_COLOR<<std::endl;
     if(httpRequest.find("Connection")==std::string::npos)
         this->_connection="close";
     int headerEnd=httpRequest.find("\r\n\r\n");
     this->_headerSize = headerEnd + 4;
     this->_header=httpRequest.substr(0,headerEnd+4);
-    std::cout<<YELLOW<<"header size :"<<this->_headerSize<<" header :"<<this->_header.length()<<"headerEnd :"<<headerEnd<<RESET_COLOR<<std::endl;
-    std::cout<<YELLOW<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
+//    std::cout<<YELLOW<<"header size :"<<this->_headerSize<<" header :"<<this->_header.length()<<"headerEnd :"<<headerEnd<<RESET_COLOR<<std::endl;
+//    std::cout<<YELLOW<<"header :"<<this->_header<<RESET_COLOR<<std::endl;
 }
 
 /*
@@ -240,9 +245,9 @@ int Request::parseRequest(std::string httpRequest)
 	}
 
 //	 print for debug
-	 for (const auto& pair : this->_requestHeaders) {
-	     std::cout<<BLUE << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
-	 }
+//	 for (const auto& pair : this->_requestHeaders) {
+//	     std::cout<<BLUE << pair.first << " first : second " << pair.second << RESET_COLOR<<std::endl;
+//	 }
 	return 0;
 }
 
