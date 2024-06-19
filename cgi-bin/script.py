@@ -3,7 +3,7 @@
 import json
 
 
-DATA_FILE = "../configuration_files/db-config/data.json"
+DATA_FILE = "./configuration_files/db-config/data.json"
 
 
 def load_data(filename):
@@ -30,7 +30,6 @@ def main():
   content = generate_content(data)
 
   print(content)
-
 
 if __name__ == "__main__":
   main()
