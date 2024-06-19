@@ -104,22 +104,30 @@ std::string parseLine(std::string line) {
     return out;
 }
 
-std::vector<std::string> tokenize(std::string s, std::string del = " ")
-{
-    std::vector<std::string>    tokens;
-    size_t start = 0, end = -1 * del.size();
+std::vector<std::string> tokenize(const std::string& str) {
+	std::vector<std::string> tokens;
+	std::string token;
 
-    while ((end = s.find(del, start)) != std::string::npos) {
-        tokens.push_back(s.substr(start, end - start));
-        start = end + del.size();
-    }
+	for (size_t i = 0; i < str.length(); ++i) {
+		char c = str[i];
 
-    if (start < s.length()) {
-        tokens.push_back(s.substr(start));
-    }
+		if (isspace(c)) {
+			if (!token.empty()) {
+				tokens.push_back(token);
+			}
+			token.clear();
+		} else {
+			token += c;
+		}
+	}
 
-    return tokens;
+	if (!token.empty()) {
+		tokens.push_back(token);
+	}
+
+	return tokens;
 }
+
 
 std::string trimLastChar(std::string line) {
     std::string newString;
@@ -135,7 +143,7 @@ std::vector<std::string> AKAftSplit(std::string& str) {
     std::string                 temp;
 
     temp = trim(str);
-    tokens = tokenize(temp, " ");
+	tokens = tokenize(temp);
     return tokens;
 }
 
@@ -193,7 +201,6 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfServers.resize(countServerBlocks);
         this->_vectorOfServers.push_back(server);
         this->_vectorOfServers[countServerBlocks].set_location_number(0);
-        // printf("server - countserverblocks|countlocationblocks|&server|&_vecOfServers =====> |%d|%d|\n", countServerBlocks, countLocationBlocks, &server, &this->_vectorOfServers);
     } else if (line.find("location") != std::string::npos && this->insideServerBlock) {
         Location location;
         this->currentState = LocationState;
@@ -202,8 +209,6 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfServers[countServerBlocks].set_location_number(countLocationBlocks + 1);
         this->_vectorOfLocations.resize(countLocationBlocks);
         this->_vectorOfLocations.push_back(location);
-        // printf("location - locations.size() =====> |%d|\n", this->_vectorOfLocations.size());
-        // printf("location - countserverblocks|countlocationblocks|&location|&getLocations()[i] =====> |%d|%d|%p|%p|\n", countServerBlocks, countLocationBlocks, &location, &this->_vectorOfLocations[countLocationBlocks]);
     }
 }
 
