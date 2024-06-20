@@ -64,7 +64,7 @@ Location	&Location::operator= (const Location &obj)
         this->_index=obj._index;
         this->setMethods(obj._methods);
         this->setReturn(obj._return);
-//        this->_cgiPath=obj._cgiPath;
+        this->_isCgi=obj._isCgi;
         this->_alias=obj._alias;
         this->_clientMaxBodySize=obj._clientMaxBodySize;
         //        this->_error_pages=obj._error_pages;

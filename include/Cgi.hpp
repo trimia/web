@@ -63,7 +63,7 @@ class	Cgi {
         std::map<std::string, std::string>  _envVars;
         char**                              _argv;
         char*                               _urlPathSanitized;
-        char*                               _scriptPath;
+        char*                               _executable;
 
     public	:
         Cgi() {;};
@@ -72,7 +72,7 @@ class	Cgi {
         ~Cgi() {} ;
         Cgi     &operator=(const Cgi &obj);
 
-        bool            checkCgiUrl();
+        void            checkCgiExtension();
         std::string     executeCgi();
         void            sanitize();
         void            setEnv();

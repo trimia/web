@@ -314,6 +314,7 @@ void Request::setUrlPathQuery(std::string &url) {
 	size_t urlEndPos = url.find(" ", urlStartPos);
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
 	this->_query= getQueryFromHttpRequest(url);
+    std::cout<<YELLOW<<"query :"<<this->_query<<std::endl;
 	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
 	size_t endLinePos = url.find("\r", urlEndPos);
 	if (endLinePos == std::string::npos) {

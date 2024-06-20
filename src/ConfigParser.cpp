@@ -5,16 +5,26 @@
 #include "../include/ConfigParser.hpp"
 
 
-std::vector<Location> vectorOfLocations;
+# define S 0
+# define L 1
 
-static bool    tokenAdmitted(std::string token) {
-    if (token != "host" && token != "listen" && token != "server_name"
-        && token != "root" && token != "error_page" && token != "body_size"
-        && token != "autoindex" && token != "method" && token != "return"
-        && token != "cgi_enable" && token != "index" && token != "alias") {
-        return false;
+static bool    tokenAdmitted(std::string token, uint8_t flag) {
+    if (flag == S) {
+        if (token != "host" && token != "listen" && token != "server_name"
+            && token != "root" && token != "body_size" && token != "autoindex"
+            && token != "return" && token != "index") {
+            return false;
+        }
+        return true;
+    } else if (flag == L) {
+        if (token != "root" && token != "body_size" && token != "autoindex"
+            && token != "method" && token != "return" && token != "cgi_enable"
+            && token != "index" && token != "alias") {
+            return false;
+        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool    checkCgiExtension(std::vector<std::string> tokens) {
@@ -94,22 +104,30 @@ std::string parseLine(std::string line) {
     return out;
 }
 
-std::vector<std::string> tokenize(std::string s, std::string del = " ")
-{
-    std::vector<std::string>    tokens;
-    size_t start = 0, end = -1 * del.size();
+std::vector<std::string> tokenize(const std::string& str) {
+	std::vector<std::string> tokens;
+	std::string token;
 
-    while ((end = s.find(del, start)) != std::string::npos) {
-        tokens.push_back(s.substr(start, end - start));
-        start = end + del.size();
-    }
+	for (size_t i = 0; i < str.length(); ++i) {
+		char c = str[i];
 
-    if (start < s.length()) {
-        tokens.push_back(s.substr(start));
-    }
+		if (isspace(c)) {
+			if (!token.empty()) {
+				tokens.push_back(token);
+			}
+			token.clear();
+		} else {
+			token += c;
+		}
+	}
 
-    return tokens;
+	if (!token.empty()) {
+		tokens.push_back(token);
+	}
+
+	return tokens;
 }
+
 
 std::string trimLastChar(std::string line) {
     std::string newString;
@@ -125,7 +143,7 @@ std::vector<std::string> AKAftSplit(std::string& str) {
     std::string                 temp;
 
     temp = trim(str);
-    tokens = tokenize(temp, " ");
+	tokens = tokenize(temp);
     return tokens;
 }
 
@@ -244,7 +262,8 @@ void    ConfigParser::handleServerState(std::string line) {
     std::vector<std::string> tokens = AKAftSplit(line);
 
     if (tokens.size() == 1 && tokens[0] == "}") {
-        this->insideServerBlock = false;
+		this->insideServerBlock = false;
+		this->portCounter = 0;
         this->currentState = HttpState;
         this->_vectorOfServers[countServerBlocks].initSock();
         this->_vectorOfServers[countServerBlocks].setLocations(this->_vectorOfLocations);
@@ -253,31 +272,36 @@ void    ConfigParser::handleServerState(std::string line) {
         if (tokens[1] == "{") {
             return;
         } else if (findLastChar(tokens) == ';') {
-            tokens[1] = trimLastChar(tokens[1]);
-            if (tokens[0] == "server_name") {
-                this->_vectorOfServers[countServerBlocks].setServerName(tokens[1]);
-            } else if (tokens[0] == "listen") {
-                this->_vectorOfServers[countServerBlocks].setPort(stoi(tokens[1]));
-            } else if (tokens[0] == "autoindex") {
-                this->_vectorOfServers[countServerBlocks].setAutoindex(true);
-            } else if (tokens[0] == "index") {
-                this->_vectorOfServers[countServerBlocks].setIndex(tokens[1]);
-            } else if (tokens[0] == "root") {
-                this->_vectorOfServers[countServerBlocks].setRoot(tokens[1]);
-            } else if (tokens[0] == "body_size") {
-                this->_vectorOfServers[countServerBlocks].setClientMaxBodySize(tokens[1]);
-            } else if (tokens[0] == "host") {
-                this->_vectorOfServers[countServerBlocks].setIp(tokens[1]);
-            } else if (!tokenAdmitted(tokens[0])) {
-                std::cout << "Error: wrong error page in server block from config file, found: " << tokens[0] << std::endl;
-                exit(2);
-            }
-        }
+			tokens[1] = trimLastChar(tokens[1]);
+			if (tokens[0] == "listen" && this->portCounter > 0) {
+				std::cout << "Error: found another port in configuration file" << std::endl;
+				exit(2);
+			} else if (tokens[0] == "listen" && this->portCounter == 0) {
+				this->portCounter++;
+				this->_vectorOfServers[countServerBlocks].setPort(stoi(tokens[1]));
+			} else if (tokens[0] == "server_name") {
+				this->_vectorOfServers[countServerBlocks].setServerName(tokens[1]);
+			} else if (tokens[0] == "autoindex") {
+				this->_vectorOfServers[countServerBlocks].setAutoindex(true);
+			} else if (tokens[0] == "index") {
+				this->_vectorOfServers[countServerBlocks].setIndex(tokens[1]);
+			} else if (tokens[0] == "root") {
+				this->_vectorOfServers[countServerBlocks].setRoot(tokens[1]);
+			} else if (tokens[0] == "body_size") {
+				this->_vectorOfServers[countServerBlocks].setClientMaxBodySize(tokens[1]);
+			} else if (tokens[0] == "host") {
+				this->_vectorOfServers[countServerBlocks].setIp(tokens[1]);
+			} else if (!tokenAdmitted(tokens[0], S)) { // ???
+				std::cout << "Error: wrong error page in server block from config file, found: " << tokens[0] << std::endl;
+				exit(2);
+			}
+		}
     } else if (tokens.size() > 2 && tokens[0] == "error_page" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfServers[countServerBlocks].setErrorPages(tokens);
     } else {
         std::cerr << "Error: Server block got wrong configuration" << std::endl;
+        exit(2);
     }
 }
 
@@ -292,7 +316,7 @@ void    ConfigParser::handleLocationState(std::string line) {
         return ;
     } if (tokens.size() > 1 && tokens[0] == "cgi_enable" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
-        if (checkCgiExtension(tokens) == true)
+        if (checkCgiExtension(tokens))
             this->_vectorOfLocations[countLocationBlocks].setIsCgi(true);
     } else if (tokens.size() == 2 && tokens[0] != "method" && tokens[0] != "return" && findLastChar(tokens) == ';') {
         tokens[1] = trimLastChar(tokens[1]);
@@ -307,7 +331,7 @@ void    ConfigParser::handleLocationState(std::string line) {
             this->_vectorOfLocations[countLocationBlocks].setClientMaxBodySize(tokens[1]);
         } else if (tokens[0] == "alias") {
             this->_vectorOfLocations[countLocationBlocks].set_alias(tokens[1]);
-        } else if (!tokenAdmitted(tokens[0])) {
+        } else if (!tokenAdmitted(tokens[0], L)) { // ???
             std::cout << "Error: wrong configuration in location block from config file, found: " << tokens[0] << std::endl;
             exit(2);
         }
@@ -319,7 +343,37 @@ void    ConfigParser::handleLocationState(std::string line) {
     } else if (tokens[0] == "return" && findLastChar(tokens) == ';') {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfLocations[countLocationBlocks].setReturn(tokens);
+    } else {
+        std::cerr << "Error: Location block got wrong configuration" << std::endl;
+        exit(2);
     }
+}
+
+/*
+ * Check if configuration
+ * file is ok with his values
+ * */
+bool	ConfigParser::isConfigurationOk() {
+	std::vector<Server>	vecOfServers = this->_vectorOfServers;
+	Server& referenceServer = vecOfServers[0];
+
+	if (referenceServer.getServerName().empty() || referenceServer.getIp().empty() || !referenceServer.getPort())
+		return false;
+
+	for (size_t i = 1; i < vecOfServers.size(); ++i) {
+		Server& currentServer = vecOfServers[i];
+
+		if (currentServer.getServerName().empty() || currentServer.getIp().empty() || !currentServer.getPort())
+			return false;
+
+		if (referenceServer.getIp() == currentServer.getIp() &&
+			referenceServer.getPort() == currentServer.getPort() &&
+			referenceServer.getServerName() == currentServer.getServerName()) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /*
@@ -410,5 +464,9 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     this->printConfig();
     //////////
 
-    return this->_vectorOfServers;
+	if (!this->isConfigurationOk()) {
+		std::cout << "Configuration file has not right values from config file" << std::endl;
+		exit(2);
+	}
+	return this->_vectorOfServers;
 }
