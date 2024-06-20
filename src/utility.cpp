@@ -129,6 +129,29 @@ std::string StatusString(int statusCode)
         default: return "501 Not Implemented";
     }
 }
+std::string getErrorPages(int statusCode)
+{
+    switch (statusCode) {
+
+        case 400: return "./errors/400.html";
+        case 401: return "./errors/401.html";
+        case 403: return "./errors/403.html";
+        case 404: return "./errors/404.html";
+        case 405: return "./errors/405.html";
+        case 409: return "./errors/409.html";
+        case 406: return "./errors/406.html";
+        case 408: return "./errors/408.html";
+        case 410: return "./errors/410.html";
+        case 413: return "./errors/413.html";
+        case 418: return "./errors/418.html";
+        case 500: return "./errors/500.html";
+        case 501: return "./errors/501.html";
+        case 503: return "./errors/503.html";
+        case 504: return "./errors/504.html";
+        case 505: return "./errors/505.html";
+        default: return "./errors/501.html";
+    }
+}
 
 bool isDigits(const std::string &str) {
     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {

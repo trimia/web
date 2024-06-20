@@ -130,8 +130,9 @@ void Response::getMethod(Client *client) {
     if (client->request()->path_file().find_last_of(".") == std::string::npos) {
         std::cout << CYAN << "no extension" << RESET_COLOR << std::endl;
         isDirectory(this->root() + client->request()->path_file());
-    } else
+    } else if (!client->cgi())
         readFromFile(this->root() + client->request()->path_file(),client);
+    else
     std::cout << YELLOW << "path file: " << this->root() + client->request()->path_file() << RESET_COLOR << std::endl;
 
     // buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
@@ -336,18 +337,18 @@ void Response::checkPath(Client *client) {
 void Response::handleLocation(Client *client) {
 
     std::cout << CYAN << "handleLocation" << RESET_COLOR << std::endl;
-     std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
-     std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
-     if (!client->locations().empty())
-         for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
-             std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
-             if (!it1->getMethods().empty()) {
-                 std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
-                           << RESET_COLOR << std::endl;
-             }
-         }
-     else
-         std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
+//     std::cout<<YELLOW<<"fit best location"<<RESET_COLOR<<std::endl;
+//     std::cout << YELLOW<<"path file:" <<client->request()->path_file() << RESET_COLOR << std::endl;
+//     if (!client->locations().empty())
+//         for (std::vector<Location>::iterator it1 = client->locations().begin(); it1 != client->locations().end(); ++it1) {
+//             std::cout << BLUE << "LOC PATH : " << it1->getPath() << RESET_COLOR << std::endl;
+//             if (!it1->getMethods().empty()) {
+//                 std::cout << BLUE << "LOC METHODS -> " << it1->getMethods()[0] << " : " << it1->getMethods()[1]
+//                           << RESET_COLOR << std::endl;
+//             }
+//         }
+//     else
+//         std::cout << RED << "LOCATIONS EMPTY" << RESET_COLOR << std::endl;
     // // Itera attraverso le posizioni definite nel server
     Location bestMatch;
     size_t bestMatchLenght = 0;
@@ -360,12 +361,12 @@ void Response::handleLocation(Client *client) {
                 // std::cout << GREEN << "BEST MATCH METHOD -> " << bestMatch->getMethods()[0] << RESET_COLOR << std::endl;
             }
         }
-    std::cout << std::boolalpha << GREEN << "BEST MATCH getIsCgi() : " << bestMatch.getIsCgi() << RESET_COLOR << std::endl;
-    if(bestMatch.getIsCgi()) { ////////////// is it the right moment to check the CGI ?
-        Cgi cgi(client->request());
-		std::string response = cgi.executeCgi();
-        std::cout << BLUE << response << RESET_COLOR << std::endl;
-    }
+//    std::cout << std::boolalpha << GREEN << "BEST MATCH getIsCgi() : " << bestMatch.getIsCgi() << RESET_COLOR << std::endl;
+//    if(bestMatch.getIsCgi()) { ////////////// is it the right moment to check the CGI ?
+//        Cgi cgi(client->request());
+//		cgi.executeCgi(client);
+//        std::cout << BLUE << client->response()->_body << RESET_COLOR << std::endl;
+//    }
     std::cout << GREEN << "BEST MATCH PATH : " << bestMatch.getPath() << RESET_COLOR << std::endl;
     if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
         std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
@@ -405,6 +406,8 @@ void Response::handleLocation(Client *client) {
     }
     // std::cout << CYAN << "location autoindex: " << bestMatch.getAutoIndex() << RESET_COLOR << std::endl;
     if (bestMatch.getAutoIndex() && bestMatch.autoIndex(this->root() + client->request()->path_file())) {
+        if (bestMatch.getIsCgi())
+            return;
         std::cout << CYAN << "autoindex" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_body = bestMatch.generateDirectoryListing( client->request()->path_file(),this->root());
@@ -413,13 +416,13 @@ void Response::handleLocation(Client *client) {
         this->_readyToSend = true;
         return;
     }
-    if (!bestMatch.index().empty())
+    if (!bestMatch.index().empty() && !bestMatch.getIsCgi())
     {
         std::cout << CYAN << "index" << RESET_COLOR << std::endl;
         return readFromFile(bestMatch.index(),client);
 
     }
-    if (!bestMatch.getReturn().empty()) {
+    if (!bestMatch.getReturn().empty() && !bestMatch.getIsCgi()) {
         std::cout << CYAN << "return" << RESET_COLOR << std::endl;
         std::vector<std::string> return_ = bestMatch.getReturn();
         for (std::vector<std::string>::iterator it = return_.begin(); it != return_.end(); ++it) {
@@ -435,9 +438,14 @@ void Response::handleLocation(Client *client) {
         this->_readyToSend = true;
         return;
     }
+    std::cout << std::boolalpha << GREEN << "BEST MATCH getIsCgi() : " << bestMatch.getIsCgi() << RESET_COLOR << std::endl;
     if(bestMatch.getIsCgi())
     {
         //TODO handle cgi
+        Cgi cgi(client->request());
+        cgi.executeCgi(client);
+        client->set_cgi(true);
+        std::cout << BLUE << client->response()->_body << RESET_COLOR << std::endl;
     }
 
 //    std::cout << YELLOW << "location return: " << this->location()->getReturn().at(0) << RESET_COLOR << std::endl;
@@ -494,6 +502,17 @@ void Response::sendData(Client *client) {
     std::cout << MAGENTA << "send data complete: " << client->response()->complete() << RESET_COLOR << std::endl;
     if (this->complete())
         return;
+
+    if(this->status_code()>=400 && this->status_code()<=505)
+    {
+//        int temp= this->status_code();
+        client->response()->readFromFile(getErrorPages(client->response()->status_code()),client);
+//        client->response()->set_status_code(200);
+        client->response()->buildHttpResponseHeader(client->request()->http_version(), StatusString(client->response()->status_code()),
+                                                    getMimeType(client->response()->file_extension()), client->response()->body_size());
+        std::cout << RED << "error" << RESET_COLOR << std::endl;
+//        this->_readyToSend = true;
+    }
 
     // buildHttpResponseHeader(client->request()->http_version(),StatusString(this->status_code()),
     //                         getMimeType(this->file_extension()),this->body_size());
@@ -560,6 +579,7 @@ void Response::sendData(Client *client) {
         responseSize = response.str().length();
     }
 
+    std::cout << YELLOW << "response: " << response.str().c_str() << " response size:" << responseSize << RESET_COLOR << std::endl;
 
 //    fcntl(response, F_SETFL, O_NONBLOCK);
 

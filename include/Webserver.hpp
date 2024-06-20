@@ -29,7 +29,6 @@ class	Webserver
 
     bool runEpoll();
 
-	std::string readFromFile(std::string path);
 
     const std::vector<Server> &getListOfServer() const;
 

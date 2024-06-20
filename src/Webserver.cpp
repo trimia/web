@@ -329,8 +329,10 @@ bool Webserver::_handleConnection(epoll_event &event) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
         if(client.response()->getReturn_())
             client.response()->buildRedirectResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),client.response()->getLocation());
-        else
-            client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),getMimeType("txt"),0);
+//        else if(client.cgi() &&client.response()->status_code()!=200)
+//            client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),getMimeType("html"),0);
+//        else
+
 //        client.response()->set_complete(true);
         // bull=false;
         // return false;

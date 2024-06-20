@@ -1,13 +1,22 @@
 <!doctype html>
-<html>
 <head>
     <title>This is the title of the webpage!</title>
 </head>
 <body style="background-color: forestgreen">
 <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
-<button id="pippo">giggio
-</button>
-<label for="jackhadettodaiunid">cippa</label><input id="jackhadettodaiunid"/>
+
+<div style="align-items:center;padding:1rem;display: flex; flex-direction: column;width:200px; border:2px solid white; background-color: blueviolet; border-radius: 4%;margin:2rem;gap:2rem">
+    <h3 style="color: purple">form</h3>
+    <div>
+        <label for="name">name</label><input style="border-radius: 100%"id="name"/>
+    </div>
+    <div>
+        <label for="lastname">lastname</label><input id="lastname"/>
+    </div>
+    <button style="width: 70px;border-radius: 3%;background-color: darkgray" id="pippo">send
+    </button>
+</div>
+
 <div style="display: flex;justify-content: center;justify-items: center; align-items: center; width: 100vw;">
 
     <button id="pippa" >upload
@@ -45,7 +54,9 @@
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "name": document.getElementById("jackhadettodaiunid").value
+                "name": document.getElementById("name").value,
+                "lastname": document.getElementById("lastname").value
+
             })
         }).then(response => response.json())
             .then(data => console.log(data));

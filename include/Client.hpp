@@ -126,6 +126,8 @@ class	Client : public sType
 
     void setTempfilen(int tempfilen);
 
+
+
 private	:
 //        friend class Socket;
     friend class Webserver;
@@ -150,11 +152,12 @@ private	:
         size_t                      _clientMaxBodySize;
 		std::time_t					_timeStart;
 		bool						_not_complete;
+        bool                        _cgi;
+
 		void _initSocket(char*ip, uint16_t port, char type, int fd);
 
 
 		bool            _error;
-		bool            _cgi;
 		bool            _ended;
 		bool			_hasBeenClosed;
 

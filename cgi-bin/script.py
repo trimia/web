@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
 import json
-import os
 
 
 DATA_FILE = "./configuration_files/db-config/data.json"
 
 
+ciao = 'ciao'
 def load_data(filename):
   """Loads data from a JSON file."""
   try:
@@ -18,24 +18,39 @@ def load_data(filename):
 
 def generate_content(data):
   """Generates content based on data from JSON file."""
-  body = os.environ.get('PATH_INFO')
-  query = os.environ.get('QUERY_STRING')
+
 
   if data:
     title = data.get("title", "Default Title")
     message = data.get("message", "Default Message")
-    return f"<h2>{title}</h2><p>{message}</h2><p>{body}</h2><p>{query}</p>"
+    return f"""
+<!doctype html>
+<html>
+<head>
+<h2>{title}</h2>
+</head>
+<body>
+<p>{message}</p>
+</body>
+</html>
+"""
   else:
-    return "<h2>Error loading data</h2>"
+    return f"""
+<!doctype html>
+<html>
+<head>
+<h2>nammerda</h2>
+</head>
+<body>
+<p>cgiErrorNaMMerda</p>
+</body>
+</html>
+"""
 
 def main():
   data = load_data(DATA_FILE)
 
   content = generate_content(data)
-
-  body = os.environ.get('PATH_INFO')
-  if body :
-    print(body)
 
   print(content)
 

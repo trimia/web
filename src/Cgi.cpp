@@ -135,6 +135,11 @@ void Cgi::setEnv() {
     this->_envVars.insert(std::make_pair("SERVER_PORT", this->_port));
     this->_envVars.insert(std::make_pair("SERVER_SOFTWARE", "Webserve/1.0"));
     this->_envVars.insert(std::make_pair("QUERY_STRING", this->_queryString));
+    for(std::map<std::string, std::string>::iterator it = this->_queryMap.begin(); it != this->_queryMap.end(); ++it) {
+        std::string key = it->first;
+        std::string value = it->second;
+        this->_envVars.insert(std::make_pair(key, value));
+    }
     this->_envVars.insert(std::make_pair("REQUEST_METHOD", this->_method));
     this->_envVars.insert(std::make_pair("REQUEST_URI", this->_requestUri));
     this->_envVars.insert(std::make_pair("SCRIPT_NAME", this->_executable));
@@ -161,23 +166,43 @@ void Cgi::setEnv() {
  * Child process and script execution
  * */
 
-std::string Cgi::executeCgi() {
+void Cgi::executeCgi(Client *client) {
     std::string scriptOutput;
     this->setEnv();
     char **envp = this->getEnv();
+    std::cout<<RED<< "pathFile: " << this->_pathFile << RESET_COLOR<<std::endl;
+
+    struct stat infoFile;
+    stat(this->_pathFile.c_str(), &infoFile);
+    if (infoFile.st_size < 0) {
+        std::cout << RED << "Error stat()" << RESET_COLOR << std::endl;
+        client->response()->set_status_code(404);
+        return;
+    }
+
+    std::ifstream file(this->_pathFile.c_str(), std::ios::binary);
+    // Check if the file was opened successfully
+    if (!file.is_open()){
+        std::cout << RED << "Error file open" << RESET_COLOR << std::endl;
+        client->response()->set_status_code(404);
+        return;
+    }
+
 
     int pipe_fd[2];
     if (pipe(pipe_fd) == -1) {
-        std::cerr << "CGI: Error creating pipe for communication" << std::endl;
-        return "";
+        std::cout<<RED << "Error CGI creating pipe for communication" <<RESET_COLOR <<std::endl;
+        client->response()->set_status_code(500);
+        return ;
     }
 
     pid_t pid = fork();
     if (pid == -1) {
-        std::cerr << "CGI: Error creating child process" << std::endl;
+        std::cout<<RED << "Error CGI creating child process" << RESET_COLOR<<std::endl;
+        client->response()->set_status_code(500);
         close(pipe_fd[0]);
         close(pipe_fd[1]);
-        return "";
+        return ;
     }
 
     if (pid == 0) {
@@ -186,11 +211,12 @@ std::string Cgi::executeCgi() {
         close(pipe_fd[1]);
 
         this->_argv[0] = this->_executable;
-        this->_argv[1] = strToChar("./cgi-bin/script.py");
+        this->_argv[1] = strToChar(this->_pathFile);
         this->_argv[2] = NULL;
 
         if (execve(this->_executable, this->_argv, envp) == -1) {
-            std::cerr << "CGI: Error executing script: " << strerror(errno) << std::endl;
+            std::cout<<RED << "Error CGI executing script: " <<RESET_COLOR << std::endl;
+            client->response()->set_status_code(500);
             this->freeEnv(envp);
             exit(EXIT_FAILURE);
         }
@@ -203,7 +229,8 @@ std::string Cgi::executeCgi() {
         if (WIFEXITED(status)) {
             scriptOutput = readScriptOutputFromPipe(pipe_fd[0]);
         } else {
-            std::cerr << "CGI: Script exited with error status: " << WEXITSTATUS(status) << std::endl;
+            std::cerr << "Error CGI Script exited with error status: " << WEXITSTATUS(status) << std::endl;
+            client->response()->set_status_code(500);
         }
 
         close(pipe_fd[0]);
@@ -211,7 +238,10 @@ std::string Cgi::executeCgi() {
 
     this->freeEnv(envp);
     std::cout << RED << scriptOutput << RESET_COLOR << std::endl;
-    return scriptOutput;
+    client->response()->set_body(scriptOutput);
+    client->response()->set_body_size(scriptOutput.length());
+    client->response()->set_file_extension("html");
+    client->response()->set_status_code(200);
 }
 
 
@@ -222,9 +252,13 @@ std::string Cgi::executeCgi() {
  */
 Cgi::Cgi(Request *request) { ////// SET CLIENT INSTEAD OF REQUEST TO HAVE CLIENT.REQUEST
 //	this->_isCgiRequest = request->cgi();
-    this->_requestUri = request->request_url();  // is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
-    this->_pathFile = request->path_file(); // la url senza query //! /www/html/index.html
+    this->_requestUri = request->request_url();
+    if(request->path_file().find("cgi-bin/script.py")!=std::string::npos)// is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
+        this->_pathFile = "./cgi-bin/script.py"; // la url senza query //! /www/html/index.html
+    if(request->path_file().find("cgi-bin/getQuery.py")!=std::string::npos)// is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
+        this->_pathFile = "./cgi-bin/getQuery.py"; // la url senza query //! /www/html/index.html
     this->_method = request->method();
+    this->_queryMap = request->getQueryMap();
 
     printf("CGI CONSTRUCTOR: |%s|%s|\n\n\n", _requestUri.c_str(), _pathFile.c_str());
 

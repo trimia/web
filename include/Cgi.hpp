@@ -5,7 +5,7 @@
 //# include <map>
 //#include <string>
 # include "include.h"
-# include "Request.hpp"
+# include "Client.hpp"
 
 /*
  * NOT SO OFF-TOPIC :
@@ -73,7 +73,7 @@ class	Cgi {
         Cgi     &operator=(const Cgi &obj);
 
         void            checkCgiExtension();
-        std::string     executeCgi();
+        void            executeCgi(Client *client);
         void            sanitize();
         void            setEnv();
         char**          getEnv();

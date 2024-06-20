@@ -115,6 +115,7 @@ std::string getFileExtension(const std::string &path);
 
 std::string getMimeType(std::string extension);
 std::string getExtensionFromMimeType(std::string mimeType);
+std::string getErrorPages(int statusCode);
 
 std::string StatusString(int statusCode);
 bool isDigits(const std::string &str);

@@ -314,6 +314,7 @@ void Request::setUrlPathQuery(std::string &url) {
 	size_t urlEndPos = url.find(" ", urlStartPos);
 	this->_requestURL=url.substr(urlStartPos, urlEndPos - urlStartPos);
 	this->_query= getQueryFromHttpRequest(url);
+    fillQueryMap(this->_query);
     std::cout<<YELLOW<<"query :"<<this->_query<<std::endl;
 	std::cout<<RED<<"requestURL :"<<this->_requestURL<<std::endl;
 	size_t endLinePos = url.find("\r", urlEndPos);
@@ -344,6 +345,22 @@ std::string Request::getQueryFromHttpRequest(std::string& httpRequest) {
 		return httpRequest.substr(queryStartPos + 1);
 	}
 	return httpRequest.substr(queryStartPos + 1, queryEndPos - queryStartPos - 1);
+}
+
+void Request::fillQueryMap(std::string &query) {
+    std::vector<std::string> queryVector;
+    queryVector=AKAftSplit(query, "&");
+    for(std::vector<std::string>::iterator it = queryVector.begin();it != queryVector.end(); it++)
+    {
+        std::string line = *it;
+        size_t equalPos = line.find_first_of('=');
+        if (equalPos != std::string::npos)
+        {
+            std::string key = line.substr(0, equalPos);
+            std::string value = line.substr(equalPos + 1);
+            this->_queryMap[key] = value;
+        }
+    }
 }
 
 void Request::buildBody(Client *client,char*  input, int size){
@@ -600,4 +617,12 @@ const std::string &Request::getBody() const {
 
 void Request::setBody(const std::string &body) {
     _body = body;
+}
+
+const std::map<std::string, std::string> &Request::getQueryMap() const {
+    return _queryMap;
+}
+
+void Request::setQueryMap(const std::map<std::string, std::string> &queryMap) {
+    _queryMap = queryMap;
 }
