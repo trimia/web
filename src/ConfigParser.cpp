@@ -310,15 +310,10 @@ void ConfigParser::popMultiserver() {
     std::vector<Server> newVecOfServers;
     int pop[this->_vectorOfServers.size()];
     memset(pop, 0, sizeof(pop));
-    for(size_t i = 0; i < this->_vectorOfServers.size(); i++)
-    {
+    for(size_t i = 0; i < this->_vectorOfServers.size(); i++){
         for(size_t n=i+1; n < this->_vectorOfServers.size(); n++)
-        {
             if(this->_vectorOfServers[i].getIp()==this->_vectorOfServers[n].getIp() && this->_vectorOfServers[i].getPort()==this->_vectorOfServers[n].getPort())
-            {
                 pop[n]=1;
-            }
-        }
         if(pop[i]!=1)
             newVecOfServers.push_back(this->_vectorOfServers[i]);
     }

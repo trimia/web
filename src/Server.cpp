@@ -117,8 +117,8 @@ void Server::initSock() {
     //TODO remember to free socket
     // this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
     // this->set_server_socket(new Socket());
-    this->_server_socket=new Socket();
-    this->_servSockCreatedWithNew=true;
+//    this->_server_socket=new Socket();
+//    this->_servSockCreatedWithNew=true;
     if(this->_ip=="localhost")
         this->_ip="127.0.0.1";
     //TODO if to check internal server error
