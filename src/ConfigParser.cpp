@@ -170,7 +170,7 @@ std::string preProcessConfig(std::string conf) {
                 } else if (c == '}') {
                     --counter;
                     if (counter < 0) {
-                        std::cerr << "Error : Unbalanced curly braces in line." << std::endl;
+                        std::cout<<RED << "Error : Unbalanced curly braces in line." <<RESET_COLOR <<std::endl;
                     }
                 }
             }
@@ -201,7 +201,6 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfServers.resize(countServerBlocks);
         this->_vectorOfServers.push_back(server);
         this->_vectorOfServers[countServerBlocks].set_location_number(0);
-        // printf("server - countserverblocks|countlocationblocks|&server|&_vecOfServers =====> |%d|%d|\n", countServerBlocks, countLocationBlocks, &server, &this->_vectorOfServers);
     } else if (line.find("location") != std::string::npos && this->insideServerBlock) {
         Location location;
         this->currentState = LocationState;
@@ -210,8 +209,6 @@ void ConfigParser::stateCheck(std::string line) {
         this->_vectorOfServers[countServerBlocks].set_location_number(countLocationBlocks + 1);
         this->_vectorOfLocations.resize(countLocationBlocks);
         this->_vectorOfLocations.push_back(location);
-        // printf("location - locations.size() =====> |%d|\n", this->_vectorOfLocations.size());
-        // printf("location - countserverblocks|countlocationblocks|&location|&getLocations()[i] =====> |%d|%d|%p|%p|\n", countServerBlocks, countLocationBlocks, &location, &this->_vectorOfLocations[countLocationBlocks]);
     }
 }
 
@@ -249,7 +246,7 @@ void    ConfigParser::handleHttpState(std::string line) {
         this->currentState = ServerState;
         return ;
     } else {
-        std::cerr << "Error: Http block got wrong configuration" << std::endl;
+        std::cout<<RED << "Error: Http block got wrong configuration"<<RESET_COLOR << std::endl;
         exit(2);
     }
 }
@@ -274,7 +271,7 @@ void    ConfigParser::handleServerState(std::string line) {
         } else if (findLastChar(tokens) == ';') {
 			tokens[1] = trimLastChar(tokens[1]);
 			if (tokens[0] == "listen" && this->portCounter > 0) {
-				std::cout << "Error: found another port in configuration file" << std::endl;
+				std::cout<<RED << "Error: found another port in configuration file"<<RESET_COLOR << std::endl;
 				exit(2);
 			} else if (tokens[0] == "listen" && this->portCounter == 0) {
 				this->portCounter++;
@@ -292,7 +289,7 @@ void    ConfigParser::handleServerState(std::string line) {
 			} else if (tokens[0] == "host") {
 				this->_vectorOfServers[countServerBlocks].setIp(tokens[1]);
 			} else if (!tokenAdmitted(tokens[0], S)) { // ???
-				std::cout << "Error: wrong error page in server block from config file, found: " << tokens[0] << std::endl;
+				std::cout<<RED << "Error: wrong error page in server block from config file, found: " << tokens[0]<<RESET_COLOR << std::endl;
 				exit(2);
 			}
 		}
@@ -300,7 +297,7 @@ void    ConfigParser::handleServerState(std::string line) {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfServers[countServerBlocks].setErrorPages(tokens);
     } else {
-        std::cerr << "Error: Server block got wrong configuration" << std::endl;
+        std::cout<<RED << "Error: Server block got wrong configuration" << RESET_COLOR<<std::endl;
         exit(2);
     }
 }
@@ -348,7 +345,7 @@ void    ConfigParser::handleLocationState(std::string line) {
         } else if (tokens[0] == "alias") {
             this->_vectorOfLocations[countLocationBlocks].set_alias(tokens[1]);
         } else if (!tokenAdmitted(tokens[0], L)) { // ???
-            std::cout << "Error: wrong configuration in location block from config file, found: " << tokens[0] << std::endl;
+            std::cout<<RED << "Error: wrong configuration in location block from config file, found: " << tokens[0]<<RESET_COLOR << std::endl;
             exit(2);
         }
     } else if (tokens.size() == 3 && tokens[0] == "location" && tokens[2] == "{") {
@@ -360,7 +357,7 @@ void    ConfigParser::handleLocationState(std::string line) {
         tokens[tokens.size() - 1] = trimLastChar(tokens[tokens.size() - 1]);
         this->_vectorOfLocations[countLocationBlocks].setReturn(tokens);
     } else {
-        std::cerr << "Error: Location block got wrong configuration" << std::endl;
+        std::cout<<RED << "Error: Location block got wrong configuration" << RESET_COLOR<<std::endl;
         exit(2);
     }
 }
@@ -462,13 +459,13 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     this->_parsedConfig = preProcessConfig(this->_configFile);
     // printf("%s\n", this->_parsedConfig.c_str()); /////////// debug
     if (this->_parsedConfig == "CONF ERROR") {
-        std::cerr << "Found error in conf file.\n" << this->_parsedConfig << std::endl;
+        std::cout<<RED << "Found error in conf file.\n" << this->_parsedConfig <<RESET_COLOR <<std::endl;
         exit(2);
     }
 
     std::stringstream   file(this->_parsedConfig);
     if (file.bad()) {
-        std::cerr << "Error manipulating file:\n" << this->_parsedConfig << std::endl;
+        std::cout<<RED << "Error manipulating file:\n" << this->_parsedConfig <<RESET_COLOR <<std::endl;
         exit(2);
     }
     this->currentState = -1;
@@ -482,7 +479,7 @@ std::vector<Server> ConfigParser::parseConfigFile() {
     //////////
 
 	if (!this->isConfigurationOk()) {
-		std::cout << "Configuration file has not right values from config file" << std::endl;
+		std::cout<<RED << "Error configuration file has not right values from config file" <<RESET_COLOR <<std::endl;
 		exit(2);
 	}
 	return this->_vectorOfServers;

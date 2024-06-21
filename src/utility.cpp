@@ -4,9 +4,6 @@
 #include "../include/include.h"
 #include "../include/Webserver.hpp"
 
-// extern Webserver* ws_ptr;
-
-
 std::string getMimeType(std::string extension){
     std::map<std::string, std::string> extensionMap;
     extensionMap["txt"]="text/plain";
@@ -86,14 +83,9 @@ std::string getExtensionFromMimeType(std::string mimeType){
 }
 
 std::string getFileExtension(const std::string& filename) {
-    // std::string extension;
-    // if(filename.find_last_of(".") == std::string::npos)
-    //       extension = "txt";
-    // else
-    printCharsAndSpecialChars(filename);
+//    printCharsAndSpecialChars(filename);
     std::string extension = filename.substr(filename.find_last_of('.')+1);
-    printCharsAndSpecialChars(extension);
-    // printCharsAndSpecialChars(extension);
+//    printCharsAndSpecialChars(extension);
     return extension;
 }
 
@@ -129,6 +121,7 @@ std::string StatusString(int statusCode)
         default: return "501 Not Implemented";
     }
 }
+
 std::string getErrorPages(int statusCode)
 {
     switch (statusCode) {
@@ -159,49 +152,6 @@ bool isDigits(const std::string &str) {
             return false;
     }
     return true;
-}
-// std::string buildHttpResponseHeader(std::string httpVersion,
-//     std::string statusText, std::string& contentType, size_t contentLength) {
-//
-//     std::ostringstream header;
-//     header << httpVersion << " " << statusText << "\r\n";
-//     header << "Content-Type: " << contentType << "\r\n";
-//     header << "Content-Length: " << contentLength << "\r\n";
-//     header << "\r\n";  // End of header
-//     // this->_headerSize = header.str().length();
-//     return header.str();
-// }
-
-bool allowMethod(std::vector<std::string> methods,std::string method)
-{
-    std::vector<int>allowMethods;
-    for (std::vector<std::string>::const_iterator it = methods.begin();it != methods.end(); ++it)
-    {
-        if(it->compare(method) == 0)
-            return true;
-        //     allowMethods[GET]=1;
-        // else if(it->compare("POST") == 0)
-        //     allowMethods[POST]=1;
-        // else if(it->compare("DELETE") == 0)
-        //     allowMethods[DELETE]=1;
-        // else if(it->compare("PUT") == 0)
-        //     allowMethods[PUT]=1;
-        // else if(it->compare("HEAD") == 0)
-        //     allowMethods[HEAD]=1;
-        // // else if(it->c_str()=="OPTIONS")
-        // 	this->_allowmethods.push_back(OPTIONS);
-        // else if(it->c_str()=="TRACE")
-        // 	this->_allowmethods.push_back(TRACE);
-        // else if(it->c_str()=="CONNECT")
-        // 	this->_allowmethods.push_back(CONNECT);
-        // else if(it->c_str()=="PATCH")
-        // 	this->_allowmethods.push_back(PATCH);
-        // else
-        // 	this->_allowmethods.push_back(0);
-
-    }
-
-    return false;
 }
 
 std::string toStr(int number)
@@ -272,26 +222,11 @@ std::vector<std::string> AKAftSplit(std::string& str, std::string div) {
 
 
 /**
- *uncomment to debug is no cpp98
+ *uncomment to debug
  * @brief Convert an integer to a string
  * @param n
  * @return std::string
- */
 
-//#include <iostream>
-//#include <iomanip>
-//#include <cctype>
-//
-//void printCharsAndSpecialChars(std::string str) {
-//	for (char c : str) {
-//		if (std::isprint(c)) {
-//			std::cout << c << ' ';
-//		} else {
-//			std::cout<<CYAN<<"print special char" << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)c << ' '<<RESET_COLOR<<std::endl;
-//		}
-//	}
-//	std::cout << '\n';
-//}
 
 #include <iostream>
 #include <iomanip>
@@ -318,3 +253,4 @@ void printsingleCharAndSpecialChar(const char c) {
         }
 //    std::cout << '\n';
 }
+ */

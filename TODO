@@ -85,6 +85,14 @@ main status code:
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt ./webserver
 have to delete socket in same place meh
 
+	 static int i = 1;
+	 if (i == 0) {
+	 	i++;
+	 	return;
+	 }
+	 i--;
+
+
 // old code
 // bool Webserver::_handleConnection(epoll_event &event) {
 //     Client& client= *reinterpret_cast<Client*>(event.data.ptr);

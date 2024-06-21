@@ -67,35 +67,6 @@ void Cgi::checkCgiExtension() {
     }
 }
 
-/*
- * Sanitizing function to get the correct parameters
- * get the correct _scriptPath
- * CHECK THIS FUNCTION
- * */
-//void Cgi::sanitize() {
-//	uint8_t cgiBinStart = _pathFile.find("/cgi-bin/");
-//
-//	if (cgiBinStart == std::string::npos || cgiBinStart == 0) {
-//		return;
-//	}
-//
-//	uint8_t scriptStart = cgiBinStart + strlen("/cgi-bin/");
-//	while (scriptStart < _pathFile.size() && _pathFile[scriptStart] == '/') {
-//		scriptStart++;
-//	}
-//
-//	uint8_t scriptEnd = scriptStart;
-//	while (scriptEnd < _pathFile.size() && (std::isalnum(_pathFile[scriptEnd]) || _pathFile[scriptEnd] == '_')) {
-//		scriptEnd++;
-//	}
-//
-//	while (scriptEnd < _pathFile.size() && !std::isalnum(_pathFile[scriptEnd]) && _pathFile[scriptEnd] != '_') {
-//		scriptEnd++;
-//	}
-//
-//	this->_scriptPath = strToChar(_pathFile.substr(scriptStart, scriptEnd - scriptStart));
-//}
-
 char **Cgi::getEnv() {
     char **env = new char *[this->_envVars.size() + 1];
     int c = 0;
@@ -147,8 +118,6 @@ void Cgi::setEnv() {
     this->_envVars.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
     this->_envVars.insert(std::make_pair("REDIRECT_STATUS", "200"));
     this->_envVars.insert(std::make_pair("BODY", this->_body));
-    printf("envVars:::::::::::::::::::: |%s|\n\n", this->_envVars["BODY"].c_str());
-
     this->_envVars.insert(std::make_pair("PATH_TRANSLATED", ""));
     this->_envVars.insert(std::make_pair("REMOTE_IDENT", ""));
     this->_envVars.insert(std::make_pair("REMOTE_ADDR", ""));
@@ -156,8 +125,6 @@ void Cgi::setEnv() {
     this->_envVars.insert(std::make_pair("REMOTE_USER", ""));
     this->_envVars.insert(std::make_pair("SERVER_NAME", ""));
     this->_envVars.insert(std::make_pair("AUTH_TYPE", ""));
-
-    //query map filling
 }
 
 /*
@@ -170,8 +137,6 @@ void Cgi::executeCgi(Client *client) {
     std::string scriptOutput;
     this->setEnv();
     char **envp = this->getEnv();
-    std::cout<<RED<< "pathFile: " << this->_pathFile << RESET_COLOR<<std::endl;
-
     struct stat infoFile;
     stat(this->_pathFile.c_str(), &infoFile);
     if (infoFile.st_size < 0) {
@@ -243,15 +208,12 @@ void Cgi::executeCgi(Client *client) {
     client->response()->set_file_extension("html");
     client->response()->set_status_code(200);
 }
-
-
 /*
  * Use the CGI constructor when filled
  * the Request parameters from HTTP request
  * then Cgi.executeCgi()
  */
 Cgi::Cgi(Request *request) { ////// SET CLIENT INSTEAD OF REQUEST TO HAVE CLIENT.REQUEST
-//	this->_isCgiRequest = request->cgi();
     this->_requestUri = request->request_url();
     if(request->path_file().find("cgi-bin/script.py")!=std::string::npos)// is the host tutta la url //! /www/html/index.html?ciao=asd/bella=zi
         this->_pathFile = "./cgi-bin/script.py"; // la url senza query //! /www/html/index.html
@@ -259,20 +221,6 @@ Cgi::Cgi(Request *request) { ////// SET CLIENT INSTEAD OF REQUEST TO HAVE CLIENT
         this->_pathFile = "./cgi-bin/getQuery.py"; // la url senza query //! /www/html/index.html
     this->_method = request->method();
     this->_queryMap = request->getQueryMap();
-
-    printf("CGI CONSTRUCTOR: |%s|%s|\n\n\n", _requestUri.c_str(), _pathFile.c_str());
-
-    //////	check values from the request to client object and workflow logic
-    ////	create a response from the executeCgi() return string(html file)
-    //		insert call functions inside Webserver::_handleConnection
-
-
-    ////////////////// getQuery getBody(), _queryMap are missing from Request.hpp (how to get port parameter ?);
-    // this->_port = ""; /// ?
-    // this->_queryMap = request._queryMap;
-    // this->_queryString = request._queryName; // le query, dopo il '?' nella URL //! ciao=asd/bella=zi
-    // this->_body = request.getBody();
-    //////////////////
 }
 
 Cgi::Cgi(Cgi const &obj) {

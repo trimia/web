@@ -10,13 +10,6 @@ Webserver::Webserver(char * conf)
     _initEpoll();
     ConfigParser    confParser(conf);
     this->_listOfServer=confParser.parseConfigFile();
-    std::cout<<std::boolalpha<<YELLOW<<"islocation: "<<this->_listOfServer[1].is_location()<<RESET_COLOR<<std::endl;
-    std::cout<<std::boolalpha<<YELLOW<<"location number: "<<this->_listOfServer[1].location_number()<<RESET_COLOR<<std::endl;
-
-    // for (auto x : _listOfServer) {
-    //     printf("%sSNAME: %s PORT: %d IP: %s%s\n", YELLOW, x.getServerName().c_str(), x.getPort(), x.getIp().c_str(), RESET_COLOR);
-    // }
-
 }
 
 Webserver::~Webserver()
@@ -26,23 +19,19 @@ Webserver::~Webserver()
 
 Webserver::Webserver(Webserver const &obj)
 {
-	std::cout << "Copy Constructor Called" << std::endl;
+//	std::cout << "Copy Constructor Called" << std::endl;
 	if (this != &obj)
 		*this = obj;
 }
 
 Webserver	&Webserver::operator= (const Webserver &obj)
 {
-	std::cout << "Copy Assignment Operator Called" << std::endl;
+//	std::cout << "Copy Assignment Operator Called" << std::endl;
 	if (this != &obj)
 	{
 	    this->_epollFd=obj._epollFd;
 	    this->_listOfServer=obj._listOfServer;
 	    this->_listOfClient=obj._listOfClient;
-	    // this->conf=obj.conf;
-
-		//	this->attributes = obj.attributes;
-		//	...
 	}
 	return (*this);
 }
@@ -65,18 +54,14 @@ bool Webserver::runEpoll()
 {
 
     if(!this->_addServerToEpoll()) {
-        std::cout<<"Error adding server to epoll"<<std::endl;
+        std::cout<<RED<<"Error adding server to epoll"<<RESET_COLOR<<std::endl;
         return false;
     }
     if(!this->_mainLoop()) {
-        std::cout<<"Error main loop"<<std::endl;
+        std::cout<<RED<<"Error main loop"<<RESET_COLOR<<std::endl;
         return false;
     }
-    std::cout<<"out of run epoll"<<std::endl;
     return true;
-
-    // understand if is necessary to allocate event
-    //    auto epoll_events = (struct epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
 }
 
 bool Webserver::_addServerToEpoll() {
@@ -85,11 +70,6 @@ bool Webserver::_addServerToEpoll() {
         item->_event.events=EPOLLIN;
         item->_event.data.ptr=item.base();
         item->socketType=SERVER_SOCK;
-        // std::cout<<BLUE<<"adding server to epoll instance"<<std::endl;
-        // std::cout<<"socket type 1 for server 2 for client ---->   "<<item->socketType<<std::endl;
-        // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-        // std::cout<<"server socket fd: "<<item->_server_socket->getFdSock()<<RESET_COLOR<<std::endl;
-
         if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, item->_server_socket->getFdSock(), &item->_event)<0) {
             std::cout<<RED<< "Error adding connection to epoll instance " << RESET_COLOR << std::endl;
             return false;
@@ -103,9 +83,7 @@ bool Webserver::_mainLoop() {
     int eventNumber=0;
     epoll_event events[MAX_EVENTS];
     do{
-        // std::cout<<"main loop"<<std::endl;
         eventNumber= epoll_wait(this->_epollFd,events,MAX_EVENTS,EPOLL_TIMEOUT);
-        std::cout<<RED<<"event number: "<<eventNumber<<RESET_COLOR<<std::endl;
         if(eventNumber>0)
         {
             if(!_handleEpollEvents(eventNumber,events)) {
@@ -113,44 +91,29 @@ bool Webserver::_mainLoop() {
                 return false;
             }
         }
-        //TODO remove sleep
-//        sleep(3);
     } while (eventNumber>=0);
-    std::cout<<RED<<"out of do while loop"<<RESET_COLOR<<std::endl;
     if(eventNumber<0) {
         std::cout<<RED<<"Error epoll wait"<<RESET_COLOR<<std::endl;
         return false;
     }
-        // return false;
     return true;
 }
 
 
 bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_EVENTS]) {
-    std::cout<<BLUE<<"handling epoll events"<<RESET_COLOR<<std::endl;
     for (int i = 0; i < eventNumber; ++i)
     {
-        // if(events[i].data.ptr == NULL)
-        //     continue;  // Skip this event if the pointer is null
-        std::cout<<"handling event number: "<<i<<std::endl;
         sType *type =static_cast<sType*>(events[i].data.ptr);
-        // std::cout<<YELLOW<<"ptr->socketType: "<<type->socketType<<RESET_COLOR<<std::endl;
         if(type->socketType==SERVER_SOCK)
         {
-            // std::cout<<MAGENTA<<"server sock"<<RESET_COLOR<<std::endl;
-        // Server &server = *reinterpret_cast<Server *>(events[i].data.ptr);
             Server *server = static_cast<Server *>(events[i].data.ptr);
            if(!this->_acceptConnection(server))
            {
-               std::cout<<"Error accepting connection"<<std::endl;
+               std::cout<<RED<<"Error accepting connection"<<RESET_COLOR<<std::endl;
                return false;
-//               continue;
            }
         }else if(((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT)) && _handleConnection(events[i]) )
         {
-            // && !_prova(events[i])
-            // _prova(events[i]);
-                 std::cout<<YELLOW<<"out of handling connection"<<RESET_COLOR<<std::endl;
                 return true;
         }
     }
@@ -158,34 +121,16 @@ bool Webserver::_handleEpollEvents(int &eventNumber, epoll_event (&events)[MAX_E
 }
 
 bool Webserver::_acceptConnection(Server *server) {
-     std::cout<<BLUE<<"accepting connection"<<RESET_COLOR<<std::endl;
-    std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-     std::cout<<"server socket fd: "<<server->getserver_socket()->getFdSock()<<std::endl;
-        std::cout<<"server socket service: "<<ntohs(server->getserver_socket()->getService().sin_port)<<std::endl;
-        std::cout<<"server socket service: "<<inet_ntoa(server->getserver_socket()->getService().sin_addr)<<std::endl;
-        std::cout<<"server socket size: "<<*server->getserver_socket()->getSockSize()<<std::endl;
     int clientFd = accept(server->getserver_socket()->getFdSock(),(sockaddr *)&server->getserver_socket()->getService(),server->getserver_socket()->getSockSize());
-    std::cout<<CYAN<<"client fd from accept: "<<clientFd<<RESET_COLOR<<std::endl;
     if (clientFd == -1) {
         std::cout <<RED<< "Error accepting connection: " << RESET_COLOR<<std::endl;
-        printf("Errno: %d\n", errno);  // This will print the errno value
-        printf("Error message: %s\n", strerror(errno));  // This will print the error message
         return false;
     }else
         std::cout<<GREEN<<"connection accepted"<<RESET_COLOR<<std::endl;
     Client *client= new Client();
     client->initClient(server,clientFd);
-    std::cout<<BLUE<<"socket type: "<<client->socketType<<RESET_COLOR<<std::endl;
-     std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-     std::cout<<"client socket fd: "<<client->_clientSock->getFdSock()<<std::endl;
-     std::cout<<"client socket service: "<<ntohs(client->_clientSock->getService().sin_port)<<std::endl;
-     std::cout<<"client socket service: "<<inet_ntoa(client->_clientSock->getService().sin_addr)<<std::endl;
-     std::cout<<"client socket size: "<<*client->_clientSock->getSockSize()<<std::endl;
-     std::cout << "Service sin family: " << client->_clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
-
     this->_listOfClient.push_back(client);
     client->_event.data.ptr=client;
-    std::cout<<BLUE<<"socket type: "<<this->_listOfClient.back()->socketType<<RESET_COLOR<<std::endl;
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_ADD, client->_clientSock->getFdSock(), &client->_event)<0)
     {
         std::cout<<RED<<"Error adding client to epoll "<<RESET_COLOR<<std::endl;
@@ -204,171 +149,95 @@ bool Webserver::_acceptConnection(Server *server) {
  * REMEMBER false keep in handleConnection true return to main loop
  */
 
-
-
 bool Webserver::_handleConnection(epoll_event &event) {
-    std::cout<<MAGENTA<<"handling connection"<<RESET_COLOR<<std::endl;
-    //TODO choose wich is better
-    // Client * client = static_cast<Client *>(event.data.ptr);
     sType *type =static_cast<sType*>(event.data.ptr);
-     std::cout<<BLUE<<"ptr->socketType: "<<type->socketType<<RESET_COLOR<<std::endl;
-
     if(type->socketType==SERVER_SOCK)
     {
-        std::cout<<MAGENTA<<"server sock"<<RESET_COLOR<<std::endl;
         return false;
     }
     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
-    std::cout<<BLUE<<"socket type: "<<client.socketType<<RESET_COLOR<<std::endl;
     if(!client.get_not_complete())
     {
         if(client._event.events & EPOLLIN){
             client.initRequest();
-            //        client.initResponse();
         }
         client.initResponse();
     }
-
-    //    client.initLocation();
-
-    // std::cout<<BLUE<<"handling connection"<<std::endl;
-    // std::cout<<"epollfd: "<<this->_epollFd<<std::endl;
-    // std::cout<<"client socket fd: "<<client._clientSock->getFdSock()<<std::endl;
-    // std::cout<<"client socket service: "<<ntohs(client._clientSock->getService().sin_port)<<std::endl;
-    // std::cout<<"client socket service: "<<inet_ntoa(client._clientSock->getService().sin_addr)<<std::endl;
-    // std::cout<<"client socket size: "<<*client._clientSock->getSockSize()<<std::endl;
-    // std::cout << "Service sin family: " << client._clientSock->getService().sin_family<<RESET_COLOR<< std::endl;
-
     std::time_t currentTime = std::time(NULL);
     double elapsedTime = std::difftime(currentTime, client.request()->time_start());
     if(client._event.events & EPOLLIN )
         client.request()->receiveData(&client);
     if(client.get_not_complete())
         return true;
-    std::cout<<BLUE"pre "<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" response error: "<<client.response()->error()<<RESET_COLOR<<std::endl;
     if (client._event.events & EPOLLIN && client.request()->ended()) {
-        std::cout<<GREEN<<"Request ended set to epollout"<<RESET_COLOR<<std::endl;
-//        client._event.data.ptr=NULL;
         client._event.events = EPOLLOUT;
-//        client.socketType=CLIENT_SOCK;
-//        client._event.data.ptr = &client;
         if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
-            // Handle error
-//            client.response()->set_status_code(501);
-//            client.response()->set_error(true);
+            std::cout<<RED<<"Error: client sock not modified to epoll instance"<<RESET_COLOR<<std::endl;
         }
     }
-    std::cout<<BLUE<<"post "<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" response error: "<<client.response()->error()<<RESET_COLOR<<std::endl;
-
-
-//    if(event.events & EPOLLOUT)
-//        client.initResponse();
-
-    //TODO check su url per cgi
-//    Cgi Cgi(client.request());
     if(client.response()->status_code()==1) {
         std::cout<<RED<<"501 internal server error"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);
     }
-    std::cout<<BLUE<<"response status code: "<<client.response()->status_code()<<"client request connection: "<<client.request()->connection()<<RESET_COLOR<<std::endl;
      if(client.response()->status_code()==204) {
-         std::cout<<YELLOW<<"client close so server close"<<RESET_COLOR<<std::endl;
          _closeConnection(event);
          return true;
      }
     if(client._event.events & EPOLLOUT && client.request()->ended() && !client.request()->error() && client.response()->status_code()!=204) {
         std::cout<<YELLOW<<"handling response"<<RESET_COLOR<<std::endl;
         client.response()->setResponseForMethod(&client);
-
     }
     if (client.request()->error() && client.response()->complete())
     {
-        std::cout<<RED<<"Error in request 1111"<<RESET_COLOR<<std::endl;
+        std::cout<<RED<<"Error in request"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);
         return true;
-        // return false;
     }
     if (client.response()->error() && client.response()->complete())
     {
         std::cout<<RED<<"Error in response"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);
         return true;
-        // return false;
     }
-
-    //TODO handle keepalive
     double keepAliveelapsedTime = std::difftime(currentTime, client.time_start());
     if(client.connection()=="keep-alive" && keepAliveelapsedTime>=20)
     {
-        std::cout<<RED<<"Connection keep-alive timeout"<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"Connection keep-alive timeout"<<RESET_COLOR<<std::endl;
         client.request()->set_connection("close");
-        // client.request()->set_complete(true);
         _closeConnection(event);
     }
     if (elapsedTime>=15 && client.request()->connection()=="close")
     {
-        std::cout<<RED<<"Connection timeout"<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"Connection timeout"<<RESET_COLOR<<std::endl;
         client.response()->set_status_code(408);
-        // this->_closeConnection(event);
-        // return false;
     }
     if(client.request()->connection()=="close" && client.response()->complete())
     {
-        std::cout<<GREEN<<"Request ended 111111"<<RESET_COLOR<<std::endl;
-        std::cout<<GREEN<<"complete: "<<client.response()->complete()<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"Request ended"<<RESET_COLOR<<std::endl;
         _closeConnection(event);
         return true;
-        // return true;
     }
-//    if(client.request()->ended() && client.response()->status_code()==0) {
-//        std::cout<<RED<<"Error not implemented"<<RESET_COLOR<<std::endl;
-//        client.response()->set_status_code(501);
-//        client.response()->set_error(true);
-//    }
-
-    std::cout<<std::boolalpha<<"response error: "<<client.response()->error()<<" request error: "<<client.request()->error()<<std::endl;
     if(client._event.events & EPOLLOUT && ((client.response()->error() || client.request()->error()) && client.response()->status_code()!=204)) {
         std::cout<<RED<<"Error in response or request"<<RESET_COLOR<<std::endl;
         if(client.response()->getReturn_())
             client.response()->buildRedirectResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),client.response()->getLocation());
-//        else if(client.cgi() &&client.response()->status_code()!=200)
-//            client.response()->buildHttpResponseHeader(client.request()->http_version(),StatusString(client.response()->status_code()),getMimeType("html"),0);
-//        else
-
-//        client.response()->set_complete(true);
-        // bull=false;
-        // return false;
     }
-    std::cout<<std::boolalpha<<"request ended: "<<client.request()->ended()<<" request error: "<<client.request()->error()<<std::endl;
     if(!client.request()->ended() && !client.request()->error()) {
-//        std::cout<<RED<<"Error in request or response"<<RESET_COLOR<<std::endl;
         return true;
-
     }
     if(client._event.events & EPOLLOUT)
         client.response()->sendData(&client);
     if (client._event.events & EPOLLOUT && client.response()->complete()) {
         std::cout<<GREEN<<"Response ended set to epollin"<<RESET_COLOR<<std::endl;
-//        client._event.data.ptr=NULL;
         client._event.events = EPOLLIN;
-//        client.socketType=CLIENT_SOCK;
-//        client._event.data.ptr = &client;
         if (epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
-            // Handle error
+            std::cout<<RED<<"Error: client sock not modified to epoll instance"<<RESET_COLOR<<std::endl;
             client.response()->set_status_code(501);
             client.response()->set_error(true);
         }
     }
-    // if(client.response()->ready_to_send()) {
-    //     client.response()->sendData(client);
-    //     // return false;
-    //     // return bull;
-    // }
-    // std::cout<<std::boolalpha<<"complete: "<<client.response()->complete()<<"connectio=====> "<<client.request()->connection()<<std::endl;
-    printCharsAndSpecialChars(client.request()->connection());
-
     if(client.request()->connection()=="keep-alive"&& client.response()->complete()) {
-        std::cout<<GREEN<<"Connection keep-alive"<<RESET_COLOR<<std::endl;
+        std::cout<<YELLOW<<"Connection keep-alive"<<RESET_COLOR<<std::endl;
         if(client.request()){
             delete client.request();
             client.set_request(NULL);
@@ -384,48 +253,26 @@ bool Webserver::_handleConnection(epoll_event &event) {
         flags |= O_NONBLOCK;
         fcntl(client.getClientSock()->getFdSock(), F_SETFL, flags);
         if (setsockopt(client.getClientSock()->getFdSock(), SOL_SOCKET, SO_KEEPALIVE,(char *) &tv, sizeof(tv)) ==SOCKET_ERROR) {
-            std::cout<<RED << "cannot set socket option" << RESET_COLOR<<std::endl;
+            std::cout<<RED << "Error cannot set socket option" << RESET_COLOR<<std::endl;
             return false;
         }
-//        // client._response=NULL;
-//        client._request=NULL;
-//        client._event.data.ptr=NULL;
-//        client._event.events = EPOLLIN;
-//        client.socketType=CLIENT_SOCK;
-//        client._event.data.ptr = &client;
         if(epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, client._clientSock->getFdSock(), &client._event) < 0) {
-            // Handle error
+            std::cout<<RED<<"Error: client sock not modified to epoll instance"<<RESET_COLOR<<std::endl;
         }
-        // client.socketType=CLIENT_SOCK;
         return true;
     }
-    std::cout<<std::boolalpha<<"response complete: "<<client.response()->complete()<<"request error: "<<client.request()->error()<<std::endl;
     if(client.request()->error() && client.response()->complete())
     {
-        std::cout<<RED<<"Error in request 2222"<<RESET_COLOR<<std::endl;
+        std::cout<<RED<<"Error in request"<<RESET_COLOR<<std::endl;
         this->_closeConnection(event);
         return true;
-        // return false;
     }
-    std::cout<<" connection: "<<client.request()->connection()<<std::boolalpha<<" complete: "<<client.response()->complete()<<std::endl;
     if(client.request()->connection()=="close" && client.response()->complete())
     {
-        std::cout<<GREEN<<"Request ended 2222"<<RESET_COLOR<<std::endl;
-        std::cout<<GREEN<<"complete: "<<client.response()->complete()<<RESET_COLOR<<std::endl;
+        std::cout<<GREEN<<"Request ended"<<RESET_COLOR<<std::endl;
         _closeConnection(event);
         return true;
-        // return true;
     }
-    // if (client.request()->error() && client.response()->complete())
-    // {
-    //     std::cout<<RED<<"Error in request 1111"<<RESET_COLOR<<std::endl;
-    //     this->_closeConnection(event);
-    //     return false;
-    //     // return false;
-    // }
-    //TODO understand if is necessary:
-    // _closeConnection(event);
-    // return _prova( &event);
     return false;
 }
 
@@ -438,9 +285,7 @@ struct MatchClient {
 };
 
 bool Webserver::_closeConnection(epoll_event &event) {
-//     Client& client= *reinterpret_cast<Client*>(event.data.ptr);
     Client* client = static_cast<Client*>(event.data.ptr);
-//TODO check what is necessary free delete from list/vector etc...
     if(client->request()){
         delete client->request();
         client->set_request(NULL);
@@ -449,7 +294,6 @@ bool Webserver::_closeConnection(epoll_event &event) {
         delete client->response();
         client->set_response(NULL);
     }
-    std::cout<<MAGENTA<<"close connection fdSock: "<<client->getClientSock()->getFdSock()<<RESET_COLOR<<std::endl;
     if(epoll_ctl(this->_epollFd,EPOLL_CTL_DEL,client->getClientSock()->getFdSock(),&client->_event)==-1) {
         std::cout<<RED<<"Error: client sock not deleted from epoll instance"<<RESET_COLOR<<std::endl;
         return false;
@@ -457,23 +301,11 @@ bool Webserver::_closeConnection(epoll_event &event) {
     if(close(client->getClientSock()->getFdSock())==-1){
         std::cout<<RED<<"Error: client sock not closed"<<RESET_COLOR<<std::endl;
         return false;
-
     }
-//     _listOfClient.remove_if([&client](const Client& c) { return &c == client; });
-//    _listOfClient.remove_if([client](const Client* c) { return c == client; });
     _listOfClient.remove_if(MatchClient(client));
-    // delete client;
     event.data.ptr=NULL;
     client = NULL;
     return true;
-}
-
-
-void Webserver::addClientToList(Client *client) {
-
-    this->_listOfClient.push_back(client);
-    std::cout<<"client added to list"<<std::endl;
-
 }
 
 /*
@@ -481,6 +313,7 @@ void Webserver::addClientToList(Client *client) {
  *                  getter and setter
  *
  */
+
 const std::vector<Server> &Webserver::getListOfServer() const {
     return _listOfServer;
 }
