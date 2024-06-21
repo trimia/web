@@ -113,7 +113,7 @@ void Response::getMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
@@ -161,7 +161,7 @@ void Response::postMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     std::string path;
@@ -243,7 +243,7 @@ void Response::deleteMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
 
@@ -381,7 +381,7 @@ void Response::handleLocation(Client *client) {
         this->_root = bestMatch.root();
     std::cout<<CYAN<<"root: "<<this->root()<<RESET_COLOR<<std::endl;
     checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     // std::cout << YELLOW << "root: " << this->root() << RESET_COLOR << std::endl;
