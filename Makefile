@@ -12,30 +12,29 @@ SRCS = main.cpp \
 		src/Response.cpp \
 		src/Webserver.cpp \
 		src/utility.cpp \
-		# src/ConfigBlock.cpp \
 
 
-OBJS = $(SRCS:.cpp=.o)
+OBJS = $(patsubst src/%.cpp,objs/%.o,$(SRCS))
+
 OBJS_DIR = ./objs/
-
 
 INCLUDE_DIR = include/
 CC = c++ -I$(INCLUDE_DIR)
 FLAG = -Wall -Wextra -Werror -g -std=c++98
 
 
-%.o: %.cpp
+objs/%.o: src/%.cpp
+	@mkdir -p objs
 	@$(CC) $(FLAG) -c $< -o $@ -g
 
 
+all: $(NAME)
+
 $(NAME): $(OBJS)
 	@$(CC) $(FLAG) $(OBJS) -o $(NAME) -g
-	@mkdir -p $(OBJS_DIR)
-	@mv $(OBJS) $(OBJS_DIR).
 	@echo "./$(NAME) has been created"
 
 
-all: $(NAME)
 
 
 clean:

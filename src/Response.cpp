@@ -16,6 +16,7 @@ Response::Response() {
     this->_error = false;
     this->_readyToSend = false;
     this->return_= false;
+
 //    std::cout << "Response : Default Constructor Called" << std::endl;
 }
 
@@ -53,12 +54,12 @@ Response &Response::operator=(const Response &obj) {
 }
 
 void Response::setResponseForMethod(Client *client) {
-	 if(client->request()->method().empty())
-         return;
+    std::cout << BLUE << "set response method" << RESET_COLOR << std::endl;
+    if(client->request()->method().empty())
+        return;
     if (client->request()->error())
         return;
     std::string method = client->request()->method();
-    std::cout << BLUE << "method :" << method << RESET_COLOR << std::endl;
     std::map<std::string, FunctionType> methodMap;
     methodMap["GET"] = &Response::getMethod;
     methodMap["POST"] = &Response::postMethod;
@@ -66,6 +67,7 @@ void Response::setResponseForMethod(Client *client) {
     (this->*methodMap[method])(client);
     buildHttpResponseHeader(client->request()->http_version(), StatusString(this->status_code()),
                             getMimeType(this->file_extension()), this->body_size());
+
 }
 
 
@@ -78,10 +80,11 @@ void Response::getMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     if (!client->is_location() && client->request()->path_file() == "/") {
+        std::cout << CYAN << "root path" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_body = "server is online";
         this->_bodySize = this->_body.length();
@@ -100,6 +103,7 @@ void Response::postMethod(Client *client) {
     if(client->get_not_complete())
         return;
     std::string str;
+
     if (client->is_location())
         handleLocation(client);
     if(this->error()||this->ready_to_send())
@@ -108,7 +112,7 @@ void Response::postMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     std::string path;
@@ -120,6 +124,7 @@ void Response::postMethod(Client *client) {
         path=this->_root+client->request()->path_file();
     }
     stat((path).c_str(), &infoFile);
+
     if (S_ISDIR(infoFile.st_mode)) {
         if(client->request()->file_name().empty())
             client->request()->set_file_name("temp");
@@ -147,14 +152,16 @@ void Response::postMethod(Client *client) {
         }
         file.close();
         this->_statusCode = 201;
-        }else {
-            std::cout << RED << "Error in stat()" << RESET_COLOR << std::endl;
-            this->_statusCode = 409;
-            return;
+    }else {
+        std::cout << RED << "Error in stat()" << RESET_COLOR << std::endl;
+        this->_statusCode = 409;
+        return;
     }
 }
 
+
 void Response::deleteMethod(Client *client) {
+
     if (client->is_location())
         handleLocation(client);
     if(this->error()||this->ready_to_send())
@@ -163,25 +170,25 @@ void Response::deleteMethod(Client *client) {
         this->_root = "/www";
     if(!client->is_location())
         checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     std::string uri=client->request()->path_file();
     std::string fileName=uri.substr(client->request()->path_file().find_last_of("/"));
     std::string path=uri.substr(0,client->request()->path_file().find_last_of("/"));
     std::string dirPath = this->_root + path;
-   if(access(dirPath.c_str(), W_OK) == 0) {
-       if (std::remove((dirPath+"/"+fileName).c_str()) == 0) {
-           this->_statusCode = 204;
-           return;
-       } else {
-           this->_statusCode = 500;
-           return;
-       }
-   } else {
-       this->_statusCode = 403;
-       return;
-   }
+    if(access(dirPath.c_str(), W_OK) == 0) {
+        if (std::remove((dirPath+"/"+fileName).c_str()) == 0) {
+            this->_statusCode = 204;
+            return;
+        } else {
+            this->_statusCode = 500;
+            return;
+        }
+    } else {
+        this->_statusCode = 403;
+        return;
+    }
 }
 
 void Response::checkPath(Client *client) {
@@ -209,7 +216,6 @@ void Response::handleLocation(Client *client) {
             }
         }
     if (!bestMatch.getMethods().empty() && !bestMatch.allowMethod(client->request()->method())) {
-        std::cout << RED << "method not allowed" << RESET_COLOR << std::endl;
         this->_error = true;
         this->_statusCode = 405;
         return;
@@ -219,7 +225,7 @@ void Response::handleLocation(Client *client) {
     else if(bestMatch.isIsRoot())
         this->_root = bestMatch.root();
     checkPath(client);
-    if (this->_root.find(".") == std::string::npos) {
+    if (!this->_root.empty() && this->_root.find(".") == std::string::npos) {
         this->_root = "." + this->root();
     }
     if (!bestMatch.alias().empty()){
@@ -268,7 +274,6 @@ void Response::handleLocation(Client *client) {
 
 void Response::buildHttpResponseHeader(std::string httpVersion,
                                        std::string statusText, std::string contentType, size_t contentLength) {
-
     std::ostringstream header;
     header << httpVersion << " " << statusText << "\r\n";
     header << "Content-Type: " << contentType << "\r\n";
@@ -293,7 +298,6 @@ static size_t send_all(int socket, const char* buffer, size_t length, int flags)
     while (total_bytes_sent < length) {
         size_t bytes_sent = send(socket, buffer + total_bytes_sent, length - total_bytes_sent, flags);
         if ((int)bytes_sent == -1) {
-            // An error occurred
             return -1;
         }
         total_bytes_sent += bytes_sent;
@@ -304,12 +308,12 @@ static size_t send_all(int socket, const char* buffer, size_t length, int flags)
 void Response::sendData(Client *client) {
     if (this->complete())
         return;
+
     if(this->status_code()>=400 && this->status_code()<=505)
     {
         client->response()->readFromFile(getErrorPages(client->response()->status_code()),client);
         client->response()->buildHttpResponseHeader(client->request()->http_version(), StatusString(client->response()->status_code()),
                                                     getMimeType(client->response()->file_extension()), client->response()->body_size());
-        std::cout << RED << "Error "<<StatusString(client->response()->_statusCode) << RESET_COLOR << std::endl;
     }
     std::ostringstream response;
     size_t responseSize = 0;
@@ -328,7 +332,7 @@ void Response::sendData(Client *client) {
         response << "Content-Type: " << getMimeType(client->response()->_fileExtension) << "\r\n";
         response << "Transfer-Encoding: chunked\r\n";
         response << "\r\n";
-        size_t chunkSize = 4096;
+        size_t chunkSize = 4096;  // Size of each chunk
         for (size_t i = 0; i < this->_body.length(); i += chunkSize) {
             size_t currentChunkSize = std::min(chunkSize, this->_body.length() - i);
             response << std::hex << currentChunkSize << "\r\n";
@@ -340,9 +344,9 @@ void Response::sendData(Client *client) {
     }
     int flags = fcntl(client->getClientSock()->getFdSock(), F_GETFL, 0);
     if (flags & O_NONBLOCK) {
-        std::cout<<YELLOW << "The socket is in non-blocking mode"<<RESET_COLOR << std::endl;
+        std::cout << "The socket is in non-blocking mode" << std::endl;
     } else {
-        std::cout<<YELLOW << "The socket is in blocking mode" << RESET_COLOR<<std::endl;
+        std::cout << "The socket is in blocking mode" << std::endl;
     }
     size_t byteCount = send_all(client->getClientSock()->getFdSock(), response.str().c_str(), responseSize, MSG_DONTWAIT);
     if ((int) byteCount == SOCKET_ERROR) {
@@ -353,6 +357,7 @@ void Response::sendData(Client *client) {
         if (close(client->getClientSock()->getFdSock()) != -1)
             return;
     } else if (byteCount == 0) {
+        std::cout << YELLOW << "send " << byteCount << " byte" << RESET_COLOR << std::endl;
         if (this->_statusCode == 0)
             this->_statusCode = 204;
     } else if (byteCount == responseSize) {
@@ -366,7 +371,7 @@ void Response::readFromFile(std::string path, Client *client) {
     struct stat infoFile;
     stat(path.c_str(), &infoFile);
     if (infoFile.st_size < 0) {
-        std::cout << RED << "Error in stat()" << RESET_COLOR << std::endl;
+        std::cout << RED << "Error ini stat()" << RESET_COLOR << std::endl;
         this->_statusCode = 404;
         return;
     }
@@ -382,7 +387,7 @@ void Response::readFromFile(std::string path, Client *client) {
     this->_bodySize = body.length();
     this->_fileExtension = getFileExtension(path);
     if (!this->_body.empty()) {
-        this->_statusCode = 200;
+        this->_statusCode = 200;// Close the file
         if(this->_bodySize > 4096)
             client->setChunked(true);
     }
@@ -403,7 +408,6 @@ void Response::isDirectory(const std::string &path) {
         return;
     }
     if (S_ISDIR(info.st_mode)) {
-        std::cout << CYAN << "is a directory" << RESET_COLOR << std::endl;
         this->_statusCode = 200;
         this->_body = "is a directory";
         this->_bodySize = this->_body.length();
