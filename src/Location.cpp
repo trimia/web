@@ -10,21 +10,11 @@ Location::Location()
     this->_isCgi=false;
     this->_index = "";
     this->_methods.reserve(0);
-//    this->_cgiPath.reserve(0);
     this->_alias = "";
     this->_clientMaxBodySize = "";
     this->_return.reserve(0);
     this->_cgiExt.reserve(0);
 }
-
-
-//Location::Location(const std::string &path, const std::string &root, bool autoindex, const std::string &index,
-//                   std::allocator<std::basic_string<char> > methods, std::allocator<std::basic_string<char> > ret, std::string alias, std::vector<std::string> cgiPath,
-//                   std::vector<std::string> cgiExt, unsigned long  clientMaxBodySize):
-//                   _path(path), _root(root), _autoindex(autoindex), _index(index),
-//                   _methods(methods), _return(ret), _alias(alias), _cgiPath(cgiPath),
-//                   _cgiExt(cgiExt), _clientMaxBodySize(reinterpret_cast<const char *>(clientMaxBodySize)) {}
-
 
 Location::~Location()
 {
@@ -43,13 +33,9 @@ Location::Location(Location const &obj)
         this->_isCgi = obj._isCgi;
 	    this->setMethods(obj._methods);
         this->setReturn(obj._return);
-//	    this->_cgiPath=obj._cgiPath;
 	    this->_alias=obj._alias;
 	    this->_clientMaxBodySize=obj._clientMaxBodySize;
 	}
-
-
-		// *this = obj;
 }
 
 Location	&Location::operator= (const Location &obj)
@@ -67,25 +53,9 @@ Location	&Location::operator= (const Location &obj)
         this->_isCgi=obj._isCgi;
         this->_alias=obj._alias;
         this->_clientMaxBodySize=obj._clientMaxBodySize;
-        //        this->_error_pages=obj._error_pages;
     }
     return (*this);
 }
-
-
-
-// Location Location::fitBestLocation(Client *client) {
-//     Location bestMatch;
-//     size_t bestMatchLenght = 0;
-//     // Itera attraverso le posizioni definite nel server
-//     for (std::vector<Location>::iterator it = client->locations().begin(); it != client->locations().end(); it++) {
-//         if (client->request()->path_file().find(it->getPath()) == 0 && it->getPath().length() > bestMatchLenght) {
-//             bestMatch = *it.base();
-//             bestMatchLenght = it->getPath().length();
-//         }
-//     }
-//     return bestMatch;
-// }
 
 bool Location::allowMethod(std::string method) {
     std::vector<std::string> methods = this->getMethods();
@@ -95,7 +65,7 @@ bool Location::allowMethod(std::string method) {
     }
     return false;
 }
-//
+
 bool Location::autoIndex(std::string path){
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
@@ -108,54 +78,24 @@ bool Location::autoIndex(std::string path){
     return false;
 }
 
-//std::string Location::generateDirectoryListing(const std::string& path) {
-//    DIR* dir;
-//    struct dirent* ent;
-//    std::ostringstream html;
-//
-//    html << "<html><body><ul>";
-//
-//    if ((dir = opendir(path.c_str())) != NULL) {
-//        while ((ent = readdir(dir)) != NULL) {
-////            if(std::strcmp(ent->d_name,".")!=0)
-//                html << "<li><a href=\"" << ent->d_name << "\">" << ent->d_name << "</a></li>";
-//        }
-//        closedir(dir);
-//    } else {
-//        // Could not open directory
-//        return "";
-//    }
-//
-//    html << "</ul></body></html>";
-//
-//    return html.str();
-//}
-
 std::string Location::generateDirectoryListing(std::string path,std::string root){
     DIR* dir;
     struct dirent* ent;
     std::ostringstream html;
     std::string temp="";
-//    std::cout<<RED<<"generate path: "<<path<<RESET_COLOR<<std::endl;
     html << "<html><body><ul>";
 
     if ((dir = opendir((root+path).c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             if(std::string(ent->d_name)==".."){
                 temp.clear();
-//                std::cout<<RED<<"name: "<<ent->d_name<<RESET_COLOR<<std::endl;
-//                std::cout<<BLUE<<"path: "<<path<<" temp: "<<temp<<RESET_COLOR<<std::endl;
                 if(path=="/"||temp=="/"){
                     temp = "";
                 }
                 else{
-//                    std::cout<<CYAN<<"generate path length: "<<path.length()<<"len"<<path.find_last_of("/")<<RESET_COLOR<<std::endl;
-//                std::cout<<"pre erase"<<MAGENTA<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
                     temp=path;
                     temp.erase(path.find_last_of("/")+1,path.length() - path.find_last_of("/"));
-//                    std::cout<<"erase"<<MAGENTA<<"generate temp: "<<&temp<<RESET_COLOR<<std::endl;
                     temp=temp.substr(path.find_last_of("/"));
-//                    std::cout<<MAGENTA<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
                 }
                 if(temp=="/"){
                     temp="";
@@ -167,17 +107,14 @@ std::string Location::generateDirectoryListing(std::string path,std::string root
             if(path=="/"){
                 path="";
             }
-//            std::cout<<RED<<"generate temp: "<<temp<<RESET_COLOR<<std::endl;
             std::string filePath = path + "/" + temp;
             if(path==""){
                 path ="/";
             }
-//            std::cout<<BLUE<<ent->d_name<<" generate filePath: "<<filePath<<RESET_COLOR<<std::endl;
             html << "<li><a href=\"" << filePath << "\">" << ent->d_name << "</a></li>";
         }
         closedir(dir);
     } else {
-        // Could not open directory
         return "";
     }
 
@@ -201,10 +138,6 @@ bool & Location::getAutoIndex() {
 std::string & Location::index() {
     return _index;
 }
-//
-//std::vector<std::string> & Location::cgiPath() {
-//    return _cgiPath;
-//}
 
 std::string & Location::alias() {
     return _alias;
@@ -217,10 +150,6 @@ void Location::set_alias(std::string alias) {
 std::basic_string<char> & Location::clientMaxBodySize() {
     return _clientMaxBodySize;
 }
-
-// void Location::set_return(std::vector<std::string> return_) {
-//     _return = return_;
-// }
 
 std::vector<std::string> & Location::cgi_ext() {
     return _cgiExt;
@@ -277,10 +206,6 @@ void Location::setReturn(std::vector<std::string> returnPage) {
 std::vector<std::string> Location::getReturn() {
     return _return;
 }
-
-//void Location::setCgiPath(std::vector<std::string> &cgiPath) {
-//    this->_cgiPath = cgiPath;
-//}
 
 void Location::setClientMaxBodySize(std::basic_string<char> clientMaxBodySize) {
     this->_clientMaxBodySize = clientMaxBodySize;

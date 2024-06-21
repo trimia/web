@@ -17,34 +17,13 @@
     </button>
 </div>
 
-<div style="display: flex;justify-content: center;justify-items: center; align-items: center; width: 100vw;">
-
-    <button id="pippa" >upload
-    </button>
-    <label for="jackhadettodaiunaltroid">upload file</label><input type="file" id="jackhadettodaiunaltroid"/>
-</div>
-<!--<label for="id">cippa</label><input id="id"/>-->
-<div style="display: flex;justify-content: center;justify-items: center; align-items: center; width: 100vw;">
+<div style="display: flex;justify-content: center;justify-items: center; align-items: center; width: 100vw; flex-direction: column">
+    <h2>File Upload Form</h2>
 
     <button id="pippi?" >upload
     </button>
     <label for="unaltroid">upload file chunked request</label><input type="file" id="unaltroid"/>
 </div>
-<div class="container">
-    <h1>Multipart File Upload</h1>
-    <form  enctype="multipart/form-data">
-        <div class="input">
-            <label for="file">Select file</label><input id="file" type="file" />
-        </div>
-        <button id="form" class="submit-btn" type="submit">Upload</button>
-    </form>
-</div>
-<h2>File Upload Form</h2>
-<form action="http://127.1.0.1:8090/" method="post" enctype="multipart/form-data" accept-charset=utf-8>
-    <label for="newfile">Select file:</label>
-    <input type="file" id="newfile" name="file">
-    <input type="submit" value="Upload">
-</form>
 </body>
 <script>
     document.getElementById("pippo").addEventListener("click", function(){
@@ -63,33 +42,12 @@
     });
 </script>
 <script>
-
-     document.getElementById("form").addEventListener("click", function(){
-         var inputFile = document.getElementById("file")[0];
-         var formData = new FormData();
-         formData.append("file", inputFile.files[0]);
-                fetch("http://localhost:8090", {
-                    method: "POST",
-                    // headers: {
-                    //     // "Content-Type": file.type,
-                    //     // "Filename": inputFile.name
-                    // },
-                    body: formData,
-                }).then(data => console.log(data));
-    });
-
-</script>
-<script>
     document.getElementById("pippi?").addEventListener("click", function(){
         var file = document.getElementById("unaltroid").files[0];
         var formdata = new FormData();
         formdata.append("file", file);
                 fetch("http://127.1.0.1:8090/", {
                     method: "POST",
-                    headers: {
-                        // "Content-Type": file.type,
-                        "Filename": file.name
-                    },
                     body: formdata
                 })
         });

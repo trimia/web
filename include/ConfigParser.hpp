@@ -14,6 +14,7 @@
 # include <cstdlib>
 # include <stdint.h>
 # include "Webserver.hpp"
+#include "include.h"
 
 enum MachineState {
     HttpState,

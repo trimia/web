@@ -21,18 +21,18 @@ OBJS_DIR = ./objs/
 
 INCLUDE_DIR = include/
 CC = c++ -I$(INCLUDE_DIR)
-FLAG = -Wall -Wextra -Werror -g #-std=c++98
+FLAG = -Wall -Wextra -Werror -std=c++98
 
 
 objs/%.o: src/%.cpp
 	@mkdir -p objs
-	@$(CC) $(FLAG) -c $< -o $@ -g
+	@$(CC) $(FLAG) -c $< -o $@
 
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CC) $(FLAG) $(OBJS) -o $(NAME) -g
+	@$(CC) $(FLAG) $(OBJS) -o $(NAME)
 #	@mkdir -p $(OBJS_DIR)
 #	@mv $(OBJS) $(OBJS_DIR).
 	@echo "./$(NAME) has been created"

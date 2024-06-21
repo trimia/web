@@ -2,8 +2,7 @@
 
 Server::Server()
 {
-	std::cout << "Server : Default Constructor Called" << std::endl;
-//    this->_isCgiEnabled = false;
+//	std::cout << "Server : Default Constructor Called" << std::endl;
     this->_port = 0;
     this->_ip = "";
     this->_server_name = "";
@@ -17,43 +16,29 @@ Server::Server()
     this->_locations.reserve(0);
     this->_servSockCreatedWithNew = false;
     this->_server_socket=new Socket();
-    // this->_allowmethods=std::vector<int>(METHOD_COUNT,0);
-    // this->_servSockCreatedWithNew=false;
-    // this->_locationNumber=0;
-    // this->socketType=SERVER_SOCK;
 }
 Server::~Server()
 {
-//     if(this->_servSockCreatedWithNew)
-         delete this->_server_socket;
-//
-//    if(this->_server_socket->getFdSock() != INVALID_SOCKET)
+    delete this->_server_socket;
     if(this->_server_socket->getFdSock() != INVALID_SOCKET) {
         close(this->_server_socket->getFdSock());
     }
-//    this->_server_socket=NULL;
-	std::cout << "Server : Destructor Called" << std::endl;
+//	std::cout << "Server : Destructor Called" << std::endl;
 }
 
 Server::Server(Server const &obj)
 {
-	std::cout << "Server : Copy Constructor Called" << std::endl;
+//	std::cout << "Server : Copy Constructor Called" << std::endl;
 	if (this != &obj) {
 	    this->_server_name=obj._server_name;
 	    this->socketType = obj.socketType;
 	    this->_ip=obj._ip;
 	    this->_port=obj._port;
 	    this->_root=obj._root;
-//        if(this->_servSockCreatedWithNew)
-//            delete this->_server_socket;
         this->_server_socket =new Socket(*obj._server_socket);
-//        delete obj._server_socket;
-//        this->_servSockCreatedWithNew= false;
-//        this->_isCgiEnabled = obj._isCgiEnabled;
 	    this->_index=obj._index;
 	    this->_client_max_body_size=obj._client_max_body_size;
 	    this->_autoindex=obj._autoindex;
-	    // this->_server_socket=obj._server_socket;
 	    this->_event=obj._event;
 	    this->setLocations(obj._locations);
 	    this->setErrorPages(obj._error_pages);
@@ -65,7 +50,7 @@ Server::Server(Server const &obj)
 
 Server	&Server::operator= (const Server &obj)
 {
-    	std::cout << "Server : Copy Assignment Operator Called" << std::endl;
+//    	std::cout << "Server : Copy Assignment Operator Called" << std::endl;
     if (this != &obj)
     {
         this->_server_name=obj._server_name;
@@ -76,24 +61,11 @@ Server	&Server::operator= (const Server &obj)
         this->_index=obj._index;
         this->_client_max_body_size=obj._client_max_body_size;
         this->_autoindex=obj._autoindex;
-//        this->_isCgiEnabled = obj._isCgiEnabled;
-        // this->set_server_socket(new Socket(*obj._server_socket));
-//        if(this->_servSockCreatedWithNew)
-//            delete this->_server_socket;
-//        this->_server_socket = new Socket(*obj._server_socket);
-//        delete obj._server_socket;
-//        this->_servSockCreatedWithNew= false;
-        // this->_server_socket=obj._server_socket;
         this->_event=obj._event;
         this->setLocations(obj._locations);
         this->setErrorPages(obj._error_pages);
         this->_isLocation = obj._isLocation;
         this->_locationNumber=obj._locationNumber;
-
-        // this->_allowmethods=obj._allowmethods;
-        // this->_isLocation=obj._isLocation;
-        //	this->attributes = obj.attributes;
-        //	...
     }
     return (*this);
 }
@@ -114,16 +86,9 @@ Server	&Server::operator= (const Server &obj)
  *      fcntl(server.getServerSocket()->getFdSock(),F_SETFL,O_NONBLOCK);
  */
 void Server::initSock() {
-    //TODO remember to free socket
-    // this->_server_socket = new Socket(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port);
-    // this->set_server_socket(new Socket());
-    this->_server_socket=new Socket();
-    this->_servSockCreatedWithNew=true;
     if(this->_ip=="localhost")
         this->_ip="127.0.0.1";
-    //TODO if to check internal server error
     this->_server_socket->createServerSock(SO_REUSEADDR,(char *)this->_ip.c_str(),this->_port,SERVER_SOCK);
-    // this->socketType=SERVER_SOCK;
 
 }
 
@@ -136,14 +101,6 @@ void Server::initSock() {
  *
  *
  */
-//
-//bool    Server::getIsCgiEnabled() {
-//    return this->_isCgiEnabled;
-//}
-//
-//void    Server::setIsCgiEnabled(bool cgiEnabled) {
-//    this->_isCgiEnabled = cgiEnabled;
-//}
 
 uint16_t Server::getPort() const {
     return _port;
@@ -257,14 +214,6 @@ int Server::location_number(){
 void Server::set_location_number(int location_number) {
     _locationNumber = location_number;
 }
-
-// std::vector<int> Server::allowmethods() const {
-//     return _allowmethods;
-// }
-//
-// void Server::set_allowmethods(const std::vector<int> &allowmethods) {
-//     _allowmethods = allowmethods;
-// }
 
 const epoll_event &Server::getEvent() const {
     return _event;
