@@ -62,6 +62,8 @@ public:
     } ;
 
     ~ConfigParser() {} ;
+
+    void popMultiserver();
 };
 
 

@@ -542,6 +542,7 @@ void Response::sendData(Client *client) {
 //        response[this->header_size() + this->body_size() + 2] = '\r';
 //        response[this->header_size() + this->body_size() + 3] = '\n';
 //    } else
+    std::cout<<std::boolalpha << YELLOW << "is chunked: " << client->isChunked() << RESET_COLOR << std::endl;
     if(!client->isChunked()) {
         std::cout << YELLOW << "not chunked" << RESET_COLOR << std::endl;
         response.clear();
@@ -580,6 +581,7 @@ void Response::sendData(Client *client) {
     }
 
     std::cout << YELLOW << "response: " << response.str().c_str() << " response size:" << responseSize << RESET_COLOR << std::endl;
+    std::cout << YELLOW << " header response: " <<client->response()->header()<< " response size:" << responseSize << RESET_COLOR << std::endl;
 
 //    fcntl(response, F_SETFL, O_NONBLOCK);
 

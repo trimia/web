@@ -295,8 +295,10 @@ bool Webserver::_handleConnection(epoll_event &event) {
         return true;
         // return false;
     }
+
     //TODO handle keepalive
-    if(client.connection()=="keep-alive" && elapsedTime>=20)
+    double keepAliveelapsedTime = std::difftime(currentTime, client.time_start());
+    if(client.connection()=="keep-alive" && keepAliveelapsedTime>=20)
     {
         std::cout<<RED<<"Connection keep-alive timeout"<<RESET_COLOR<<std::endl;
         client.request()->set_connection("close");

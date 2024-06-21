@@ -17,6 +17,13 @@ Client::~Client()
 {
 	std::cout << "Client : Destructor Called" << std::endl;
 	// if(_clientSock)
+    this->_id = 0;
+    this->_isLocation = false;
+    this->_locationNumber = 0;
+    this->_not_complete=false;
+    this->_chunked=false;
+    this->_cgi=false;
+    this->_tempfilen=1;
 	delete this->_clientSock;
 }
 
@@ -120,8 +127,10 @@ void Client::_initSocket(char *ip, uint16_t port, char type, int fd) {
 
 void Client::initRequest() {
 	this->_request = new Request();
-	if(this->_request->time_start()==0)
-		this->_request->set_time_start(std::time(NULL));
+	if(this->_request->time_start()==0){
+        this->_request->set_time_start(std::time(NULL));
+        this->_timeStart=this->_request->time_start();
+    }
     // Request *request = new Request();
 	// this->_request = request;
 
